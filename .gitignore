@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.venv/
+venv/
+.python-version
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# Environment / secrets
+.env
+.env.*
+
+# Experiment outputs (regenerable from seeds; large)
+data/
+runs/
+outputs/
+checkpoints/
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+wandb/
+lightning_logs/
+
+# Editors / OS
+.DS_Store
+.vscode/
+.idea/
+*.swp
