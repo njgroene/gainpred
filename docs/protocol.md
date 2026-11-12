@@ -119,6 +119,6 @@ Generated first, from their own random seed, before any training data, and exclu
 
 ### P10. Assumptions, departures and amendments
 
-**Assumptions where their paper is silent.** Constant learning rate; loss on answer characters only; how pieces are chosen within a size (ours: the fixed cuts of P4).
+**Assumptions where their paper is silent.** Constant learning rate; loss on answer characters only; how pieces are chosen within a size (ours: the fixed cuts of P4). Model details (`src/gainpred/model.py`): a Llama-style block, inferred from the parameter count (pre-norm RMSNorm, SwiGLU feed-forward of width 1536, no biases; 14,175,360 parameters with a 19-symbol vocabulary, where a GPT-2-style block would give 10.6M); separate input and output embeddings, as in Llama; weights initialised from a normal distribution with standard deviation 0.02; weight decay on weight matrices and embeddings but not on norm gains; float32 weights and optimizer state with bfloat16 computation; no dropout; no gradient clipping.
 
 **Departures from their setup.** Four rounds of addition where they run eight; one round of longest run where they run eight; three cuts per addition problem where they use one; two edge-run questions added to longest-run starting training; half the longest-run hard problems built with a run across the join; no piece starting with 0 under any cut.
