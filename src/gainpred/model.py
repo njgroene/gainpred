@@ -206,7 +206,9 @@ class SwiGLU(nn.Module):
         self.down = nn.Linear(cfg.d_ff, cfg.d_model, bias=False)
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
-        return self.down(F.silu(self.gate(x)) * self.up(x))  # (B,T,F) -> (B,T,D)
+        # down: (B, T, F) -> (B, T, D). B = batch, T = length; only the last
+        # dimension changes, from the wide product F=1536 back to D=384.
+        return self.down(F.silu(self.gate(x)) * self.up(x))
 
 
 class Block(nn.Module):
@@ -372,9 +374,12 @@ class Transformer(nn.Module):
             generator: optional seeded random generator, for reproducible sampling.
 
         Returns:
-            The newly generated ids for each prompt, without the prompt and
-            without the final eos. Decoding them into a string, and parsing that
-            into an answer (P2, "unreadable answers"), is the caller's job.
+            The newly generated ids for each prompt, without the prompt. A row
+            ends with ``eos_id`` if and only if the model stopped by itself; a
+            row without it was cut off at ``max_new_tokens``. The caller needs
+            that distinction: a cut-off answer must count as unreadable (P2),
+            not as whatever number the first few characters happen to spell.
+            Decoding and parsing are the caller's job (tokenizer.read_generated).
 
         How batching works
             Prompts are *left*-padded so they all end at the same column, and
@@ -428,8 +433,10 @@ class Transformer(nn.Module):
         out = torch.stack(generated, dim=1).tolist() if generated else [[] for _ in prompts]
         results = []
         for row in out:
-            row = row[: row.index(eos_id)] if eos_id in row else row
-            results.append([t for t in row if t != pad_id])
+            # Keep everything up to and including the first eos; drop the
+            # padding that rows receive after they finish.
+            row = row[: row.index(eos_id) + 1] if eos_id in row else row
+            results.append(row)
         return results
 
     # ------------------------------------------------------------------
