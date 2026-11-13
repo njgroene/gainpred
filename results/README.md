@@ -9,6 +9,7 @@ Measurements from every training run, kept in git. Checkpoints stay in `runs/` (
 | `runs/<run>/config.json` | Exact model and training settings, device, torch version, dataset fingerprints |
 | `runs/<run>/log.jsonl` | The full training log: loss, gradient norm, learning rate, accuracies, timings |
 | `errors/<run>_step<N>.json` | How a checkpoint gets 8- and 9-digit problems wrong (answer length, leading digits right, which place is wrong), from `uv run python -m gainpred.errors RUN [--step N]` |
+| `paper_test.md` | Every teacher with a perfect calculator in place of the model (P9 acceptance test), from `uv run python -m gainpred.paper_test` |
 | `plots/*.png` | Training curves (loss, gradient norm, easy and 8-digit accuracy), from `uv run python -m gainpred.plots RUN [RUN]` |
 
 ## Datasets
