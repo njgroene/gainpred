@@ -110,10 +110,14 @@ def plot(runs: list[Run], out: Path) -> None:
     hard_ax.set_xlabel("training step", color=INK, fontsize=10)
     hard_ax.set_xlim(0, max(r.config["train"]["steps"] for r in runs))
 
-    handles, labels = loss_ax.get_legend_handles_labels()
+    # One run: the title names it, so the legend only explains the band and shading.
+    handles, labels = loss_ax.get_legend_handles_labels() if len(runs) > 1 else ([], [])
+    if any("loss_max" in r.train[0] for r in runs):
+        handles.append(plt.Rectangle((0, 0), 1, 1, color=SERIES[0], alpha=0.18))
+        labels.append("band: up to largest batch loss")
     if scheduled:
         handles.append(plt.Rectangle((0, 0), 1, 1, color=GRID, alpha=0.6))
-        labels.append(f"warm-up / decay ({scheduled[0].name})")
+        labels.append("warm-up / decay phases" if len(runs) == 1 else f"warm-up / decay ({scheduled[0].name})")
     loss_ax.legend(handles, labels, frameon=False, fontsize=9, loc="upper right", labelcolor=INK)
     title = "Starting training: " + " vs ".join(r.name for r in runs)
     fig.suptitle(title, color=INK, fontsize=12, x=0.02, ha="left")
