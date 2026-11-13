@@ -19,10 +19,38 @@ What one training step does
    position. Loss = average cross-entropy on the answer characters only (P1).
 3. Backward pass: compute how much each of the 14M weights contributed to the
    loss (its gradient).
-4. Optimiser step: AdamW nudges every weight against its gradient, scaled by
-   the learning rate (constant 5e-4, no warm-up: P1, P10).
+4. Clip: if the gradient as a whole is unusually large, scale it down (see
+   "Keeping training stable" below).
+5. Optimiser step: AdamW nudges every weight against its gradient, scaled by
+   the learning rate for this step (peak 5e-4, P1; schedule below).
 
 Repeat 10,000 times for starting training; 3,000 per self-improvement round.
+
+Keeping training stable (P10)
+=============================
+Our first full run (start-seed0, 13 November 2026) used a constant learning
+rate and no clipping. It learned addition, then kept "spiking": every few
+hundred steps the loss jumped and the model partly forgot long problems.
+Easy accuracy was 98.8% at step 8,000 but 77% at the final step. The paper
+does not state these settings, so we follow the code of Lee et al. (2025),
+from which Shin et al.'s setup derives (same architecture, same unusual
+AdamW epsilon), in ``experiments/run_forward_vanilla.sh``:
+
+* **Gradient clipping at 1.0** (the Hugging Face Trainer default, which
+  their code does not override). The gradient is one long vector with an
+  entry per weight; if its length ("norm") exceeds 1.0, it is scaled down to
+  length 1.0 before the update. Its *direction* is kept, so a normal step is
+  unaffected, but a freak batch can no longer throw the weights far away.
+* **Warmup-stable-decay learning rate** (``lr_factor``): rise linearly from 0
+  over the first 10% of steps, hold at the peak, then fall along a half
+  cosine to 1% of the peak over the last 20%. Warm-up avoids huge updates
+  while AdamW's running averages are still unreliable. The final decay lets
+  the weights settle into a good spot, so the *last* checkpoint -- the one
+  self-improvement starts from -- is a good one, not a random point in a
+  spike.
+
+We log the gradient norm before clipping, and the largest loss in each
+logging window, so spikes are visible rather than averaged away.
 
 Epochs and shuffling
 ====================
@@ -49,6 +77,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
 import time
 from collections import defaultdict
 from collections.abc import Callable, Iterator
@@ -95,6 +124,25 @@ class TrainConfig:
     checkpoint_every: int = 2_000
     """How often to save model + optimiser. Also saved at the end."""
 
+    warmup_fraction: float = 0.1
+    """P10 (Lee et al. code: warmup_ratio=0.1). Share of steps spent raising the
+    learning rate linearly from 0 to its peak: 1,000 of 10,000."""
+
+    decay_fraction: float = 0.2
+    """P10 (Lee et al. code: 2,000 decay steps of 10,000). Share of steps, at
+    the end, spent lowering the learning rate to ``min_lr_ratio`` x peak."""
+
+    min_lr_ratio: float = 0.01
+    """P10 (Lee et al. code). Final learning rate as a share of the peak."""
+
+    grad_clip: float = 1.0
+    """P10 (Hugging Face Trainer default, used by Lee et al.). Maximum gradient
+    norm; larger gradients are scaled down to this length."""
+
+    def __post_init__(self) -> None:
+        if self.warmup_fraction + self.decay_fraction > 1:
+            raise ValueError("warm-up and decay together cannot exceed the whole run")
+
 
 # ----------------------------------------------------------------------------
 # Devices and timing
@@ -125,6 +173,16 @@ def synchronize(device: torch.device) -> None:
         torch.mps.synchronize()
 
 
+def device_name(device: torch.device) -> str:
+    """The exact hardware, for the run's config (P9: confirming runs must share
+    a GPU type; Modal may serve an "A10G" request with an "A10")."""
+    if device.type == "cuda":
+        return torch.cuda.get_device_name(device)
+    if device.type == "mps":
+        return "Apple MPS"
+    return "CPU"
+
+
 class Stopwatch:
     """Accumulates wall-clock seconds per activity (P9 logs train/eval separately).
 
@@ -142,6 +200,38 @@ class Stopwatch:
         yield
         synchronize(self.device)
         self.totals[activity] += time.perf_counter() - start
+
+
+# ----------------------------------------------------------------------------
+# Learning-rate schedule
+# ----------------------------------------------------------------------------
+
+
+def lr_factor(step: int, cfg: TrainConfig) -> float:
+    r"""Learning rate at ``step`` (0-based) as a multiple of the peak (P1: 5e-4).
+
+    Warmup-stable-decay, as Hugging Face's ``warmup_stable_decay`` scheduler
+    that Lee et al. use (cosine decay, its default)::
+
+        1.0 |      ____________________
+            |     /                    \_
+            |    /                       \_
+       0.01 |   /                          \___
+          0 |__/____________________________________
+             warm-up      stable          decay      -> steps
+    """
+    warmup = round(cfg.warmup_fraction * cfg.steps)
+    decay = round(cfg.decay_fraction * cfg.steps)
+    decay_start = cfg.steps - decay
+    if step < warmup:
+        return step / warmup
+    if step < decay_start or decay == 0:
+        return 1.0
+    # 0 -> 1 across the decay phase. PyTorch also asks for step == cfg.steps
+    # (the step after the last), hence the cap at 1.
+    progress = min((step - decay_start) / decay, 1.0)
+    cosine = 0.5 * (1 + math.cos(math.pi * progress))  # 1 -> 0
+    return cfg.min_lr_ratio + (1 - cfg.min_lr_ratio) * cosine
 
 
 # ----------------------------------------------------------------------------
@@ -306,7 +396,8 @@ def train(
     run_dir.mkdir(parents=True, exist_ok=True)
     (run_dir / "config.json").write_text(
         json.dumps(
-            {"model": model.cfg.to_dict(), "train": asdict(cfg), "device": str(device), **(extra_config or {})},
+            {"model": model.cfg.to_dict(), "train": asdict(cfg), "device": device_name(device),
+             "torch": torch.__version__, **(extra_config or {})},
             indent=2,
         )
         + "\n"
@@ -319,6 +410,9 @@ def train(
 
     model.to(device).train()
     optimizer = model.configure_optimizer()
+    # LambdaLR multiplies the optimiser's base learning rate by lr_factor(step);
+    # scheduler.step() after each update moves it to the next step's value.
+    scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lambda step: lr_factor(step, cfg))
     tokens, loss_mask = make_training_batch(examples)
     stream = batches(
         tokens.to(device), loss_mask.to(device), cfg.batch_size, torch.Generator().manual_seed(cfg.seed)
@@ -335,9 +429,10 @@ def train(
             print(f"  eval {name:<6} {shown}")
         model.train()
 
-    # Summing the loss on the GPU and reading it only at log time avoids
-    # forcing the CPU to wait for the GPU after every step.
-    loss_sum, answer_tokens = torch.zeros((), device=device), 0
+    # Window statistics are kept on the GPU and read only at log time, which
+    # avoids forcing the CPU to wait for the GPU after every step.
+    window = {name: torch.zeros((), device=device) for name in ("loss_sum", "loss_max", "norm_sum", "norm_max")}
+    answer_tokens = 0
     for step in range(1, cfg.steps + 1):
         batch_tokens, batch_mask = next(stream)
         with watch.time("train"):
@@ -345,18 +440,40 @@ def train(
                 _, loss = model(batch_tokens, batch_mask)
             optimizer.zero_grad(set_to_none=True)
             loss.backward()
+            # Returns the norm *before* clipping, which is what we want to log.
+            grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), cfg.grad_clip)
             optimizer.step()
-        loss_sum += loss.detach()
+            scheduler.step()
+        loss = loss.detach()
+        window["loss_sum"] += loss
+        window["loss_max"] = torch.maximum(window["loss_max"], loss)
+        window["norm_sum"] += grad_norm
+        window["norm_max"] = torch.maximum(window["norm_max"], grad_norm)
         answer_tokens += int(batch_mask.sum())
 
         if step % cfg.log_every == 0 or step == cfg.steps:
             steps_since = (step - 1) % cfg.log_every + 1
-            mean_loss = (loss_sum / steps_since).item()
-            loss_sum.zero_()
+            stats = {name: value.item() for name, value in window.items()}
+            for value in window.values():
+                value.zero_()
+            entry = {
+                "event": "train",
+                "step": step,
+                "loss": stats["loss_sum"] / steps_since,  # mean over the window
+                "loss_max": stats["loss_max"],  # worst single step: shows spikes
+                "grad_norm": stats["norm_sum"] / steps_since,  # before clipping
+                "grad_norm_max": stats["norm_max"],
+                "lr": scheduler.get_last_lr()[0],  # learning rate for the next step
+                "answer_tokens": answer_tokens,
+                "seconds": dict(watch.totals),
+            }
+            log(entry)
             rate = step / watch.totals["train"]
-            log({"event": "train", "step": step, "loss": mean_loss, "answer_tokens": answer_tokens,
-                 "seconds": dict(watch.totals)})
-            print(f"step {step:>6}  loss {mean_loss:.4f}  {rate:.2f} steps/s")
+            print(
+                f"step {step:>6}  loss {entry['loss']:.4f} (max {entry['loss_max']:.3f})  "
+                f"grad {entry['grad_norm']:.2f} (max {entry['grad_norm_max']:.1f})  "
+                f"lr {entry['lr']:.1e}  {rate:.1f} steps/s"
+            )
 
         if step % cfg.eval_every == 0 or step == cfg.steps:
             run_evals(step)
