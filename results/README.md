@@ -8,6 +8,7 @@ Measurements from every training run, kept in git. Checkpoints stay in `runs/` (
 | `evals.csv` | Every evaluation of every run, one row per run, step, test set and group |
 | `runs/<run>/config.json` | Exact model and training settings, device, torch version, dataset fingerprints |
 | `runs/<run>/log.jsonl` | The full training log: loss, gradient norm, learning rate, accuracies, timings |
+| `errors/<run>_step<N>.json` | How a checkpoint gets 8- and 9-digit problems wrong (answer length, leading digits right, which place is wrong), from `uv run python -m gainpred.errors RUN [--step N]` |
 | `plots/*.png` | Training curves (loss, gradient norm, easy and 8-digit accuracy), from `uv run python -m gainpred.plots RUN [RUN]` |
 
 ## Datasets
@@ -52,3 +53,14 @@ All are P1 starting training on easy addition (3–7 digits), batch 256, seed 0 
 
 - **Stability.** With a constant learning rate the model learns, then repeatedly forgets long problems. With warm-up, clipping and a final decay, **both seeds end at 100.0% on easy problems**. The paths differ: seed 0 learned fast and then spiked through the stable phase (gradient norm up to ~240 before clipping, easy accuracy swinging between 53% and 99.6%); seed 1 climbed slowly and steadily (largest gradient norm ~130, one loss spike at step ~8,050) and passed 99% only at step 9,000. Clipping is active on almost every step in both (typical gradient norm 10–20, against a threshold of 1.0).
 - **8 digits are seed-dependent.** Seed 0 answers many 8-digit problems directly (up to ~90% at some checkpoints in the first run; 58% at the end of the stable run), with no carry/no-carry difference. Seed 1 stays at 0% throughout, as P9 expects. Nine digits stay at ~0% in every run. So length generalisation by one digit is something some runs stumble into, not part of the recipe; how to treat it against P9 is an open protocol decision.
+- **Why 8 digits differ: the model's sense of number length** (`errors/`, final checkpoints, 2,000 eight-digit problems each). The longest answer in training is 8 characters (7 + 7 digits).
+
+  | | Seed 0 | Seed 1 |
+  | --- | --- | --- |
+  | Right | 58.5% | 0% |
+  | Answer length | Right on all 2,000 | One digit short on 1,985 |
+  | Leading digits right, when wrong | 5–7 | 1–3 |
+  | Typical error | Tens digit off (±10 to ±30) | Everything after the first few digits |
+  | 9 digits | One digit short (1,921 of 2,000) | One digit short or worse; 45% unreadable |
+
+  Seed 1's sense of length stops at the 7 digits it trained on: it treats an 8-digit problem roughly as a 7-digit one, and the digits fall out of line. Seed 0's stretches one digit further, and only the last places are shaky. At step 4,000, during a spike, seed 0 scored 0.1% with answer lengths scattered (short, right and long) and errors in every place, so its spikes seem to damage and rebuild exactly this ability. Self-improvement round 1 shows the model 9-digit answers for the first time, so seed 1 has the most to gain from it.
