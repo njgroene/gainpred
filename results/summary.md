@@ -10,6 +10,7 @@ unless marked otherwise, all on held-out test sets (definitions and what each ru
 | quick-m2 | mps | 300 / 300 | constant LR, no clipping | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
 | start-seed0 | cuda | 10,000 / 10,000 | constant LR, no clipping | 77.0 | 98.8 | 0.9 | 0.7 | 0.0 | 0.0 |
 | start-seed0-stable | NVIDIA A10 | 10,000 / 10,000 | warmup 10% / decay 20% to 1%, clip 1.0 | 100.0 | 100.0 | 59.9 | 56.2 | 0.0 | 0.0 |
+| start-seed1-stable | NVIDIA A10 | 10,000 / 10,000 | warmup 10% / decay 20% to 1%, clip 1.0 | 100.0 | 100.0 | 0.0 | 0.0 | 0.0 | 0.0 |
 
 ## local-1500
 
@@ -151,3 +152,49 @@ Training stability:
 | warm-up | 0–1,000 | 3.48 | 53.8 | 1.48e+00 |
 | stable | 1,000–8,000 | 2.54 | 244 | 1.33e-01 |
 | decay | 8,000–10,000 | 1.63 | 274 | 1.13e-05 |
+
+## start-seed1-stable
+
+- Device: NVIDIA A10, torch 2.15.0+cu132
+- Steps: 10,000 planned, finished; batch 256, seed 1
+- Recipe: warmup 10% / decay 20% to 1%, clip 1.0
+- Test sets: full
+- Time: 7.6 min training, 0.5 min evaluating
+
+Easy addition (3–7 digits, check 0; pass mark 99% for starting training): final **100.0%** at step 10,000; best 100.0% at step 10,000.
+
+| step | 3 | 4 | 5 | 6 | 7 | all |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1,000 | 0.7 | 0.0 | 0.0 | 0.0 | 0.0 | 0.1 |
+| 2,000 | 90.2 | 6.6 | 0.4 | 0.0 | 0.0 | 19.4 |
+| 3,000 | 94.1 | 82.3 | 7.2 | 0.9 | 0.1 | 36.9 |
+| 4,000 | 97.0 | 86.8 | 84.1 | 17.6 | 1.6 | 57.4 |
+| 5,000 | 99.4 | 99.1 | 95.4 | 79.7 | 6.9 | 76.1 |
+| 6,000 | 90.8 | 91.5 | 91.1 | 81.8 | 48.2 | 80.7 |
+| 7,000 | 99.4 | 98.2 | 93.5 | 89.9 | 82.8 | 92.8 |
+| 8,000 | 98.1 | 99.1 | 99.4 | 98.9 | 92.6 | 97.6 |
+| 9,000 | 99.9 | 99.6 | 99.6 | 98.9 | 97.7 | 99.1 |
+| 10,000 | 100.0 | 100.0 | 100.0 | 100.0 | 99.8 | 100.0 |
+
+Starting point (8–9 digits asked directly, split by carry across cut 1; P9 expects ~0%):
+
+| step | 8/no-carry | 8/carry | 9/no-carry | 9/carry | all |
+| --- | --- | --- | --- | --- | --- |
+| 1,000 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+| 2,000 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+| 3,000 | 0.1 | 0.0 | 0.0 | 0.0 | 0.0 |
+| 4,000 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+| 5,000 | 0.2 | 0.3 | 0.0 | 0.0 | 0.1 |
+| 6,000 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+| 7,000 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+| 8,000 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+| 9,000 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+| 10,000 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+
+Training stability:
+
+| phase | steps | largest batch loss | largest grad norm | loss at end |
+| --- | --- | --- | --- | --- |
+| warm-up | 0–1,000 | 3.64 | 65.6 | 1.52e+00 |
+| stable | 1,000–8,000 | 1.8 | 103 | 3.23e-02 |
+| decay | 8,000–10,000 | 4.98 | 133 | 3.85e-04 |

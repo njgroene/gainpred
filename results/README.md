@@ -34,7 +34,7 @@ uv run python -m gainpred.report
 
 ## The runs so far
 
-All are P1 starting training on easy addition (3–7 digits), seed 0, batch 256. "Easy" is check 0 on the easy test set; "8 digits" is the starting-point test (P9), asked directly with no cutting.
+All are P1 starting training on easy addition (3–7 digits), batch 256, seed 0 unless named otherwise. "Easy" is check 0 on the easy test set; "8 digits" is the starting-point test (P9), asked directly with no cutting.
 
 | Run | Date | Where | Purpose | Outcome |
 | --- | --- | --- | --- | --- |
@@ -42,10 +42,13 @@ All are P1 starting training on easy addition (3–7 digits), seed 0, batch 256.
 | `local-1500` | 13 Nov 2026 | Laptop (M2, MPS) | Longer laptop run | Stopped at step 800 in favour of Modal; still 0% |
 | `start-seed0` | 13 Nov 2026 | Modal, NVIDIA A10 (config says only `cuda`; the device name was not yet recorded) | Full P1 recipe as stated: constant learning rate, no clipping | **Failed P9.** Easy peaked at 98.8% (step 8,000) then fell to 77.0% after loss spikes |
 | `start-seed0-stable` | 13 Nov 2026 | Modal, NVIDIA A10 | Same, plus warmup-stable-decay schedule and clipping at 1.0 from Lee et al.'s code (P10) | **Passes P9:** easy 100.0% (7 digits 99.9%). 8 digits directly: 59.9% / 56.2%; 9 digits: 0% |
+| `start-seed1-stable` | 13 Nov 2026 | Modal, NVIDIA A10 | Same recipe, seed 1: is seed 0's result reliable? | **Passes P9:** easy 100.0% (7 digits 99.8%). 8 and 9 digits directly: 0% at every checkpoint |
 
 ## What we take from them
 
 ![Seed 0 training curves (start-seed0-stable)](plots/seed0.png)
 
-- **Stability.** With a constant learning rate the model learns, then repeatedly forgets long problems. Warm-up, clipping and a final decay fix the *end point*, but spikes still occur in the stable phase (gradient norm up to ~240 before clipping, easy accuracy swinging between 53% and 99.6%); the decay phase settles them. Seed 1 has not been run yet, so we do not know whether 100% is reliable.
-- **8 digits are not "close to 0%".** Both runs answer many 8-digit problems directly at some checkpoints (up to ~90%), with no carry/no-carry difference, so the model is not using cut-1 structure. The share swings widely between checkpoints (stable run: 0–60%), and the final value depends on where training stops (start-seed0 ended at 0.9%, the stable run at 58%). Nine digits stay at ~0% throughout. How to treat this against P9 is an open protocol decision.
+![Seed 1 training curves (start-seed1-stable)](plots/seed1.png)
+
+- **Stability.** With a constant learning rate the model learns, then repeatedly forgets long problems. With warm-up, clipping and a final decay, **both seeds end at 100.0% on easy problems**. The paths differ: seed 0 learned fast and then spiked through the stable phase (gradient norm up to ~240 before clipping, easy accuracy swinging between 53% and 99.6%); seed 1 climbed slowly and steadily (largest gradient norm ~130, one loss spike at step ~8,050) and passed 99% only at step 9,000. Clipping is active on almost every step in both (typical gradient norm 10–20, against a threshold of 1.0).
+- **8 digits are seed-dependent.** Seed 0 answers many 8-digit problems directly (up to ~90% at some checkpoints in the first run; 58% at the end of the stable run), with no carry/no-carry difference. Seed 1 stays at 0% throughout, as P9 expects. Nine digits stay at ~0% in every run. So length generalisation by one digit is something some runs stumble into, not part of the recipe; how to treat it against P9 is an open protocol decision.
