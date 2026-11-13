@@ -4,6 +4,7 @@ Usage::
 
     uv run python -m gainpred.errors start-seed1-stable              # final checkpoint, 8 and 9 digits
     uv run python -m gainpred.errors start-seed0-stable --step 4000 --digits 8
+    uv run python -m gainpred.errors si-their-seed1-r1/round_1 --digits 9   # a self-improvement round
 
 Writes ``results/errors/<run>_step<N>.json`` and prints a summary.
 
@@ -133,7 +134,7 @@ def main() -> None:
     checkpoint = RUNS_DIR / args.run / "checkpoints" / f"step_{args.step:06d}.pt" if args.step else checkpoints[-1]
     step = int(checkpoint.stem.removeprefix("step_"))
     profiles = profile_checkpoint(checkpoint, args.digits)
-    out = RESULTS_DIR / "errors" / f"{args.run}_step{step}.json"
+    out = RESULTS_DIR / "errors" / f"{args.run.replace('/', '__')}_step{step}.json"  # round_1 -> one file
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps({"run": args.run, "step": step, "by_digits": profiles}, indent=2) + "\n")
     print(f"{args.run}, step {step}")

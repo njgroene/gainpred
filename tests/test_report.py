@@ -51,3 +51,27 @@ def test_summary_and_csv(tmp_path):
     rows = list(csv.DictReader((results / "evals.csv").open()))
     assert len(rows) == 6  # done: 2 evals x 2 groups; stopped: 1 eval x 2 groups
     assert rows[0] == {"run": "done", "step": "10", "set": "easy", "group": "3", "accuracy": "0.5"}
+
+
+def test_rounds_runs_are_collected_and_summarised(tmp_path):
+    from gainpred.report import load_rounds, write_rounds
+
+    run = tmp_path / "runs" / "si"
+    (run / "round_1" / "checkpoints").mkdir(parents=True)
+    (run / "round_1" / "checkpoints" / "step_000003.pt").write_bytes(b"big")
+    (run / "round_1" / "log.jsonl").write_text('{"event": "done", "step": 3, "seconds": {"train": 1.0}}')
+    (run / "round_1" / "config.json").write_text("{}")
+    (run / "config.json").write_text(json.dumps({"start_run": "start", "device": "CPU", "rounds": {
+        "teacher": "their_rule", "seed": 1, "rounds": 1, "kept_per_length": 10, "replay_per_length": 5, "steps": 3}}))
+    events = [
+        {"event": "eval", "round": 0, "set": "study", "accuracy": {"8/no-carry": 0.0, "8/carry": 0.0, "all": 0.0}},
+        {"event": "eval", "round": 1, "set": "study", "accuracy": {"8/no-carry": 1.0, "8/carry": 0.5, "all": 0.75}},
+        {"event": "round_done", "round": 1, "examples": 15, "seconds": {"build": 2.0}, "generated_tokens": 99},
+    ]
+    (run / "rounds.jsonl").write_text("\n".join(json.dumps(e) for e in events))
+    results = tmp_path / "results"
+    assert collect(tmp_path / "runs", results) == ["si"]
+    assert not (results / "runs" / "si" / "round_1" / "checkpoints").exists()
+    write_rounds(load_rounds(results), results)
+    assert "| 1 | – | 100.0 / 50.0 |" in (results / "rounds.md").read_text()
+    assert len((results / "rounds.csv").read_text().splitlines()) == 1 + 6

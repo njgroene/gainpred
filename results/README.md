@@ -4,7 +4,8 @@ Measurements from every training run, kept in git. Checkpoints stay in `runs/` (
 
 | File | What it is |
 | --- | --- |
-| `summary.md` | Generated tables per run: settings, accuracy at each evaluation, spike statistics. Do not edit by hand |
+| `summary.md` | Generated tables per starting run: settings, accuracy at each evaluation, spike statistics. Do not edit by hand |
+| `rounds.md`, `rounds.csv` | Generated tables per self-improvement run: accuracy after each round, training answers built (drawn, kept, audited right), replay, checks, cost |
 | `evals.csv` | Every evaluation of every run, one row per run, step, test set and group |
 | `runs/<run>/config.json` | Exact model and training settings, device, torch version, dataset fingerprints |
 | `runs/<run>/log.jsonl` | The full training log: loss, gradient norm, learning rate, accuracies, timings |
@@ -65,3 +66,13 @@ All are P1 starting training on easy addition (3–7 digits), batch 256, seed 0 
   | 9 digits | One digit short (1,921 of 2,000) | One digit short or worse; 45% unreadable |
 
   Seed 1's sense of length stops at the 7 digits it trained on: it treats an 8-digit problem roughly as a 7-digit one, and the digits fall out of line. Seed 0's stretches one digit further, and only the last places are shaky. At step 4,000, during a spike, seed 0 scored 0.1% with answer lengths scattered (short, right and long) and errors in every place, so its spikes seem to damage and rebuild exactly this ability. Self-improvement round 1 shows the model 9-digit answers for the first time, so seed 1 has the most to gain from it.
+
+## Self-improvement
+
+| Run | Where | What | Outcome |
+| --- | --- | --- | --- |
+| `si-quick-m2` | Laptop (M2) | Wiring check: 1 round of their rule from seed 1, a tenth of the data, 300 updates | Worked end to end; 8 digits 0 → 44%, 9 digits 0 → 21% |
+| `si-their-seed1-r1` | Modal, NVIDIA A10 | Acceptance test "one round, their rule" (P9): full round 1 from `start-seed1-stable` | 8 digits **99.6% / 98.6%** (no carry / carry), 9 digits **99.8% / 69.9%**, easy 99.8%. About 4 minutes on the GPU |
+
+- **Round 1 works.** Their rule kept 38% of drawn problems, and 99.7–99.9% of kept answers were right. The model went from 0% to near-perfect at 8 digits, *including* problems with a carry across cut 1, which their rule never keeps. So it learned addition at the new length, not just the kept problems.
+- **9 digits with a carry lag at 70%.** The mistakes sit exactly at cut 1 (3∣6): 335 of the 343 wrong digits are in the two places either side of it (`errors/si-their-seed1-r1__round_1_step3000.json`). Their rule shows the model no 9-digit problem with a carry there, so the carry at that position has to come from somewhere else. That it gets 70% right at all suggests it is borrowing from 8-digit problems, whose cut is in a different place. Later rounds should show whether this gap closes, or whether it is the systematic blind spot of their rule that two cuts agree is designed to fix.

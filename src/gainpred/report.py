@@ -83,22 +83,59 @@ class Run:
 
 
 def collect(runs_dir: Path = RUNS_DIR, results_dir: Path = RESULTS_DIR) -> list[str]:
-    """Copy config.json and log.jsonl of every run into results/runs/. Returns run names."""
+    """Copy the logs (never checkpoints) of every run into results/runs/. Returns run names.
+
+    Starting runs: config.json and log.jsonl. Self-improvement runs: config.json,
+    rounds.jsonl, and each round's config.json and log.jsonl.
+    """
     copied = []
     for run_dir in sorted(p for p in runs_dir.iterdir() if p.is_dir()):
-        if not all((run_dir / f).exists() for f in KEPT_FILES):
+        if (run_dir / "rounds.jsonl").exists():
+            files = ["config.json", "rounds.jsonl"] + [
+                str(f.relative_to(run_dir)) for r in sorted(run_dir.glob("round_*")) for f in
+                (r / "config.json", r / "log.jsonl") if f.exists()]
+        elif all((run_dir / f).exists() for f in KEPT_FILES):
+            files = list(KEPT_FILES)
+        else:
             continue
-        target = results_dir / "runs" / run_dir.name
-        target.mkdir(parents=True, exist_ok=True)
-        for f in KEPT_FILES:
-            shutil.copy2(run_dir / f, target / f)
+        for f in files:
+            target = results_dir / "runs" / run_dir.name / f
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(run_dir / f, target)
         copied.append(run_dir.name)
     return copied
 
 
 def load_all(results_dir: Path = RESULTS_DIR) -> list[Run]:
+    """The starting-training runs (those with a log.jsonl at the top)."""
     runs_dir = results_dir / "runs"
-    return [Run.load(p) for p in sorted(runs_dir.iterdir()) if p.is_dir()] if runs_dir.exists() else []
+    if not runs_dir.exists():
+        return []
+    return [Run.load(p) for p in sorted(runs_dir.iterdir()) if (p / "log.jsonl").exists()]
+
+
+@dataclass
+class RoundsRun:
+    """A self-improvement run: its settings and the events of rounds.jsonl."""
+
+    name: str
+    config: dict
+    events: list[dict]
+
+    @classmethod
+    def load(cls, run_dir: Path) -> RoundsRun:
+        events = [json.loads(line) for line in (run_dir / "rounds.jsonl").read_text().splitlines()]
+        return cls(run_dir.name, json.loads((run_dir / "config.json").read_text()), events)
+
+    def of(self, kind: str) -> list[dict]:
+        return [e for e in self.events if e["event"] == kind]
+
+
+def load_rounds(results_dir: Path = RESULTS_DIR) -> list[RoundsRun]:
+    runs_dir = results_dir / "runs"
+    if not runs_dir.exists():
+        return []
+    return [RoundsRun.load(p) for p in sorted(runs_dir.iterdir()) if (p / "rounds.jsonl").exists()]
 
 
 # ----------------------------------------------------------------------------
@@ -243,6 +280,74 @@ def write_evals_csv(runs: list[Run], results_dir: Path = RESULTS_DIR) -> None:
                     writer.writerow([run.name, e["step"], e["set"], group, acc])
 
 
+def summarise_rounds_run(run: RoundsRun) -> list[str]:
+    c = run.config["rounds"]
+    done = run.of("round_done")
+    lines = [f"## {run.name}", "",
+             f"- Teacher: **{c['teacher']}**; starting run `{run.config['start_run']}` (seed {c['seed']})",
+             f"- Rounds: {len(done)} of {c['rounds']} finished; {c['kept_per_length']:,} kept per length, "
+             f"{c['replay_per_length']:,} replay per easy length, {c['steps']:,} updates per round",
+             f"- Device: {run.config.get('device', '?')}", ""]
+    study = [e for e in run.of("eval") if e["set"] == "study"]
+    easy = {e["round"]: e["accuracy"] for e in run.of("eval") if e["set"] == "easy"}
+    if study:
+        lengths = sorted({int(k.split("/")[0]) for k in study[0]["accuracy"] if k != "all"})
+        header = ["round", "easy (3–7)"] + [f"{d}: no carry / carry" for d in lengths]
+        rows = [[str(e["round"]), pct(easy.get(e["round"], {}).get("all"))] +
+                [f"{pct(e['accuracy'].get(f'{d}/no-carry'))} / {pct(e['accuracy'].get(f'{d}/carry'))}" for d in lengths]
+                for e in study]
+        lines += ["Test accuracy (%) after each round (round 0 = the starting model); carry = across cut 1:", "",
+                  *table(header, rows), ""]
+    builds = run.of("build")
+    if builds:
+        rows = [[str(e["round"]), str(e["digits"]), f"{e['drawn']:,}", f"{e['kept']:,}", pct(e["kept_share"]),
+                 pct(e["kept_right"]), f"{e['shortfall']:,}"] for e in builds]
+        lines += ["Training answers built by the teacher (\"right\" is an audit; the teacher never sees it):", "",
+                  *table(["round", "digits", "drawn", "kept", "kept %", "right %", "shortfall"], rows), ""]
+    replays = run.of("replay")
+    if replays:
+        rows = [[str(e["round"]), f"{e['problems']:,}", f"{e['readable']:,}", pct(e["right"])] for e in replays]
+        lines += ["Easy replay answered by the current model:", "",
+                  *table(["round", "problems", "readable", "right %"], rows), ""]
+    checks = run.of("checks")
+    if checks:
+        rows = [[str(e["round"]), str(e["digits"]), pct(e["check_1"]), pct(e["teachable"]), pct(e["check_2_kept"])]
+                for e in checks]
+        lines += ["Label-free checks (P8) on 2,000 fresh problems per new length:", "",
+                  *table(["round", "digits", "check 1: kept ≠ direct", "teachable", "check 2: two cuts agree"], rows),
+                  ""]
+    if done:
+        rows = []
+        for e in done:
+            train_log = RESULTS_DIR / "runs" / run.name / f"round_{e['round']}" / "log.jsonl"
+            train_s = None
+            if train_log.exists():
+                last = json.loads(train_log.read_text().splitlines()[-1])
+                train_s = last["seconds"].get("train")
+            rows.append([str(e["round"]), f"{e['examples']:,}", f"{e['seconds'].get('build', 0):.0f}",
+                         f"{e['seconds'].get('checks', 0):.0f}", f"{train_s:.0f}" if train_s else "–",
+                         f"{e['generated_tokens']:,}"])
+        lines += ["Cost per round (seconds; tokens = characters the model generated for building and checks):", "",
+                  *table(["round", "examples", "build s", "checks s", "train s", "generated tokens"], rows), ""]
+    return lines
+
+
+def write_rounds(runs: list[RoundsRun], results_dir: Path = RESULTS_DIR) -> None:
+    lines = ["# Self-improvement runs", "",
+             "Generated by `uv run python -m gainpred.report` from `results/runs/*/rounds.jsonl`; do not edit by hand.",
+             "All accuracies are on held-out test sets (see `README.md`).", ""]
+    for run in runs:
+        lines += summarise_rounds_run(run)
+    (results_dir / "rounds.md").write_text("\n".join(lines))
+    with (results_dir / "rounds.csv").open("w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(["run", "teacher", "round", "set", "group", "accuracy"])
+        for run in runs:
+            for e in run.of("eval"):
+                for group, acc in e["accuracy"].items():
+                    writer.writerow([run.name, run.config["rounds"]["teacher"], e["round"], e["set"], group, acc])
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("--no-copy", action="store_true", help="don't copy from runs/; only rebuild tables")
@@ -254,7 +359,10 @@ def main() -> None:
     runs = load_all(args.results_dir)
     write_summary(runs, args.results_dir)
     write_evals_csv(runs, args.results_dir)
-    print(f"wrote {args.results_dir}/summary.md and evals.csv for {len(runs)} runs")
+    rounds_runs = load_rounds(args.results_dir)
+    write_rounds(rounds_runs, args.results_dir)
+    print(f"wrote summary.md and evals.csv ({len(runs)} starting runs), "
+          f"rounds.md and rounds.csv ({len(rounds_runs)} self-improvement runs)")
 
 
 if __name__ == "__main__":
