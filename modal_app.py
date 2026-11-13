@@ -36,9 +36,11 @@ SHA-256 fingerprints differ, it stops before training on different data.
 
 GPU choice
 ==========
-An NVIDIA L4: a 14M-parameter model leaves bigger GPUs mostly idle, and the
-L4 is among the cheapest. All confirming runs must use the same GPU type
-(P9), which is why it is fixed here rather than a command-line option.
+An NVIDIA A10G: a 14M-parameter model leaves bigger GPUs mostly idle, and
+the A10G is cheap and usually available. (We first chose the L4, but Modal
+had no L4 capacity on 13 November 2026, and no run had used it yet.) All
+confirming runs must use the same GPU type (P9), which is why it is fixed
+here rather than a command-line option.
 """
 
 from __future__ import annotations
@@ -48,7 +50,7 @@ from pathlib import Path
 
 import modal
 
-GPU = "L4"
+GPU = "A10G"
 VOLUME_PATH = Path("/vol")
 
 app = modal.App("gainpred")
