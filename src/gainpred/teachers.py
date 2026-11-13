@@ -99,6 +99,8 @@ class ModelSolver:
         self.device = device
         self.batch_size = batch_size
         self.generator = torch.Generator(device=device).manual_seed(seed)
+        self.calls = 0  # problems answered so far
+        self.generated_tokens = 0  # characters written, including end tokens (P9: log tokens)
 
     def __call__(self, problems: list[Addition], temperature: float = 0.0) -> list[Answer]:
         from gainpred.train import autocast  # avoid an import cycle
@@ -114,6 +116,8 @@ class ModelSolver:
                                               temperature=temperature, generator=self.generator)
             for i, ids in zip(idx, outputs):
                 answers[i] = read_generated(ids)
+                self.generated_tokens += len(ids)
+        self.calls += len(problems)
         return answers  # type: ignore[return-value]
 
 

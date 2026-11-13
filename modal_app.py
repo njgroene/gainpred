@@ -8,6 +8,10 @@ Usage (from the repo root)::
     uv run modal run --detach modal_app.py --run start-seed0     # keeps running if you close the terminal
     uv run modal volume get gainpred runs/start-seed0 runs/      # download a finished run
 
+    # self-improvement rounds (P3), continuing from a starting run on the volume:
+    uv run modal run --detach modal_app.py::rounds --run si-their-seed1 --start start-seed1-stable \
+        --teacher their_rule --rounds 1
+
 How Modal works, briefly
 ========================
 You write ordinary Python functions and decorate them with ``@app.function``.
@@ -23,9 +27,11 @@ Three pieces are declared below:
 * **Volume** -- persistent cloud storage, mounted at ``/vol`` in the
   container. It outlives the container, so datasets and runs survive between
   calls. Layout: ``/vol/data/addition/`` and ``/vol/runs/<run>/``.
-* **Functions** -- ``make_data`` (CPU only) and ``train_start`` (on a GPU).
-  ``main`` is the *local entrypoint*: it runs on your machine and calls the
-  remote functions with ``.remote(...)``.
+* **Functions** -- ``make_data`` (CPU only), ``train_start`` and
+  ``self_improve`` (on a GPU). ``main`` and ``rounds`` are *local
+  entrypoints*: they run on your machine and call the remote functions with
+  ``.remote(...)``. ``modal run modal_app.py`` runs ``main``;
+  ``modal run modal_app.py::rounds`` runs ``rounds``.
 
 Why the data is generated in the cloud, not uploaded
 ====================================================
@@ -124,4 +130,33 @@ def main(
         raise SystemExit("cloud datasets differ from local ones (fingerprints in manifest.json); not training")
     print("datasets match local fingerprints")
     train_start.remote(run, seed, steps, eval_every, eval_per_length, checkpoint_every)
+    print(f"done. download with: uv run modal volume get gainpred runs/{run} runs/")
+
+
+@app.function(image=image, gpu=GPU, volumes={str(VOLUME_PATH): volume}, timeout=12 * 60 * 60)
+def self_improve(run: str, start: str, teacher: str, rounds: int) -> None:
+    """P3 self-improvement rounds on one GPU. Output goes to /vol/runs/<run>/."""
+    import torch
+
+    from gainpred.rounds import RoundConfig, self_improve
+
+    print(f"GPU: {torch.cuda.get_device_name()}  torch {torch.__version__}")
+    runs_dir = VOLUME_PATH / "runs"
+    seed = json.loads((runs_dir / start / "config.json").read_text())["train"]["seed"]
+    # Bigger generation batches than the default: a GPU answers 4,096 short prompts at once easily.
+    cfg = RoundConfig(teacher=teacher, rounds=rounds, seed=seed, solver_batch_size=4_096)
+    try:
+        self_improve(cfg, run, start, data_dir=VOLUME_PATH / "data" / "addition",
+                     device=torch.device("cuda"), runs_dir=runs_dir)
+    finally:
+        volume.commit()
+
+
+@app.local_entrypoint()
+def rounds(run: str, start: str, teacher: str = "their_rule", rounds: int = 4) -> None:
+    """Self-improvement rounds from a starting run already on the volume."""
+    remote = make_data.remote()
+    if remote != json.loads(Path("data/addition/manifest.json").read_text()):
+        raise SystemExit("cloud datasets differ from local ones (fingerprints in manifest.json); not training")
+    self_improve.remote(run, start, teacher, rounds)
     print(f"done. download with: uv run modal volume get gainpred runs/{run} runs/")
