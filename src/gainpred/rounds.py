@@ -58,6 +58,7 @@ import argparse
 import json
 import math
 import random
+import time
 from collections.abc import Callable
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -103,6 +104,13 @@ class RoundConfig:
     batch_size: int = 256
     eval_per_length: int | None = None
     solver_batch_size: int = 1_000
+    build_seconds_per_length: float | None = None
+    """Optional wall-clock limit on drawing for one length in one round. When it
+    runs out, drawing stops and the shortfall is logged: a result, not a
+    failure (used for sample and vote, whose keep rate can be tiny)."""
+    max_chunk: int = 20_000
+    """Most candidates handed to the teacher at once, so a time limit is checked
+    often enough to matter."""
 
     def train_config(self, round_: int) -> TrainConfig:
         return TrainConfig(
@@ -136,19 +144,25 @@ def draw_fresh(rng: random.Random, digits: int, n: int, exclude: set[Addition]) 
 
 
 def collect_kept(teacher: Teacher, solver: Solver, rng: random.Random, digits: int, quota: int,
-                 cap: int, exclude: set[Addition]) -> tuple[list[tuple[Addition, int]], int]:
-    """Draw candidates in chunks until ``quota`` answers are kept or ``cap`` are drawn.
+                 cap: int, exclude: set[Addition], seconds: float | None = None,
+                 max_chunk: int = 20_000) -> tuple[list[tuple[Addition, int]], int, bool]:
+    """Draw candidates in chunks until ``quota`` answers are kept, ``cap`` are drawn,
+    or (if given) ``seconds`` have passed.
 
     Chunks are sized from the keep rate so far, so a teacher that keeps 7%
     is not called 140,000 times one by one, nor asked for far too many.
-    Returns (kept examples, in draw order and at most ``quota``; number drawn).
+    Returns (kept examples, in draw order and at most ``quota``; number drawn;
+    whether the time limit stopped it).
     """
     kept: list[tuple[Addition, int]] = []
     drawn = 0
     rate = 0.3  # first guess; replaced by the observed rate after one chunk
+    deadline = None if seconds is None else time.monotonic() + seconds
     while len(kept) < quota and drawn < cap:
+        if deadline is not None and time.monotonic() > deadline:
+            return kept, drawn, True
         need = quota - len(kept)
-        chunk = min(cap - drawn, max(500, math.ceil(1.15 * need / max(rate, 0.02))))
+        chunk = min(cap - drawn, max_chunk, max(500, math.ceil(1.15 * need / max(rate, 0.02))))
         problems = draw_fresh(rng, digits, chunk, exclude)
         for d in teacher(problems, solver):
             drawn += 1
@@ -157,7 +171,7 @@ def collect_kept(teacher: Teacher, solver: Solver, rng: random.Random, digits: i
                 if len(kept) == quota:
                     break
         rate = max(len(kept) / drawn, 0.001)
-    return kept, drawn
+    return kept, drawn, False
 
 
 def eval_sets(data_dir: Path, per_length: int | None) -> dict[str, EvalSet]:
@@ -174,22 +188,52 @@ def known_problems(data_dir: Path) -> set[Addition]:
     return {p for name in names for p in problems_of(load(data_dir / f"{name}.jsonl"))}
 
 
+def start_checkpoint_of(runs_dir: Path, start_run: str, start_round: int | None = None) -> Path:
+    """The checkpoint to continue from.
+
+    ``start_round`` None: the last checkpoint of a starting-training run.
+    ``start_round`` k: the checkpoint after round k of a self-improvement run,
+    e.g. run f of P9b (no selection after two rounds of the no-carry rule).
+    """
+    run_dir = runs_dir / start_run if start_round is None else runs_dir / start_run / f"round_{start_round}"
+    return sorted((run_dir / "checkpoints").glob("step_*.pt"))[-1]
+
+
+def start_seed(runs_dir: Path, start_run: str, start_round: int | None = None) -> int:
+    """The starting point (P9) of the run we continue from."""
+    config = json.loads((runs_dir / start_run / "config.json").read_text())
+    return config["train"]["seed"] if start_round is None else config["rounds"]["seed"]
+
+
 def self_improve(cfg: RoundConfig, run_name: str, start_run: str, data_dir: Path = DATA_DIR,
                  device: torch.device | None = None, runs_dir: Path = RUNS_DIR,
-                 make_solver: Callable[[Transformer, int], Solver] | None = None) -> Transformer:
+                 make_solver: Callable[[Transformer, int], Solver] | None = None,
+                 start_round: int | None = None) -> Transformer:
     """Run ``cfg.rounds`` rounds. ``make_solver`` (model, round) -> Solver replaces the
-    model as piece-adder; only tests use it (with a perfect calculator)."""
+    model as piece-adder; only tests use it (with a perfect calculator).
+
+    With ``start_round`` k, continue from round k of the self-improvement run
+    ``start_run`` and number the rounds from k + 1: round k + 1 then uses the
+    same lengths, candidate stream and schedule as round k + 1 of that run
+    (only the teacher may differ). The default (None) starts at round 1 from a
+    starting-training run.
+    """
     device = device or pick_device()
     run_dir = runs_dir / run_name
     if (run_dir / "rounds.jsonl").exists():
         raise FileExistsError(f"{run_dir} already holds a run; pick another --run name")
     run_dir.mkdir(parents=True)
-    start_checkpoint = sorted((runs_dir / start_run / "checkpoints").glob("step_*.pt"))[-1]
+    start_checkpoint = start_checkpoint_of(runs_dir, start_run, start_round)
+    first_round = (start_round or 0) + 1
+    if first_round + cfg.rounds - 1 > len(MAX_DIGITS_BY_ROUND):
+        raise ValueError(f"rounds {first_round}..{first_round + cfg.rounds - 1}: the study has only "
+                         f"{len(MAX_DIGITS_BY_ROUND)} rounds")
     model = load_model(start_checkpoint, device)
     teacher = TEACHERS[cfg.teacher]
     manifest = json.loads((data_dir / "manifest.json").read_text())
     (run_dir / "config.json").write_text(json.dumps({
-        "rounds": asdict(cfg), "start_run": start_run, "start_checkpoint": start_checkpoint.name,
+        "rounds": asdict(cfg), "start_run": start_run, "start_round": start_round,
+        "start_checkpoint": str(start_checkpoint.relative_to(runs_dir)),
         "device": device_name(device), "torch": torch.__version__, "task": "addition/self-improvement",
         "data": manifest}, indent=2) + "\n")
     log_file = open(run_dir / "rounds.jsonl", "a")
@@ -210,9 +254,8 @@ def self_improve(cfg: RoundConfig, run_name: str, start_run: str, data_dir: Path
                   "  ".join(f"{k}:{v:.0%}" for k, v in accuracy.items() if k != "all"))
 
     print(f"{run_name}: teacher {cfg.teacher}, starting from {start_run}/{start_checkpoint.name}, device {device}")
-    run_evals(0)
-    max_reached = max(EASY_DIGITS)
-    for round_ in range(1, cfg.rounds + 1):
+    run_evals(first_round - 1)  # the model as it starts: round 0, or round k of start_run
+    for round_ in range(first_round, first_round + cfg.rounds):
         watch = Stopwatch(device)
         max_digits = MAX_DIGITS_BY_ROUND[round_ - 1]
         solver = (make_solver(model, round_) if make_solver
@@ -222,16 +265,21 @@ def self_improve(cfg: RoundConfig, run_name: str, start_run: str, data_dir: Path
         # 1. Draw and build.
         for digits in range(min(HARD_DIGITS), max_digits + 1):
             tokens_before = getattr(solver, 'generated_tokens', 0)
+            build_before = watch.totals["build"]
             with watch.time("build"):
-                kept, drawn = collect_kept(teacher, solver, rng_for(cfg.seed, round_, digits, "build"), digits,
-                                           cfg.kept_per_length, cfg.draw_cap_factor * cfg.kept_per_length, exclude)
+                kept, drawn, timed_out = collect_kept(
+                    teacher, solver, rng_for(cfg.seed, round_, digits, "build"), digits, cfg.kept_per_length,
+                    cfg.draw_cap_factor * cfg.kept_per_length, exclude, cfg.build_seconds_per_length,
+                    cfg.max_chunk)
             right = sum(answer == solve(p) for p, answer in kept)  # audit only
             log({"event": "build", "round": round_, "digits": digits, "drawn": drawn, "kept": len(kept),
                  "shortfall": cfg.kept_per_length - len(kept), "kept_share": len(kept) / drawn if drawn else 0.0,
-                 "kept_right": right / len(kept) if kept else None,
+                 "kept_right": right / len(kept) if kept else None, "stopped_by_time": timed_out,
+                 "seconds": watch.totals["build"] - build_before,
                  "generated_tokens": getattr(solver, 'generated_tokens', 0) - tokens_before})
             print(f"  round {round_} {digits} digits: drew {drawn:,}, kept {len(kept):,} "
-                  f"({len(kept) / max(drawn, 1):.1%}), right {right / max(len(kept), 1):.1%}")
+                  f"({len(kept) / max(drawn, 1):.1%}), right {right / max(len(kept), 1):.1%}"
+                  f"{' (stopped by the time limit)' if timed_out else ''}")
             examples += kept
 
         # 2. Replay: easy problems answered by the current model, unchecked.
@@ -266,7 +314,6 @@ def self_improve(cfg: RoundConfig, run_name: str, start_run: str, data_dir: Path
         run_evals(round_)
         log({"event": "round_done", "round": round_, "examples": len(examples),
              "seconds": dict(watch.totals), "generated_tokens": getattr(solver, 'generated_tokens', 0)})
-        max_reached = max_digits
 
     log({"event": "done"})
     log_file.close()
@@ -277,7 +324,11 @@ def main() -> None:
     d = RoundConfig()
     parser = argparse.ArgumentParser(description="Addition self-improvement rounds (P3).")
     parser.add_argument("--run", required=True)
-    parser.add_argument("--start", required=True, help="starting-training run to continue from")
+    parser.add_argument("--start", required=True, help="run to continue from (starting training, by default)")
+    parser.add_argument("--start-round", type=int, default=None,
+                        help="continue from this round of a self-improvement run --start (e.g. P9b run f)")
+    parser.add_argument("--build-seconds", type=float, default=None,
+                        help="wall-clock limit on drawing per length and round; the shortfall is logged")
     parser.add_argument("--teacher", choices=sorted(TEACHERS), default=d.teacher)
     parser.add_argument("--rounds", type=int, default=d.rounds)
     parser.add_argument("--kept", type=int, default=d.kept_per_length)
@@ -288,11 +339,12 @@ def main() -> None:
     parser.add_argument("--eval-per-length", type=int, default=None)
     parser.add_argument("--device", default=None)
     args = parser.parse_args()
-    start_config = json.loads((RUNS_DIR / args.start / "config.json").read_text())
-    cfg = RoundConfig(teacher=args.teacher, rounds=args.rounds, seed=start_config["train"]["seed"],
+    seed = start_seed(RUNS_DIR, args.start, args.start_round)
+    cfg = RoundConfig(teacher=args.teacher, rounds=args.rounds, seed=seed, build_seconds_per_length=args.build_seconds,
                       kept_per_length=args.kept, replay_per_length=args.replay, check_sample=args.checks,
                       steps=args.steps, decay_steps=args.decay_steps, eval_per_length=args.eval_per_length)
-    self_improve(cfg, args.run, args.start, device=torch.device(args.device) if args.device else None)
+    self_improve(cfg, args.run, args.start, device=torch.device(args.device) if args.device else None,
+                 start_round=args.start_round)
 
 
 if __name__ == "__main__":

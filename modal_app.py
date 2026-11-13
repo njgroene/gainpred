@@ -134,29 +134,36 @@ def main(
 
 
 @app.function(image=image, gpu=GPU, volumes={str(VOLUME_PATH): volume}, timeout=12 * 60 * 60)
-def self_improve(run: str, start: str, teacher: str, rounds: int) -> None:
+def self_improve(run: str, start: str, teacher: str, rounds: int, start_round: int, build_seconds: float) -> None:
     """P3 self-improvement rounds on one GPU. Output goes to /vol/runs/<run>/."""
     import torch
 
-    from gainpred.rounds import RoundConfig, self_improve
+    from gainpred.rounds import RoundConfig, self_improve, start_seed
 
     print(f"GPU: {torch.cuda.get_device_name()}  torch {torch.__version__}")
     runs_dir = VOLUME_PATH / "runs"
-    seed = json.loads((runs_dir / start / "config.json").read_text())["train"]["seed"]
+    from_round = start_round or None  # 0 means "from a starting-training run"
     # Bigger generation batches than the default: a GPU answers 4,096 short prompts at once easily.
-    cfg = RoundConfig(teacher=teacher, rounds=rounds, seed=seed, solver_batch_size=4_096)
+    cfg = RoundConfig(teacher=teacher, rounds=rounds, seed=start_seed(runs_dir, start, from_round),
+                      solver_batch_size=4_096, build_seconds_per_length=build_seconds or None)
     try:
         self_improve(cfg, run, start, data_dir=VOLUME_PATH / "data" / "addition",
-                     device=torch.device("cuda"), runs_dir=runs_dir)
+                     device=torch.device("cuda"), runs_dir=runs_dir, start_round=from_round)
     finally:
         volume.commit()
 
 
 @app.local_entrypoint()
-def rounds(run: str, start: str, teacher: str = "no_carry", rounds: int = 4) -> None:
-    """Self-improvement rounds from a starting run already on the volume."""
+def rounds(run: str, start: str, teacher: str = "no_carry", rounds: int = 4, start_round: int = 0,
+           build_seconds: float = 0) -> None:
+    """Self-improvement rounds from a run already on the volume.
+
+    ``--start-round K`` continues from round K of the self-improvement run
+    ``--start`` (P9b run f); ``--build-seconds S`` stops drawing for a length
+    after S seconds and logs the shortfall (0 = no limit).
+    """
     remote = make_data.remote()
     if remote != json.loads(Path("data/addition/manifest.json").read_text()):
         raise SystemExit("cloud datasets differ from local ones (fingerprints in manifest.json); not training")
-    self_improve.remote(run, start, teacher, rounds)
+    self_improve.remote(run, start, teacher, rounds, start_round, build_seconds)
     print(f"done. download with: uv run modal volume get gainpred runs/{run} runs/")

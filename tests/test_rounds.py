@@ -2,6 +2,7 @@
 
 import json
 import random
+import time
 
 import pytest
 import torch
@@ -18,17 +19,33 @@ from gainpred.train import TrainConfig, save_checkpoint
 
 def test_collect_kept_meets_the_quota_with_right_answers():
     exclude = set()
-    kept, drawn = collect_kept(no_carry, PerfectCalculator(), random.Random(0), 8, quota=300, cap=6000,
-                               exclude=exclude)
+    kept, drawn, timed_out = collect_kept(no_carry, PerfectCalculator(), random.Random(0), 8, quota=300, cap=6000,
+                                          exclude=exclude)
+    assert not timed_out
     assert len(kept) == 300 and all(a == solve(p) for p, a in kept)
     assert 300 / drawn == pytest.approx(0.38, abs=0.08)  # paper test keep rate
     assert len({p for p, _ in kept}) == 300 and len(exclude) >= drawn
 
 
 def test_collect_kept_stops_at_the_cap_and_reports_a_shortfall():
-    kept, drawn = collect_kept(agreement, PerfectCalculator(), random.Random(0), 15, quota=1000, cap=2000,
-                               exclude=set())
+    kept, drawn, _ = collect_kept(agreement, PerfectCalculator(), random.Random(0), 15, quota=1000, cap=2000,
+                                  exclude=set())
     assert drawn == 2000 and len(kept) < 1000  # ~7% of 2,000
+
+
+def test_collect_kept_stops_at_the_time_limit_and_reports_it():
+    kept, drawn, timed_out = collect_kept(agreement, PerfectCalculator(), random.Random(0), 15, quota=10_000,
+                                          cap=200_000, exclude=set(), seconds=0.0, max_chunk=1_000)
+    assert timed_out and drawn == 0 and kept == []
+
+    class Slow(PerfectCalculator):
+        def __call__(self, problems, temperature=0.0):
+            time.sleep(0.2)
+            return super().__call__(problems, temperature)
+
+    kept, drawn, timed_out = collect_kept(agreement, Slow(), random.Random(0), 15, quota=10_000,
+                                          cap=200_000, exclude=set(), seconds=0.1, max_chunk=1_000)
+    assert timed_out and drawn == 1_000  # one chunk, then the limit is noticed
 
 
 def test_draw_fresh_avoids_excluded_problems():
@@ -72,4 +89,13 @@ def test_one_tiny_round_runs_end_to_end(tmp_path):
     built = [e for e in events if e["event"] == "build"]
     assert all(e["kept"] == 20 for e in built)  # no selection keeps everything
     assert (runs / "si" / "round_1" / "checkpoints" / "step_000004.pt").exists()
+
+    # P9b run f: continue from round 1 of that run with another teacher; round 2 follows.
+    cfg_f = RoundConfig(**{**cfg.__dict__, "teacher": "no_carry"})
+    self_improve(cfg_f, "f", "si", data_dir=data_dir, device=torch.device("cpu"), runs_dir=runs,
+                 make_solver=lambda model, round_: PerfectCalculator(), start_round=1)
+    events_f = [json.loads(line) for line in (runs / "f" / "rounds.jsonl").read_text().splitlines()]
+    assert {e["round"] for e in events_f if e["event"] == "eval"} == {1, 2}  # before (= round 1) and after
+    assert {e["digits"] for e in events_f if e["event"] == "build"} == set(range(8, 12))  # round 2: 8-11
+    assert json.loads((runs / "f" / "config.json").read_text())["start_round"] == 1
 
