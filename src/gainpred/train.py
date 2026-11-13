@@ -374,7 +374,7 @@ def train(
 
 
 def starting_training(cfg: TrainConfig, run_name: str, data_dir: Path = DATA_DIR,
-                      device: torch.device | None = None) -> Transformer:
+                      device: torch.device | None = None, runs_dir: Path = RUNS_DIR) -> Transformer:
     """Train a fresh model on 3-7 digit additions with their true answers."""
     device = device or pick_device()
     train_records = load(data_dir / "train_start.jsonl")
@@ -390,7 +390,7 @@ def starting_training(cfg: TrainConfig, run_name: str, data_dir: Path = DATA_DIR
     model = Transformer(ModelConfig(vocab_size=VOCAB_SIZE, pad_id=PAD_ID))
     manifest = json.loads((data_dir / "manifest.json").read_text())
     print(f"{run_name}: {model.num_params():,} parameters, {len(examples):,} examples, device {device}")
-    return train(model, examples, cfg, RUNS_DIR / run_name, eval_sets, device,
+    return train(model, examples, cfg, runs_dir / run_name, eval_sets, device,
                  extra_config={"task": "addition/starting-training", "data": manifest})
 
 
