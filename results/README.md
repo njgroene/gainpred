@@ -8,6 +8,7 @@ Measurements from every training run, kept in git. Checkpoints stay in `runs/` (
 | `evals.csv` | Every evaluation of every run, one row per run, step, test set and group |
 | `runs/<run>/config.json` | Exact model and training settings, device, torch version, dataset fingerprints |
 | `runs/<run>/log.jsonl` | The full training log: loss, gradient norm, learning rate, accuracies, timings |
+| `plots/*.png` | Training curves (loss, gradient norm, easy and 8-digit accuracy), from `uv run python -m gainpred.plots RUN [RUN]` |
 
 ## Datasets
 
@@ -43,6 +44,8 @@ All are P1 starting training on easy addition (3–7 digits), seed 0, batch 256.
 | `start-seed0-stable` | 13 Nov 2026 | Modal, NVIDIA A10 | Same, plus warmup-stable-decay schedule and clipping at 1.0 from Lee et al.'s code (P10) | **Passes P9:** easy 100.0% (7 digits 99.9%). 8 digits directly: 59.9% / 56.2%; 9 digits: 0% |
 
 ## What we take from them
+
+![Seed 0 training curves](plots/seed0.png)
 
 - **Stability.** With a constant learning rate the model learns, then repeatedly forgets long problems. Warm-up, clipping and a final decay fix the *end point*, but spikes still occur in the stable phase (gradient norm up to ~240 before clipping, easy accuracy swinging between 53% and 99.6%); the decay phase settles them. Seed 1 has not been run yet, so we do not know whether 100% is reliable.
 - **8 digits are not "close to 0%".** Both runs answer many 8-digit problems directly at some checkpoints (up to ~90%), with no carry/no-carry difference, so the model is not using cut-1 structure. The share swings widely between checkpoints (stable run: 0–60%), and the final value depends on where training stops (start-seed0 ended at 0.9%, the stable run at 58%). Nine digits stay at ~0% throughout. How to treat this against P9 is an open protocol decision.
