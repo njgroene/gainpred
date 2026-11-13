@@ -10,8 +10,8 @@ Check 1 -- does the teacher say anything new?
     direct answer *differs* from the kept answer. If ~0%, the teacher only
     repeats what the model already says, and training on it cannot change
     the model.
-Check 2 -- do two cuts agree?
-    Run the two-cuts-agree rule (P5) on the same problems and report the share
+Check 2 -- does the agreement rule keep an answer?
+    Run the agreement rule (P5) on the same problems and report the share
     kept and set aside. Agreement between independent routes to an answer is
     evidence the pieces were right.
 Teachable share
@@ -27,7 +27,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from gainpred.formats import Answer
-from gainpred.teachers import Decision, Solver, two_cuts_agree
+from gainpred.teachers import Decision, Solver, agreement
 
 
 @dataclass(frozen=True)
@@ -36,7 +36,7 @@ class CheckReport:
     kept: int
     check_1: float | None  # share of kept answers that differ from the direct answer
     teachable: float  # share of all problems with a kept answer differing from the direct one
-    check_2_kept: float  # two-cuts-agree: share kept
+    check_2_kept: float  # agreement rule: share kept
     check_2_set_aside: float
 
 
@@ -51,7 +51,7 @@ def run_checks(decisions: list[Decision], solver: Solver) -> CheckReport:
     problems = [d.problem for d in decisions]
     direct = solver(problems)  # greedy
     check_1, teachable = check_1_and_teachable(decisions, direct)
-    agree = two_cuts_agree(problems, solver)
+    agree = agreement(problems, solver)
     kept_2 = sum(d.kept is not None for d in agree) / len(agree)
     return CheckReport(
         problems=len(decisions),

@@ -29,11 +29,14 @@ string is not a canonical number, the built answer is unreadable (P2).
 
 The four teachers (P5)
 ======================
-``their_rule``
+The no-carry rule (and, for longest run, the edges-differ rule) are "the
+hand-written rules": they encode where combining is known to fail.
+
+``no_carry`` -- the no-carry rule (Shin et al.'s filter for addition)
     Build from cut 1; keep it if every lower piece sum fits its width. With a
     perfect calculator this keeps exactly the problems where no carry crosses
     cut 1, and every kept answer is right.
-``two_cuts_agree``
+``agreement`` -- the agreement rule
     Build from all three cuts; if at least two give the identical answer, keep
     it. Two *different* cuts can only agree on a wrong answer if the model
     makes matching mistakes, which is why P4 forbids shared cut positions.
@@ -137,7 +140,7 @@ def combine(piece_answers: list[Answer], cut: Cut) -> Answer:
 
 
 def fits(piece_answers: list[Answer], cut: Cut) -> bool:
-    """Their rule's test: every lower piece sum is readable and fits in its width."""
+    """The no-carry rule's test: every lower piece sum is readable and fits in its width."""
     return all(not isinstance(a, Unreadable) and a < 10**w for a, w in zip(piece_answers[1:], cut[1:]))
 
 
@@ -208,12 +211,12 @@ def cuts_of(problem: Addition) -> tuple[Cut, ...]:
     return ADDITION_CUTS[problem.n_digits]
 
 
-def their_rule(problems: list[Addition], solver: Solver) -> list[Decision]:
+def no_carry(problems: list[Addition], solver: Solver) -> list[Decision]:
     built = build_all(problems, [cuts_of(p)[:1] for p in problems], solver)
     return [Decision(p, readable(b.answer) if b.fits else None, (b.answer,)) for p, (b,) in zip(problems, built)]
 
 
-def two_cuts_agree(problems: list[Addition], solver: Solver) -> list[Decision]:
+def agreement(problems: list[Addition], solver: Solver) -> list[Decision]:
     built = build_all(problems, [cuts_of(p) for p in problems], solver)
     decisions = []
     for p, bs in zip(problems, built):
@@ -241,8 +244,24 @@ def sample_and_vote(problems: list[Addition], solver: Solver) -> list[Decision]:
 Teacher = Callable[[list[Addition], Solver], list[Decision]]
 
 TEACHERS: dict[str, Teacher] = {
-    "their_rule": their_rule,
-    "two_cuts_agree": two_cuts_agree,
+    "no_carry": no_carry,
+    "agreement": agreement,
     "no_selection": no_selection,
     "sample_and_vote": sample_and_vote,
 }
+
+TEACHER_NAMES = {
+    "no_carry": "the no-carry rule",
+    "agreement": "the agreement rule",
+    "no_selection": "no selection",
+    "sample_and_vote": "sample and vote",
+}
+"""How each teacher is written in prose and tables (P5)."""
+
+OLD_NAMES = {"their_rule": "no_carry", "two_cuts_agree": "agreement"}
+"""Names used before 13 November 2026, still found in early run logs."""
+
+
+def teacher_key(name: str) -> str:
+    """The current code name for a teacher, accepting the old names in early logs."""
+    return OLD_NAMES.get(name, name)

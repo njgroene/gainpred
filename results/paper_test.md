@@ -7,16 +7,16 @@ Percentages: **kept** = share of problems with a kept answer; **right** = share 
 
 | Teacher | | 8 (4∣4) | 9 (3∣6) | 10 (5∣5) | 11 (4∣7) | 12 (6∣6) | 13 (6∣7) | 14 (7∣7) | 15 (5∣5∣5) |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| their rule | kept | 38.1 | 38.8 | 38.5 | 38.6 | 38.3 | 38.6 | 39.4 | 14.6 |
+| The no-carry rule | kept | 38.1 | 38.8 | 38.5 | 38.6 | 38.3 | 38.6 | 39.4 | 14.6 |
 | | right | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 |
 | | draws | 2.6 | 2.6 | 2.6 | 2.6 | 2.6 | 2.6 | 2.5 | 6.9 |
-| two cuts agree | kept | 34.6 | 34.8 | 34.1 | 34.1 | 34.2 | 24.8 | 13.7 | 7.1 |
+| The agreement rule | kept | 34.6 | 34.8 | 34.1 | 34.1 | 34.2 | 24.8 | 13.7 | 7.1 |
 | | right | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 |
 | | draws | 2.9 | 2.9 | 2.9 | 2.9 | 2.9 | 4.0 | 7.3 | 14.1 |
-| no selection | kept | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 |
+| No selection | kept | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 |
 | | right | 38.1 | 38.8 | 38.5 | 38.6 | 38.3 | 38.6 | 39.4 | 14.6 |
 | | draws | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 |
-| sample and vote | kept | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 |
+| Sample and vote | kept | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 |
 | | right | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 |
 | | draws | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 |
 
@@ -34,4 +34,4 @@ of labels that would be wrong even with every block sum right: our *no selection
 | Filtered: rule errors | 0.0 | 0.0 |
 
 Their wrong labels with the filter (0.1–2.4%) come from wrong block sums by the model, which a perfect
-calculator cannot show. Two cuts agree, sample and vote and the draws per kept answer are ours (P3, P5).
+calculator cannot show. The agreement rule, sample and vote and the draws per kept answer are ours (P3, P5).

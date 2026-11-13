@@ -62,7 +62,7 @@ def test_rounds_runs_are_collected_and_summarised(tmp_path):
     (run / "round_1" / "log.jsonl").write_text('{"event": "done", "step": 3, "seconds": {"train": 1.0}}')
     (run / "round_1" / "config.json").write_text("{}")
     (run / "config.json").write_text(json.dumps({"start_run": "start", "device": "CPU", "rounds": {
-        "teacher": "their_rule", "seed": 1, "rounds": 1, "kept_per_length": 10, "replay_per_length": 5, "steps": 3}}))
+        "teacher": "no_carry", "seed": 1, "rounds": 1, "kept_per_length": 10, "replay_per_length": 5, "steps": 3}}))
     events = [
         {"event": "eval", "round": 0, "set": "study", "accuracy": {"8/no-carry": 0.0, "8/carry": 0.0, "all": 0.0}},
         {"event": "eval", "round": 1, "set": "study", "accuracy": {"8/no-carry": 1.0, "8/carry": 0.5, "all": 0.75}},

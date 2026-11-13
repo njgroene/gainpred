@@ -17,9 +17,9 @@ what each teacher does to the problems, independent of any model:
 
 Expected, if the code matches the protocol:
 
-* their rule: kept = share with no carry across cut 1 (~half for 2-piece
+* the no-carry rule: kept = share with no carry across cut 1 (~half for 2-piece
   cuts, ~a quarter for 3-piece), right = 100%;
-* two cuts agree: right = 100%; draws per kept about 3 up to 12 digits and
+* the agreement rule: right = 100%; draws per kept about 3 up to 12 digits and
   about 14 at 15 digits (P3);
 * no selection: kept = 100%, right = share with no carry across cut 1;
 * sample and vote: kept = right = 100% (a perfect calculator answers directly).
@@ -38,7 +38,7 @@ from pathlib import Path
 from gainpred.cuts import ADDITION_CUTS, HARD_DIGITS
 from gainpred.data import draw_hard
 from gainpred.formats import Addition, solve
-from gainpred.teachers import TEACHERS, PerfectCalculator
+from gainpred.teachers import TEACHER_NAMES, TEACHERS, PerfectCalculator
 
 SEED = 3001  # its own seed: these problems are never trained or tested on
 OUT = Path("results/paper_test.md")
@@ -76,7 +76,7 @@ def to_markdown(table: dict[str, dict[int, dict[str, float]]], n: int) -> str:
         "| --- | --- | " + " | ".join("---" for _ in sizes) + " |",
     ]
     for name, by_size in table.items():
-        lines.append(f"| {name.replace('_', ' ')} | kept | " + " | ".join(f"{100 * by_size[d]['kept']:.1f}" for d in sizes) + " |")
+        lines.append(f"| {TEACHER_NAMES[name].capitalize()} | kept | " + " | ".join(f"{100 * by_size[d]['kept']:.1f}" for d in sizes) + " |")
         lines.append("| | right | " + " | ".join(f"{100 * by_size[d]['right']:.1f}" for d in sizes) + " |")
         lines.append("| | draws | " + " | ".join(
             f"{1 / by_size[d]['kept']:.1f}" if by_size[d]["kept"] else "–" for d in sizes) + " |")
@@ -93,10 +93,10 @@ def to_markdown(table: dict[str, dict[int, dict[str, float]]], n: int) -> str:
             "| --- | --- | --- |",
             f"| Unfiltered, up to 9 digits: rule errors | 60.8 | {ours:.1f} (mean of 8 and 9 digits) |",
             "| Unfiltered, up to 23 digits: rule errors | 83.3 | not comparable (we stop at 15 digits; their block widths are not stated) |",
-            f"| Filtered: rule errors | 0.0 | {100 - 100 * min(table['their_rule'][d]['right'] for d in sizes):.1f} |",
+            f"| Filtered: rule errors | 0.0 | {100 - 100 * min(table['no_carry'][d]['right'] for d in sizes):.1f} |",
             "",
             "Their wrong labels with the filter (0.1–2.4%) come from wrong block sums by the model, which a perfect",
-            "calculator cannot show. Two cuts agree, sample and vote and the draws per kept answer are ours (P3, P5).",
+            "calculator cannot show. The agreement rule, sample and vote and the draws per kept answer are ours (P3, P5).",
         ]
     return "\n".join(lines) + "\n"
 

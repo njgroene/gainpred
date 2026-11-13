@@ -11,14 +11,14 @@ from gainpred.data import write_all
 from gainpred.formats import solve
 from gainpred.model import Transformer
 from gainpred.rounds import RoundConfig, collect_kept, draw_fresh, rng_for, self_improve
-from gainpred.teachers import PerfectCalculator, their_rule, two_cuts_agree
+from gainpred.teachers import PerfectCalculator, no_carry, agreement
 from gainpred.tokenizer import PAD_ID, VOCAB_SIZE
 from gainpred.train import TrainConfig, save_checkpoint
 
 
 def test_collect_kept_meets_the_quota_with_right_answers():
     exclude = set()
-    kept, drawn = collect_kept(their_rule, PerfectCalculator(), random.Random(0), 8, quota=300, cap=6000,
+    kept, drawn = collect_kept(no_carry, PerfectCalculator(), random.Random(0), 8, quota=300, cap=6000,
                                exclude=exclude)
     assert len(kept) == 300 and all(a == solve(p) for p, a in kept)
     assert 300 / drawn == pytest.approx(0.38, abs=0.08)  # paper test keep rate
@@ -26,7 +26,7 @@ def test_collect_kept_meets_the_quota_with_right_answers():
 
 
 def test_collect_kept_stops_at_the_cap_and_reports_a_shortfall():
-    kept, drawn = collect_kept(two_cuts_agree, PerfectCalculator(), random.Random(0), 15, quota=1000, cap=2000,
+    kept, drawn = collect_kept(agreement, PerfectCalculator(), random.Random(0), 15, quota=1000, cap=2000,
                                exclude=set())
     assert drawn == 2000 and len(kept) < 1000  # ~7% of 2,000
 

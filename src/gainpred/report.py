@@ -45,6 +45,8 @@ import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from gainpred.teachers import TEACHER_NAMES, teacher_key
+
 RUNS_DIR = Path("runs")
 RESULTS_DIR = Path("results")
 KEPT_FILES = ("config.json", "log.jsonl")
@@ -284,7 +286,7 @@ def summarise_rounds_run(run: RoundsRun) -> list[str]:
     c = run.config["rounds"]
     done = run.of("round_done")
     lines = [f"## {run.name}", "",
-             f"- Teacher: **{c['teacher']}**; starting run `{run.config['start_run']}` (seed {c['seed']})",
+             f"- Teacher: **{TEACHER_NAMES[teacher_key(c['teacher'])]}** (`{c['teacher']}`); starting run `{run.config['start_run']}` (seed {c['seed']})",
              f"- Rounds: {len(done)} of {c['rounds']} finished; {c['kept_per_length']:,} kept per length, "
              f"{c['replay_per_length']:,} replay per easy length, {c['steps']:,} updates per round",
              f"- Device: {run.config.get('device', '?')}", ""]
@@ -314,7 +316,7 @@ def summarise_rounds_run(run: RoundsRun) -> list[str]:
         rows = [[str(e["round"]), str(e["digits"]), pct(e["check_1"]), pct(e["teachable"]), pct(e["check_2_kept"])]
                 for e in checks]
         lines += ["Label-free checks (P8) on 2,000 fresh problems per new length:", "",
-                  *table(["round", "digits", "check 1: kept ≠ direct", "teachable", "check 2: two cuts agree"], rows),
+                  *table(["round", "digits", "check 1: kept ≠ direct", "teachable", "check 2: agreement rule keeps"], rows),
                   ""]
     if done:
         rows = []
@@ -345,7 +347,7 @@ def write_rounds(runs: list[RoundsRun], results_dir: Path = RESULTS_DIR) -> None
         for run in runs:
             for e in run.of("eval"):
                 for group, acc in e["accuracy"].items():
-                    writer.writerow([run.name, run.config["rounds"]["teacher"], e["round"], e["set"], group, acc])
+                    writer.writerow([run.name, teacher_key(run.config["rounds"]["teacher"]), e["round"], e["set"], group, acc])
 
 
 def main() -> None:

@@ -9,8 +9,8 @@ Usage (from the repo root)::
     uv run modal volume get gainpred runs/start-seed0 runs/      # download a finished run
 
     # self-improvement rounds (P3), continuing from a starting run on the volume:
-    uv run modal run --detach modal_app.py::rounds --run si-their-seed1 --start start-seed1-stable \
-        --teacher their_rule --rounds 1
+    uv run modal run --detach modal_app.py::rounds --run si-nocarry-seed1 --start start-seed1-stable \
+        --teacher no_carry --rounds 1
 
 How Modal works, briefly
 ========================
@@ -153,7 +153,7 @@ def self_improve(run: str, start: str, teacher: str, rounds: int) -> None:
 
 
 @app.local_entrypoint()
-def rounds(run: str, start: str, teacher: str = "their_rule", rounds: int = 4) -> None:
+def rounds(run: str, start: str, teacher: str = "no_carry", rounds: int = 4) -> None:
     """Self-improvement rounds from a starting run already on the volume."""
     remote = make_data.remote()
     if remote != json.loads(Path("data/addition/manifest.json").read_text()):

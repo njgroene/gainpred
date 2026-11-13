@@ -21,7 +21,7 @@ rule" (Shin et al., P5) keeps a built answer only when no carry crosses a cut.
 Why three cuts
 ==============
 Each size has three different cuts. If two cuts give the identical answer, that
-is evidence it is right ("two cuts agree", P5). For this to be real evidence,
+is evidence it is right ("the agreement rule", P5). For this to be real evidence,
 no two cuts of a size may cut at the same position: a carry at a shared
 position would make both wrong *in the same way*, so they would agree on a
 wrong answer. The tests check this rule for every row.
@@ -55,7 +55,7 @@ ADDITION_CUTS: dict[int, tuple[Cut, Cut, Cut]] = {
     14: ((7, 7), (4, 5, 5), (6, 4, 4)),
     15: ((5, 5, 5), (4, 7, 4), (6, 3, 6)),
 }
-"""P4. Cut 1 (index 0) supplies the answer for "their rule" and "no selection"."""
+"""P4. Cut 1 (index 0) supplies the answer for "the no-carry rule" and "no selection"."""
 
 HARD_DIGITS = range(min(ADDITION_CUTS), max(ADDITION_CUTS) + 1)
 """Sizes the model must learn by self-improvement: 8-15 digits (P3)."""
@@ -103,7 +103,7 @@ def carry_crosses(problem: Addition, cut: Cut) -> bool:
     """Does a carry cross any position where this cut splits the numbers?
 
     True iff some piece other than the leading one has a sum that does not fit
-    in its width (P5, their rule: "every lower piece sum fits in its piece's
+    in its width (P5, the no-carry rule: "every lower piece sum fits in its piece's
     width"). The leading piece may overflow freely: its extra digit simply
     becomes the first digit of the answer (P2).
 

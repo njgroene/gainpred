@@ -14,7 +14,7 @@ What gets generated, in this order
    ================  =========================================================
    test_study        lengths 8-15; 1,000 per length *with* a carry across
                      cut 1 and 1,000 *without* (the question of the study:
-                     can the model learn the problems "their rule" rejects?)
+                     can the model learn the problems "the no-carry rule" rejects?)
    test_reproduction lengths 3-15, 100 each, for comparison with Shin et al.
    test_easy         lengths 3-7, 1,000 each, for check 0 (pass mark 98%)
    ================  =========================================================

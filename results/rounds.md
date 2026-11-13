@@ -5,7 +5,7 @@ All accuracies are on held-out test sets (see `README.md`).
 
 ## si-quick-m2
 
-- Teacher: **their_rule**; starting run `start-seed1-stable` (seed 1)
+- Teacher: **the no-carry rule** (`their_rule`); starting run `start-seed1-stable` (seed 1)
 - Rounds: 1 of 1 finished; 1,000 kept per length, 500 replay per easy length, 300 updates per round
 - Device: Apple MPS
 
@@ -31,7 +31,7 @@ Easy replay answered by the current model:
 
 Label-free checks (P8) on 2,000 fresh problems per new length:
 
-| round | digits | check 1: kept ≠ direct | teachable | check 2: two cuts agree |
+| round | digits | check 1: kept ≠ direct | teachable | check 2: agreement rule keeps |
 | --- | --- | --- | --- | --- |
 | 1 | 8 | 100.0 | 36.0 | 33.0 |
 | 1 | 9 | 100.0 | 42.0 | 39.7 |
@@ -44,7 +44,7 @@ Cost per round (seconds; tokens = characters the model generated for building an
 
 ## si-their-seed1-r1
 
-- Teacher: **their_rule**; starting run `start-seed1-stable` (seed 1)
+- Teacher: **the no-carry rule** (`their_rule`); starting run `start-seed1-stable` (seed 1)
 - Rounds: 1 of 1 finished; 10,000 kept per length, 5,000 replay per easy length, 3,000 updates per round
 - Device: NVIDIA A10
 
@@ -70,7 +70,7 @@ Easy replay answered by the current model:
 
 Label-free checks (P8) on 2,000 fresh problems per new length:
 
-| round | digits | check 1: kept ≠ direct | teachable | check 2: two cuts agree |
+| round | digits | check 1: kept ≠ direct | teachable | check 2: agreement rule keeps |
 | --- | --- | --- | --- | --- |
 | 1 | 8 | 100.0 | 38.0 | 34.6 |
 | 1 | 9 | 100.0 | 36.6 | 35.4 |

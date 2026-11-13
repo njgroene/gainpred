@@ -2,7 +2,7 @@
 
 Usage::
 
-    uv run python -m gainpred.rounds --run si-their-seed1 --start start-seed1-stable --teacher their_rule --rounds 1
+    uv run python -m gainpred.rounds --run si-nocarry-seed1 --start start-seed1-stable --teacher no_carry --rounds 1
     uv run python -m gainpred.rounds ... --kept 500 --replay 300 --steps 300 --eval-per-length 100   # quick check
 
 On Modal: ``uv run modal run --detach modal_app.py::rounds --run ... --start ... --teacher ...``.
@@ -20,7 +20,7 @@ Round r (1-4) has a maximum length of 9, 11, 13 or 15 digits (P3).
    greedily by the current model, unchecked (Shin et al., Table 4: 25,000
    replay examples). They keep the model from forgetting easy addition.
 3. **Checks** (P8) on 2,000 fresh problems per *new* length: is the teacher
-   saying anything new (check 1), do two cuts agree (check 2), and the
+   saying anything new (check 1), does the agreement rule keep an answer (check 2), and the
    teachable share.
 4. **Train** 3,000 updates on kept answers + replay, continuing from the
    current weights. Fresh AdamW state each round; learning rate constant at
@@ -88,7 +88,7 @@ MAX_DIGITS_BY_ROUND = (9, 11, 13, 15)  # P3
 
 @dataclass(frozen=True)
 class RoundConfig:
-    teacher: str = "their_rule"
+    teacher: str = "no_carry"
     rounds: int = 4
     seed: int = 0
     """Starting point (P9); taken from the starting run."""
@@ -251,7 +251,7 @@ def self_improve(cfg: RoundConfig, run_name: str, start_run: str, data_dir: Path
                 report = run_checks(teacher(sample, solver), solver)
             log({"event": "checks", "round": round_, "digits": digits, **asdict(report)})
             print(f"  round {round_} checks {digits} digits: check 1 {report.check_1}, "
-                  f"teachable {report.teachable:.1%}, two cuts agree {report.check_2_kept:.1%}")
+                  f"teachable {report.teachable:.1%}, agreement rule {report.check_2_kept:.1%}")
 
         # 4. Train (fresh optimiser; schedule and batch order per round).
         if len(examples) < cfg.batch_size:

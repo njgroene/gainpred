@@ -19,8 +19,8 @@ from gainpred.teachers import (
     majority,
     no_selection,
     sample_and_vote,
-    their_rule,
-    two_cuts_agree,
+    no_carry,
+    agreement,
 )
 
 PERFECT = PerfectCalculator()
@@ -70,21 +70,21 @@ def test_built_answer_is_right_exactly_when_no_carry_crosses():
     for digits, cuts in ADDITION_CUTS.items():
         for _ in range(200):
             p = draw_hard(rng, digits)
-            assert (their_rule([p], PERFECT)[0].kept == solve(p)) == (not carry_crosses(p, cuts[0]))
+            assert (no_carry([p], PERFECT)[0].kept == solve(p)) == (not carry_crosses(p, cuts[0]))
 
 
 # --- teachers (P5) -------------------------------------------------------------
 
 
-def test_their_rule_keeps_only_when_lower_sums_fit():
-    kept, set_aside = their_rule([NO_CARRY, CARRY], PERFECT)
+def test_no_carry_keeps_only_when_lower_sums_fit():
+    kept, set_aside = no_carry([NO_CARRY, CARRY], PERFECT)
     assert kept.kept == solve(NO_CARRY) and set_aside.kept is None
 
 
-def test_their_rule_keeps_a_wrong_piece_that_still_fits():
-    # The model gets the lower piece wrong but within width: their rule cannot tell.
+def test_no_carry_keeps_a_wrong_piece_that_still_fits():
+    # The model gets the lower piece wrong but within width: the no-carry rule cannot tell.
     solver = Scripted({Addition(2071, 5512): 7584})
-    (d,) = their_rule([NO_CARRY], solver)
+    (d,) = no_carry([NO_CARRY], solver)
     assert d.kept == 150277584 != solve(NO_CARRY)
 
 
@@ -94,20 +94,20 @@ def test_no_selection_keeps_even_wrong_answers_but_not_unreadable_ones():
     assert no_selection([CARRY], solver)[0].kept is None
 
 
-def test_two_cuts_agree_needs_two_identical_answers():
+def test_agreement_needs_two_identical_answers():
     # 8 digits: cuts 4|4, 3|5, 5|3; kept iff at least two cuts have no carry.
     cuts = ADDITION_CUTS[8]
     p = NO_CARRY
     ok = [not carry_crosses(p, c) for c in cuts]
-    d = two_cuts_agree([p], PERFECT)[0]
+    d = agreement([p], PERFECT)[0]
     assert len(d.candidates) == 3
     assert (d.kept == solve(p)) == (sum(ok) >= 2)
 
 
-def test_two_cuts_agree_rejects_one_wrong_piece_when_others_disagree():
+def test_agreement_rejects_one_wrong_piece_when_others_disagree():
     # Break cut 1's lower piece: cuts 2 and 3 still agree on the right answer.
     solver = Scripted({Addition(2071, 5512): 7584})
-    d = two_cuts_agree([NO_CARRY], solver)[0]
+    d = agreement([NO_CARRY], solver)[0]
     assert d.kept == solve(NO_CARRY)
     assert d.candidates[0] == 150277584
 
@@ -136,7 +136,7 @@ def test_sample_and_vote_needs_three_of_five():
 
 def test_teachers_call_the_solver_once_per_batch():
     solver = Scripted({})
-    two_cuts_agree([NO_CARRY, CARRY], solver)
+    agreement([NO_CARRY, CARRY], solver)
     assert solver.calls == 1
 
 
@@ -152,7 +152,7 @@ def test_check_1_and_teachable_share():
 
 
 def test_a_perfect_model_has_nothing_to_learn():
-    report = run_checks(their_rule([NO_CARRY, CARRY], PERFECT), PERFECT)
+    report = run_checks(no_carry([NO_CARRY, CARRY], PERFECT), PERFECT)
     assert report.check_1 == 0.0 and report.teachable == 0.0 and report.kept == 1
 
 
@@ -190,15 +190,15 @@ def test_paper_test_matches_the_protocol():
     table = paper_test(n=3000)
     for digits in ADDITION_CUTS:
         # Perfect pieces: the filtering teachers never keep a wrong answer.
-        for name in ("their_rule", "two_cuts_agree", "sample_and_vote"):
+        for name in ("no_carry", "agreement", "sample_and_vote"):
             assert table[name][digits]["right"] == 1.0
-        # No selection keeps everything, right exactly when their rule would keep it.
+        # No selection keeps everything, right exactly when the no-carry rule would keep it.
         assert table["no_selection"][digits]["kept"] == 1.0
-        assert table["no_selection"][digits]["right"] == table["their_rule"][digits]["kept"]
+        assert table["no_selection"][digits]["right"] == table["no_carry"][digits]["kept"]
     # P3: about three draws per kept answer up to 12 digits, about fourteen at 15.
     for digits in range(8, 13):
-        assert 1 / table["two_cuts_agree"][digits]["kept"] == pytest.approx(3, abs=0.4)
-    assert 1 / table["two_cuts_agree"][15]["kept"] == pytest.approx(14, abs=2)
+        assert 1 / table["agreement"][digits]["kept"] == pytest.approx(3, abs=0.4)
+    assert 1 / table["agreement"][15]["kept"] == pytest.approx(14, abs=2)
 
 
 def test_rule_errors_match_shin_et_al_table_7():
@@ -206,3 +206,11 @@ def test_rule_errors_match_shin_et_al_table_7():
     table = paper_test(n=3000)
     rule_errors = 1 - (table["no_selection"][8]["right"] + table["no_selection"][9]["right"]) / 2
     assert rule_errors == pytest.approx(0.608, abs=0.025)
+
+
+def test_old_teacher_names_in_early_logs_still_resolve():
+    from gainpred.teachers import TEACHER_NAMES, TEACHERS, teacher_key
+
+    assert teacher_key("their_rule") == "no_carry" and teacher_key("two_cuts_agree") == "agreement"
+    assert teacher_key("no_selection") == "no_selection"
+    assert set(TEACHER_NAMES) == set(TEACHERS)
