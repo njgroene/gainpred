@@ -113,7 +113,7 @@ Generated first, from their own random seed, before any training data, and exclu
 | Model | About 14.2M parameters; memorises 64 problems to zero error |
 | Starting training | At least 99% on easy addition test problems |
 | Starting point | Close to 0% when asked 8- and 9-digit problems directly |
-| Cutting and combining | With a perfect calculator in place of the model, reproduces the paper-test table of experiment 1 |
+| Cutting and combining | With a perfect calculator in place of the model, reproduces the paper-test table of experiment 1. Checked 13 November 2026: rule errors of unfiltered labels up to 9 digits 61.6% against 60.8% in Shin et al.'s Table 7, 0.0% with their filter as in theirs; two cuts agree needs 2.9 draws per kept answer up to 12 digits and 14.1 at 15 (`results/paper_test.md`) |
 | One round, their rule | High accuracy at 8 and 9 digits, including problems with a carry across the cut |
 | The gate: four rounds, their rule | Accuracy holds to 15 digits, in the direction of their Figure 4, by the end of week 3 |
 

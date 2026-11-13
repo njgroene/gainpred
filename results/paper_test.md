@@ -21,3 +21,17 @@ Percentages: **kept** = share of problems with a kept answer; **right** = share 
 | | draws | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 | 1.0 |
 
 Column headings give the size and its cut 1 (P4).
+
+## Comparison with Shin et al. (2026), Table 7
+
+Their Table 7 audits the kept labels of one round against the true answers. "Rule errors" is the share
+of labels that would be wrong even with every block sum right: our *no selection, 100 - right*.
+
+| | Shin et al. | Ours (cut 1) |
+| --- | --- | --- |
+| Unfiltered, up to 9 digits: rule errors | 60.8 | 61.6 (mean of 8 and 9 digits) |
+| Unfiltered, up to 23 digits: rule errors | 83.3 | not comparable (we stop at 15 digits; their block widths are not stated) |
+| Filtered: rule errors | 0.0 | 0.0 |
+
+Their wrong labels with the filter (0.1–2.4%) come from wrong block sums by the model, which a perfect
+calculator cannot show. Two cuts agree, sample and vote and the draws per kept answer are ours (P3, P5).

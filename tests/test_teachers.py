@@ -199,3 +199,10 @@ def test_paper_test_matches_the_protocol():
     for digits in range(8, 13):
         assert 1 / table["two_cuts_agree"][digits]["kept"] == pytest.approx(3, abs=0.4)
     assert 1 / table["two_cuts_agree"][15]["kept"] == pytest.approx(14, abs=2)
+
+
+def test_rule_errors_match_shin_et_al_table_7():
+    """Shin et al., Table 7: unfiltered addition labels up to 9 digits have 60.8% rule errors."""
+    table = paper_test(n=3000)
+    rule_errors = 1 - (table["no_selection"][8]["right"] + table["no_selection"][9]["right"]) / 2
+    assert rule_errors == pytest.approx(0.608, abs=0.025)

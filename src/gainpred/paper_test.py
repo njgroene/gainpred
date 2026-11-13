@@ -24,9 +24,9 @@ Expected, if the code matches the protocol:
 * no selection: kept = 100%, right = share with no carry across cut 1;
 * sample and vote: kept = right = 100% (a perfect calculator answers directly).
 
-It is also the acceptance test "Cutting and combining" of P9. The numbers in
-the table should be compared against the paper-test table of experiment 1 in
-the main text.
+It is also the acceptance test "Cutting and combining" of P9. The output
+compares the rule errors with Table 7 of Shin et al. (unfiltered labels up to
+9 digits: 60.8% wrong even with every block sum right).
 """
 
 from __future__ import annotations
@@ -80,7 +80,24 @@ def to_markdown(table: dict[str, dict[int, dict[str, float]]], n: int) -> str:
         lines.append("| | right | " + " | ".join(f"{100 * by_size[d]['right']:.1f}" for d in sizes) + " |")
         lines.append("| | draws | " + " | ".join(
             f"{1 / by_size[d]['kept']:.1f}" if by_size[d]["kept"] else "–" for d in sizes) + " |")
-    lines += ["", "Column headings give the size and its cut 1 (P4)."]
+    lines += ["", "Column headings give the size and its cut 1 (P4).", ""]
+    if 8 in table["no_selection"] and 9 in table["no_selection"]:
+        ours = 100 * (1 - (table["no_selection"][8]["right"] + table["no_selection"][9]["right"]) / 2)
+        lines += [
+            "## Comparison with Shin et al. (2026), Table 7",
+            "",
+            "Their Table 7 audits the kept labels of one round against the true answers. \"Rule errors\" is the share",
+            "of labels that would be wrong even with every block sum right: our *no selection, 100 - right*.",
+            "",
+            "| | Shin et al. | Ours (cut 1) |",
+            "| --- | --- | --- |",
+            f"| Unfiltered, up to 9 digits: rule errors | 60.8 | {ours:.1f} (mean of 8 and 9 digits) |",
+            "| Unfiltered, up to 23 digits: rule errors | 83.3 | not comparable (we stop at 15 digits; their block widths are not stated) |",
+            f"| Filtered: rule errors | 0.0 | {100 - 100 * min(table['their_rule'][d]['right'] for d in sizes):.1f} |",
+            "",
+            "Their wrong labels with the filter (0.1–2.4%) come from wrong block sums by the model, which a perfect",
+            "calculator cannot show. Two cuts agree, sample and vote and the draws per kept answer are ours (P3, P5).",
+        ]
     return "\n".join(lines) + "\n"
 
 
