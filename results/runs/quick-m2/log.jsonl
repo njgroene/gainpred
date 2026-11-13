@@ -1,0 +1,11 @@
+{"event": "train", "step": 50, "loss": 2.319016218185425, "answer_tokens": 84489, "seconds": {"train": 43.085242671193555}}
+{"event": "train", "step": 100, "loss": 2.221574306488037, "answer_tokens": 168921, "seconds": {"train": 85.85027304128744}}
+{"event": "train", "step": 150, "loss": 2.204672336578369, "answer_tokens": 253303, "seconds": {"train": 128.63242225092836}}
+{"event": "eval", "set": "easy", "step": 150, "accuracy": {"3": 0.0, "4": 0.0, "5": 0.0, "6": 0.0, "7": 0.0, "all": 0.0}}
+{"event": "eval", "set": "start", "step": 150, "accuracy": {"8/no-carry": 0.0, "8/carry": 0.0, "9/no-carry": 0.0, "9/carry": 0.0, "all": 0.0}}
+{"event": "train", "step": 200, "loss": 2.2008228302001953, "answer_tokens": 337800, "seconds": {"train": 169.5819132970646, "eval": 16.980769332963973}}
+{"event": "train", "step": 250, "loss": 2.1782784461975098, "answer_tokens": 422152, "seconds": {"train": 210.93156829453073, "eval": 16.980769332963973}}
+{"event": "train", "step": 300, "loss": 2.1752796173095703, "answer_tokens": 506612, "seconds": {"train": 259.24691033596173, "eval": 16.980769332963973}}
+{"event": "eval", "set": "easy", "step": 300, "accuracy": {"3": 0.0, "4": 0.0, "5": 0.0, "6": 0.0, "7": 0.0, "all": 0.0}}
+{"event": "eval", "set": "start", "step": 300, "accuracy": {"8/no-carry": 0.0, "8/carry": 0.0, "9/no-carry": 0.0, "9/carry": 0.0, "all": 0.0}}
+{"event": "done", "step": 300, "seconds": {"train": 259.24691033596173, "eval": 38.78244395786896}}

@@ -186,11 +186,15 @@ class Decision:
     ``kept`` is the training answer, or None if the problem was set aside.
     ``candidates`` are what the teacher looked at: built answers per cut, or
     the five sampled direct answers for sample-and-vote.
+    ``source`` is the index of the cut whose built answer was kept (0 = cut 1),
+    or None for a direct answer (sample and vote) or nothing kept. Check 2b
+    asks whether some *other* cut confirms the kept answer.
     """
 
     problem: Addition
     kept: int | None
     candidates: tuple[Answer, ...]
+    source: int | None = None
 
 
 def readable(answer: Answer) -> int | None:
@@ -213,21 +217,27 @@ def cuts_of(problem: Addition) -> tuple[Cut, ...]:
 
 def no_carry(problems: list[Addition], solver: Solver) -> list[Decision]:
     built = build_all(problems, [cuts_of(p)[:1] for p in problems], solver)
-    return [Decision(p, readable(b.answer) if b.fits else None, (b.answer,)) for p, (b,) in zip(problems, built)]
+    return [Decision(p, readable(b.answer) if b.fits else None, (b.answer,), 0) for p, (b,) in zip(problems, built)]
 
 
-def agreement(problems: list[Addition], solver: Solver) -> list[Decision]:
-    built = build_all(problems, [cuts_of(p) for p in problems], solver)
+def agreement_from(problems: list[Addition], built: list[list[Built]]) -> list[Decision]:
+    """The agreement rule applied to answers already built from all three cuts."""
     decisions = []
     for p, bs in zip(problems, built):
         answers = [b.answer for b in bs]
-        decisions.append(Decision(p, majority(answers, needed=2), tuple(answers)))
+        kept = majority(answers, needed=2)
+        source = None if kept is None else answers.index(kept)
+        decisions.append(Decision(p, kept, tuple(answers), source))
     return decisions
+
+
+def agreement(problems: list[Addition], solver: Solver) -> list[Decision]:
+    return agreement_from(problems, build_all(problems, [cuts_of(p) for p in problems], solver))
 
 
 def no_selection(problems: list[Addition], solver: Solver) -> list[Decision]:
     built = build_all(problems, [cuts_of(p)[:1] for p in problems], solver)
-    return [Decision(p, readable(b.answer), (b.answer,)) for p, (b,) in zip(problems, built)]
+    return [Decision(p, readable(b.answer), (b.answer,), 0) for p, (b,) in zip(problems, built)]
 
 
 def sample_and_vote(problems: list[Addition], solver: Solver) -> list[Decision]:

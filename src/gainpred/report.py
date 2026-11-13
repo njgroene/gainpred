@@ -313,10 +313,13 @@ def summarise_rounds_run(run: RoundsRun) -> list[str]:
                   *table(["round", "problems", "readable", "right %"], rows), ""]
     checks = run.of("checks")
     if checks:
-        rows = [[str(e["round"]), str(e["digits"]), pct(e["check_1"]), pct(e["teachable"]), pct(e["check_2_kept"])]
+        rows = [[str(e["round"]), str(e["digits"]), pct(e["check_1"]), pct(e.get("check_2b")), pct(e["teachable"]),
+                 pct(e["check_2_kept"])]
                 for e in checks]
-        lines += ["Label-free checks (P8) on 2,000 fresh problems per new length:", "",
-                  *table(["round", "digits", "check 1: kept ≠ direct", "teachable", "check 2: agreement rule keeps"], rows),
+        lines += ["Label-free checks (P8) on 2,000 fresh problems per length, before the round's training "
+                  "(runs before 13 November 2026: new lengths only, no 2b):", "",
+                  *table(["round", "digits", "check 1: kept ≠ direct", "2b: confirmed", "teachable",
+                          "check 2: agreement rule keeps"], rows),
                   ""]
     if done:
         rows = []

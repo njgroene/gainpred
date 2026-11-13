@@ -19,8 +19,10 @@ Round r (1-4) has a maximum length of 9, 11, 13 or 15 digits (P3).
 2. **Replay.** 5,000 new easy problems per easy length (3-7 digits), answered
    greedily by the current model, unchecked (Shin et al., Table 4: 25,000
    replay examples). They keep the model from forgetting easy addition.
-3. **Checks** (P8) on 2,000 fresh problems per *new* length: is the teacher
-   saying anything new (check 1), does the agreement rule keep an answer (check 2), and the
+3. **Checks** (P8) on 2,000 fresh problems at *every* length from 8 to the
+   maximum, with the model before this round's training: is the teacher
+   saying anything new (check 1), does the agreement rule keep an answer
+   (check 2), does another cut confirm the kept answers (2b), and the
    teachable share.
 4. **Train** 3,000 updates on kept answers + replay, continuing from the
    current weights. Fresh AdamW state each round; learning rate constant at
@@ -213,7 +215,6 @@ def self_improve(cfg: RoundConfig, run_name: str, start_run: str, data_dir: Path
     for round_ in range(1, cfg.rounds + 1):
         watch = Stopwatch(device)
         max_digits = MAX_DIGITS_BY_ROUND[round_ - 1]
-        new_lengths = range(max_reached + 1, max_digits + 1)
         solver = (make_solver(model, round_) if make_solver
                   else ModelSolver(model, device, cfg.solver_batch_size, seed=cfg.seed * 1_000 + round_))
         examples: list[tuple[Addition, int]] = []
@@ -244,13 +245,14 @@ def self_improve(cfg: RoundConfig, run_name: str, start_run: str, data_dir: Path
              "right": sum(a == solve(p) for p, a in replay) / len(replay_problems)})
         examples += replay
 
-        # 3. Checks (P8) on the lengths new this round.
-        for digits in new_lengths:
+        # 3. Checks (P8) at every length from 8 to the maximum, before training:
+        #    the verdict of experiment 3 (P9b) is given in advance.
+        for digits in range(min(HARD_DIGITS), max_digits + 1):
             sample = draw_fresh(rng_for(cfg.seed, round_, digits, "checks"), digits, cfg.check_sample, exclude)
             with watch.time("checks"):
                 report = run_checks(teacher(sample, solver), solver)
             log({"event": "checks", "round": round_, "digits": digits, **asdict(report)})
-            print(f"  round {round_} checks {digits} digits: check 1 {report.check_1}, "
+            print(f"  round {round_} checks {digits} digits: check 1 {report.check_1}, 2b {report.check_2b}, "
                   f"teachable {report.teachable:.1%}, agreement rule {report.check_2_kept:.1%}")
 
         # 4. Train (fresh optimiser; schedule and batch order per round).

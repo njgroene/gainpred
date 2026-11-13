@@ -53,18 +53,18 @@ Easy replay answered by the current model:
 | 3 | 25,000 | 25,000 | 99.8 |
 | 4 | 25,000 | 25,000 | 99.8 |
 
-Label-free checks (P8) on 2,000 fresh problems per new length:
+Label-free checks (P8) on 2,000 fresh problems per length, before the round's training (runs before 13 November 2026: new lengths only, no 2b):
 
-| round | digits | check 1: kept ≠ direct | teachable | check 2: agreement rule keeps |
-| --- | --- | --- | --- | --- |
-| 1 | 8 | 100.0 | 38.0 | 34.6 |
-| 1 | 9 | 100.0 | 36.6 | 35.4 |
-| 2 | 10 | 100.0 | 36.9 | 34.4 |
-| 2 | 11 | 100.0 | 39.2 | 35.9 |
-| 3 | 12 | 100.0 | 37.0 | 33.0 |
-| 3 | 13 | 100.0 | 39.1 | 26.2 |
-| 4 | 14 | 100.0 | 37.9 | 12.6 |
-| 4 | 15 | 100.0 | 14.3 | 6.6 |
+| round | digits | check 1: kept ≠ direct | 2b: confirmed | teachable | check 2: agreement rule keeps |
+| --- | --- | --- | --- | --- | --- |
+| 1 | 8 | 100.0 | – | 38.0 | 34.6 |
+| 1 | 9 | 100.0 | – | 36.6 | 35.4 |
+| 2 | 10 | 100.0 | – | 36.9 | 34.4 |
+| 2 | 11 | 100.0 | – | 39.2 | 35.9 |
+| 3 | 12 | 100.0 | – | 37.0 | 33.0 |
+| 3 | 13 | 100.0 | – | 39.1 | 26.2 |
+| 4 | 14 | 100.0 | – | 37.9 | 12.6 |
+| 4 | 15 | 100.0 | – | 14.3 | 6.6 |
 
 Cost per round (seconds; tokens = characters the model generated for building and checks):
 
@@ -101,12 +101,12 @@ Easy replay answered by the current model:
 | --- | --- | --- | --- |
 | 1 | 2,500 | 2,500 | 100.0 |
 
-Label-free checks (P8) on 2,000 fresh problems per new length:
+Label-free checks (P8) on 2,000 fresh problems per length, before the round's training (runs before 13 November 2026: new lengths only, no 2b):
 
-| round | digits | check 1: kept ≠ direct | teachable | check 2: agreement rule keeps |
-| --- | --- | --- | --- | --- |
-| 1 | 8 | 100.0 | 36.0 | 33.0 |
-| 1 | 9 | 100.0 | 42.0 | 39.7 |
+| round | digits | check 1: kept ≠ direct | 2b: confirmed | teachable | check 2: agreement rule keeps |
+| --- | --- | --- | --- | --- | --- |
+| 1 | 8 | 100.0 | – | 36.0 | 33.0 |
+| 1 | 9 | 100.0 | – | 42.0 | 39.7 |
 
 Cost per round (seconds; tokens = characters the model generated for building and checks):
 
@@ -140,12 +140,12 @@ Easy replay answered by the current model:
 | --- | --- | --- | --- |
 | 1 | 25,000 | 25,000 | 99.9 |
 
-Label-free checks (P8) on 2,000 fresh problems per new length:
+Label-free checks (P8) on 2,000 fresh problems per length, before the round's training (runs before 13 November 2026: new lengths only, no 2b):
 
-| round | digits | check 1: kept ≠ direct | teachable | check 2: agreement rule keeps |
-| --- | --- | --- | --- | --- |
-| 1 | 8 | 100.0 | 38.0 | 34.6 |
-| 1 | 9 | 100.0 | 36.6 | 35.4 |
+| round | digits | check 1: kept ≠ direct | 2b: confirmed | teachable | check 2: agreement rule keeps |
+| --- | --- | --- | --- | --- | --- |
+| 1 | 8 | 100.0 | – | 38.0 | 34.6 |
+| 1 | 9 | 100.0 | – | 36.6 | 35.4 |
 
 Cost per round (seconds; tokens = characters the model generated for building and checks):
 

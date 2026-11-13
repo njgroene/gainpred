@@ -214,3 +214,36 @@ def test_old_teacher_names_in_early_logs_still_resolve():
     assert teacher_key("their_rule") == "no_carry" and teacher_key("two_cuts_agree") == "agreement"
     assert teacher_key("no_selection") == "no_selection"
     assert set(TEACHER_NAMES) == set(TEACHERS)
+
+
+# --- check 2b: confirmed share -------------------------------------------------
+
+
+def test_confirmed_share_counts_other_cuts_only():
+    from gainpred.checks import confirmed_share
+    from gainpred.teachers import build_all, cuts_of
+
+    problems = [NO_CARRY, CARRY]
+    built = build_all(problems, [cuts_of(p) for p in problems], PERFECT)
+    # No selection keeps the cut-1 answer of both; only cut 2 or 3 may confirm it.
+    decisions = no_selection(problems, PERFECT)
+    expected = [any(b.answer == d.kept for b in bs[1:]) for d, bs in zip(decisions, built)]
+    assert confirmed_share(decisions, built) == sum(expected) / 2
+    # The agreement rule is confirmed by construction.
+    assert confirmed_share(agreement(problems, PERFECT), built) in (1.0, None)
+    # A direct answer (source None) may be confirmed by any cut, including cut 1.
+    direct = [Decision(NO_CARRY, solve(NO_CARRY), (), None)]
+    assert confirmed_share(direct, built[:1]) == 1.0
+    assert confirmed_share([Decision(NO_CARRY, None, ())], built[:1]) is None
+
+
+def test_paper_test_2b():
+    """With a perfect calculator: the agreement rule 100%; no selection's 2b is the
+    no-carry rule's 2b scaled by its keep rate (same cut-1 answers, more of them wrong)."""
+    table = paper_test(n=3000)
+    for digits in ADDITION_CUTS:
+        assert table["agreement"][digits]["confirmed"] == 1.0
+        nc = table["no_carry"][digits]
+        assert table["no_selection"][digits]["confirmed"] == pytest.approx(nc["kept"] * nc["confirmed"], abs=1e-9)
+    assert table["no_carry"][8]["confirmed"] == pytest.approx(0.697, abs=0.03)  # P8 / user's simulation
+    assert table["no_selection"][15]["confirmed"] == pytest.approx(0.054, abs=0.015)

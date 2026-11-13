@@ -17,7 +17,7 @@ venv/
 
 # Experiment outputs (regenerable from seeds; large)
 data/
-runs/
+/runs/
 outputs/
 checkpoints/
 literature/
