@@ -11,6 +11,7 @@ formats   -- how problems and answers are written as text (protocol P2).
 tokenizer -- characters <-> token ids; training batches and prompts.
 cuts      -- the P4 cut table: splitting hard problems into easy pieces.
 data      -- the addition datasets (P1, P7); run ``python -m gainpred.data``.
+train     -- training loop, evaluation, checkpoints; ``python -m gainpred.train``.
 """
 
 from gainpred.config import ModelConfig
