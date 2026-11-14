@@ -367,7 +367,7 @@ class RunBuilt:
 def diagnostic_positions(problem: HardRun, offset: int | None = None) -> tuple[int, ...]:
     """P4 diagnostic cuts. Index 0 is the join, the cut that supplies training answers.
 
-    Decided at decision point 1 (15 November 2026): the two diagnostic cuts are
+    Decided at decision point 1 (14 November 2026): the two diagnostic cuts are
     the nearest alternative splits that keep both pieces 6-10 symbols long, the
     lengths the model was trained on (ties: the left one first). The original
     reading, the join +- 3, mostly made pieces of 3-13 symbols; pass ``offset=3``

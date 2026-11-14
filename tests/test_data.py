@@ -140,7 +140,7 @@ FROZEN_SHA256 = {
     "test_study": "27272dece2e2644a8b2ac0765c76e8abe8989ba74b7b921e45aebb453b124b28",
     "test_reproduction": "30e86244025f33a818228c32a3bbf804ab73dcc0c3e417b8b370410d3021a840",
     "test_easy": "383152bad978a884461f0078b5ebd8a3b8f42fa427f74d0997d0c14e1a569179",
-    "test_study_5cut": "f72b92588a33ba37ccf192aa38b029f9ae4233b101c743a2fccc31947e6d4811",  # added 15 Nov 2026
+    "test_study_5cut": "f72b92588a33ba37ccf192aa38b029f9ae4233b101c743a2fccc31947e6d4811",  # added 14 Nov 2026
     "train_start": "1f43a85d4e1958c8276236f4c31b53a048bee98d6abe00aed79a367622dac325",
 }
 

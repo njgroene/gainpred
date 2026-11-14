@@ -61,7 +61,7 @@ study test set (``test_study``) was drawn under these cuts' no-zero rule and mus
 regenerate byte for byte."""
 
 FIVE_CUT_EXTRAS: dict[int, tuple[Cut, Cut]] = {
-    # Decided by the owner at decision point 1 (15 November 2026): five cuts at
+    # Decided by the owner at decision point 1 (14 November 2026): five cuts at
     # 13-15 digits. Chosen in scripts/cuts_sim.py; they keep P4's two rules
     # (pieces 3-7 digits; no position shared with any other cut of the size).
     13: ((5, 3, 5), (3, 7, 3)),

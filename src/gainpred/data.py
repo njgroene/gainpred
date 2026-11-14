@@ -215,7 +215,7 @@ def make_all() -> dict[str, list[Record]]:
         "test_reproduction", TEST_REPRODUCTION_DIGITS, TEST_REPRODUCTION_PER_LENGTH, draw_easy, exclude
     )
     sets["test_easy"] = make_per_length("test_easy", EASY_DIGITS, TEST_EASY_PER_LENGTH, draw_easy, exclude)
-    # Added at decision point 1 (15 November 2026). Placed after the easy test
+    # Added at decision point 1 (14 November 2026). Placed after the easy test
     # set, so every set generated before it is unchanged byte for byte.
     sets["test_study_5cut"] = make_test_study(exclude, "test_study_5cut", FIVE_CUT_DIGITS, ADDITION_CUTS)
     sets["train_start"] = make_per_length("train_start", EASY_DIGITS, TRAIN_START_PER_LENGTH, draw_easy, exclude)
