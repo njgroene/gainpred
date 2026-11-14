@@ -107,7 +107,14 @@ def pick_weak(s: int, st: dict[str, str], dry: bool) -> None:
     if not all(st.get(n) == "done" for n in names):
         print(f"seed {s}: weak grid not finished")
         return
-    acc = {n: easy_accuracy(f"start-seed{s}-authors-s{n}") for n in WEAK_GRID}
+    # Every finished step count for this seed: the grid plus any added by the rule.
+    prefix = f"start-seed{s}-authors-s"
+    steps = sorted({int(n.removeprefix(prefix)) for n, state in st.items()
+                    if n.startswith(prefix) and state == "done"} | set(WEAK_GRID))
+    if any(st.get(f"{prefix}{n}") != "done" for n in steps):
+        print(f"seed {s}: extra step counts still training")
+        return
+    acc = {n: easy_accuracy(f"{prefix}{n}") for n in steps}
     print(f"seed {s} weak grid: " + ", ".join(f"{n}:{a:.1f}" for n, a in acc.items() if a is not None))
     for target in WEAK_TARGETS:
         close = sorted((abs(a - target), n) for n, a in acc.items() if a is not None and abs(a - target) <= 5)
