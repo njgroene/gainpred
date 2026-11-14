@@ -16,6 +16,8 @@ Kept as work proceeds (runbook section 5). Each entry: date, what, evidence.
 
 ## Surprises
 
+- **Longest run behaves exactly as designed, on both seeds** (30,000-update models, one round): join at the cut lifts the study set 56% → 95–99% (joined runs of 6: 0 → 97–100%); the edges-differ rule barely moves it (55–59%) and never teaches joined runs of 6+ (check 3: hands back); pick the longer harms (56% → 24–27%; joined runs of 4: 89–94% → 2–3%). Check 1 for the edges-differ rule is low (0.04–0.08) and it did little: a 'does nothing' case for P9b's longest-run analogue.
+
 - **Sample and vote keeps only wrong answers and teaches nothing** (seed 0, four rounds): every kept answer wrong in every round, test accuracy 0% throughout; check 1 was 7% (8 digits) and 15% (9 digits) before round 1, 2b 0%.
 - **Longest run, pick the longer harms runs across the join**: joined run length 3: 97.6% → 49.2%, length 4: 96.1% → 1.8% (seed 0, one round); the edges-differ rule lifts random joins 94.8% → 98.6% but never teaches joined runs of 6+.
 
