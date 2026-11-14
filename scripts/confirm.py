@@ -109,8 +109,7 @@ def pick_weak(s: int, st: dict[str, str], dry: bool) -> None:
         return
     # Every finished step count for this seed: the grid plus any added by the rule.
     prefix = f"start-seed{s}-authors-s"
-    steps = sorted({int(n.removeprefix(prefix)) for n, state in st.items()
-                    if n.startswith(prefix) and state == "done"} | set(WEAK_GRID))
+    steps = sorted({int(n.removeprefix(prefix)) for n in st if n.startswith(prefix)} | set(WEAK_GRID))
     if any(st.get(f"{prefix}{n}") != "done" for n in steps):
         print(f"seed {s}: extra step counts still training")
         return
