@@ -1,0 +1,11 @@
+{"event": "eval", "round": 0, "set": "easy", "accuracy": {"3": 0.977, "4": 0.971, "5": 0.968, "6": 0.95, "7": 0.929, "all": 0.959}}
+{"event": "eval", "round": 0, "set": "study", "accuracy": {"8/no-carry": 0.246, "8/carry": 0.233, "9/no-carry": 0.0, "9/carry": 0.0, "10/no-carry": 0.0, "10/carry": 0.0, "11/no-carry": 0.0, "11/carry": 0.0, "12/no-carry": 0.0, "12/carry": 0.0, "13/no-carry": 0.0, "13/carry": 0.0, "14/no-carry": 0.0, "14/carry": 0.0, "15/no-carry": 0.0, "15/carry": 0.0, "all": 0.0299375}}
+{"event": "build", "round": 1, "digits": 8, "drawn": 25975, "kept": 10000, "shortfall": 0, "kept_share": 0.3849855630413859, "kept_right": 0.9527, "stopped_by_time": false, "seconds": 11.140322994000002, "generated_tokens": 300363}
+{"event": "build", "round": 1, "digits": 9, "drawn": 26356, "kept": 10000, "shortfall": 0, "kept_share": 0.3794202458643193, "kept_right": 0.9288, "stopped_by_time": false, "seconds": 14.320039355999999, "generated_tokens": 334139}
+{"event": "replay", "round": 1, "problems": 25000, "readable": 25000, "right": 0.95988}
+{"event": "checks", "round": 1, "digits": 8, "problems": 2000, "kept": 762, "check_1": 0.7375328083989501, "teachable": 0.281, "check_2_kept": 0.335, "check_2_set_aside": 0.665, "check_2b": 0.699475065616798}
+{"event": "checks", "round": 1, "digits": 9, "problems": 2000, "kept": 734, "check_1": 1.0, "teachable": 0.367, "check_2_kept": 0.338, "check_2_set_aside": 0.6619999999999999, "check_2b": 0.6348773841961853}
+{"event": "eval", "round": 1, "set": "easy", "accuracy": {"3": 0.981, "4": 0.972, "5": 0.983, "6": 0.972, "7": 0.965, "all": 0.9746}}
+{"event": "eval", "round": 1, "set": "study", "accuracy": {"8/no-carry": 0.974, "8/carry": 0.908, "9/no-carry": 0.939, "9/carry": 0.893, "10/no-carry": 0.623, "10/carry": 0.564, "11/no-carry": 0.0, "11/carry": 0.0, "12/no-carry": 0.0, "12/carry": 0.0, "13/no-carry": 0.0, "13/carry": 0.0, "14/no-carry": 0.0, "14/carry": 0.0, "15/no-carry": 0.0, "15/carry": 0.0, "all": 0.3063125}}
+{"event": "round_done", "round": 1, "examples": 45000, "seconds": {"build": 32.500953284999994, "checks": 9.697650957999997}, "generated_tokens": 1025128}
+{"event": "done"}
