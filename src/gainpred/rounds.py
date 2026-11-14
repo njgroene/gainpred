@@ -145,7 +145,7 @@ def draw_fresh(rng: random.Random, digits: int, n: int, exclude: set[Addition]) 
 
 def collect_kept(teacher: Teacher, solver: Solver, rng: random.Random, digits: int, quota: int,
                  cap: int, exclude: set[Addition], seconds: float | None = None,
-                 max_chunk: int = 20_000) -> tuple[list[tuple[Addition, int]], int, bool]:
+                 max_chunk: int = 20_000, draw: Callable | None = None) -> tuple[list[tuple[Addition, int]], int, bool]:
     """Draw candidates in chunks until ``quota`` answers are kept, ``cap`` are drawn,
     or (if given) ``seconds`` have passed.
 
@@ -153,7 +153,11 @@ def collect_kept(teacher: Teacher, solver: Solver, rng: random.Random, digits: i
     is not called 140,000 times one by one, nor asked for far too many.
     Returns (kept examples, in draw order and at most ``quota``; number drawn;
     whether the time limit stopped it).
+
+    ``draw(rng, size, n, exclude)`` draws the candidates; None means addition's
+    ``draw_fresh``. Longest run (``gainpred.run_train``) passes its own pool.
     """
+    draw = draw or draw_fresh
     kept: list[tuple[Addition, int]] = []
     drawn = 0
     rate = 0.3  # first guess; replaced by the observed rate after one chunk
@@ -163,7 +167,7 @@ def collect_kept(teacher: Teacher, solver: Solver, rng: random.Random, digits: i
             return kept, drawn, True
         need = quota - len(kept)
         chunk = min(cap - drawn, max_chunk, max(500, math.ceil(1.15 * need / max(rate, 0.02))))
-        problems = draw_fresh(rng, digits, chunk, exclude)
+        problems = draw(rng, digits, chunk, exclude)
         for d in teacher(problems, solver):
             drawn += 1
             if d.kept is not None:

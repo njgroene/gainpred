@@ -4,6 +4,8 @@ Usage::
 
     uv run python -m gainpred.launch main start-seed1-s9000 --seed 1 --steps 9000 --norm-eps 1e-6 --decay-fraction 0.1
     uv run python -m gainpred.launch rounds si-agreement-seed1 --start start-seed1-authors --teacher agreement
+    uv run python -m gainpred.launch runs-main runs-start-seed0 --seed 0            # longest run: starting training
+    uv run python -m gainpred.launch runs-rounds runs-join-seed0 --start runs-start-seed0 --teacher join_at_the_cut
     uv run python -m gainpred.launch status            # every spawned run: running, done or failed
 
 Why this exists
@@ -78,7 +80,12 @@ def ensure_deployed(commit: str) -> None:
     DEPLOYED.write_text(commit + "\n")
 
 
-def spawn(function: str, run: str, kwargs: dict) -> None:
+DATA = {"addition": ("make_data", Path("data/addition/manifest.json")),
+        "longest_run": ("make_run_data", Path("data/longest_run/manifest.json"))}
+"""Per task: the Modal function that makes (or reads) the cloud data, and the local manifest to compare."""
+
+
+def spawn(function: str, run: str, kwargs: dict, task: str = "addition") -> None:
     import modal
 
     if not code_is_committed():
@@ -87,12 +94,16 @@ def spawn(function: str, run: str, kwargs: dict) -> None:
         sys.exit(f"run {run} already exists; runs are never overwritten (pick a new name)")
     commit = git("rev-parse", "HEAD")
     ensure_deployed(commit)
-    remote = modal.Function.from_name(APP, "make_data").remote()
-    if remote != json.loads(Path("data/addition/manifest.json").read_text()):
+    data_function, local_manifest = DATA[task]
+    if not local_manifest.exists():
+        sys.exit(f"no {local_manifest}: generate the {task} data locally first, so there is a manifest to compare")
+    remote = modal.Function.from_name(APP, data_function).remote()
+    if remote != json.loads(local_manifest.read_text()):
         sys.exit("cloud datasets differ from local ones (manifest fingerprints); not launching")
     call = modal.Function.from_name(APP, function).spawn(run=run, **kwargs)
     record({"run": run, "function": function, "args": kwargs, "commit": commit, "call_id": call.object_id,
-            "outcome": "spawned", "time": datetime.now(timezone.utc).isoformat(timespec="seconds")})
+            "outcome": "spawned", "time": datetime.now(timezone.utc).isoformat(timespec="seconds"),
+            **({} if task == "addition" else {"task": task})})
     print(f"{run}: spawned ({call.object_id}) from commit {commit[:7]}")
 
 
@@ -133,6 +144,20 @@ def main() -> None:
     r.add_argument("--rounds", type=int, default=4)
     r.add_argument("--start-round", type=int, default=0)
     r.add_argument("--build-seconds", type=float, default=0.0)
+    rm = sub.add_parser("runs-main", help="longest-run starting training")
+    rm.add_argument("run")
+    rm.add_argument("--seed", type=int, required=True)
+    rm.add_argument("--steps", type=int, default=15_000)
+    rm.add_argument("--eval-every", type=int, default=1_000)
+    rm.add_argument("--checkpoint-every", type=int, default=3_000)
+    rm.add_argument("--norm-eps", type=float, default=1e-6)
+    rm.add_argument("--decay-fraction", type=float, default=0.1)
+    rr = sub.add_parser("runs-rounds", help="one longest-run self-improvement round")
+    rr.add_argument("run")
+    rr.add_argument("--start", required=True)
+    rr.add_argument("--teacher", required=True,
+                    choices=["edges_differ", "pick_the_longer", "join_at_the_cut", "no_selection"])
+    rr.add_argument("--build-seconds", type=float, default=0.0)
     sub.add_parser("status", help="state of every spawned run")
     args = parser.parse_args()
 
@@ -144,6 +169,14 @@ def main() -> None:
             "seed": args.seed, "steps": args.steps, "eval_every": args.eval_every, "eval_per_length": 0,
             "checkpoint_every": args.checkpoint_every, "norm_eps": args.norm_eps,
             "decay_fraction": args.decay_fraction})
+    elif args.command == "runs-main":
+        spawn("train_start_runs", args.run, {
+            "seed": args.seed, "steps": args.steps, "eval_every": args.eval_every,
+            "checkpoint_every": args.checkpoint_every, "norm_eps": args.norm_eps,
+            "decay_fraction": args.decay_fraction}, task="longest_run")
+    elif args.command == "runs-rounds":
+        spawn("self_improve_runs", args.run, {
+            "start": args.start, "teacher": args.teacher, "build_seconds": args.build_seconds}, task="longest_run")
     else:
         spawn("self_improve", args.run, {
             "start": args.start, "teacher": args.teacher, "rounds": args.rounds,

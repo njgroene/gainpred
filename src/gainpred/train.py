@@ -369,10 +369,16 @@ def load_model(path: Path, device: torch.device | str = "cpu") -> Transformer:
 
 @dataclass
 class EvalSet:
-    """A named test set and how to group its accuracies."""
+    """A named test set and how to group its accuracies.
+
+    ``evaluate`` is how to score it; None means addition's ``evaluate``. The
+    longest-run task (``gainpred.run_train``) passes its own, so ``train``
+    serves both tasks unchanged.
+    """
 
     records: list[Record]
     group_key: GroupKey
+    evaluate: Callable[..., dict[str, float]] | None = None
 
 
 def train(
@@ -386,7 +392,8 @@ def train(
 ) -> Transformer:
     """Train ``model`` on ``examples`` for ``cfg.steps`` updates.
 
-    ``examples`` are (problem, answer to train on) pairs. For starting training
+    ``examples`` are (problem, answer to train on) pairs: (Addition, int) or,
+    for longest run, (RunQuestion, Run). For starting training
     the answer is the true sum; in self-improvement rounds it will be whatever
     a teacher built (P5) -- this function does not care which.
     """
@@ -423,7 +430,8 @@ def train(
         model.eval()
         for name, eval_set in eval_sets.items():
             with watch.time("eval"):
-                accuracy = evaluate(model, eval_set.records, eval_set.group_key, cfg.eval_batch_size, device)
+                score = eval_set.evaluate or evaluate
+                accuracy = score(model, eval_set.records, eval_set.group_key, cfg.eval_batch_size, device)
             log({"event": "eval", "set": name, "step": step, "accuracy": accuracy})
             shown = "  ".join(f"{k}:{v:.1%}" for k, v in accuracy.items())
             print(f"  eval {name:<6} {shown}")
