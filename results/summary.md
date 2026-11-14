@@ -20,7 +20,9 @@ unless marked otherwise, all on held-out test sets (definitions and what each ru
 | start-seed1-authors-s1750 | NVIDIA A10 | 1,750 / 1,750 | warmup 10% / decay 10% to 1%, clip 1.0 | 2.5 | 2.5 | 0.0 | 0.0 | 0.0 | 0.0 |
 | start-seed1-authors-s2000 | NVIDIA A10 | 2,000 / 2,000 | warmup 10% / decay 10% to 1%, clip 1.0 | 2.1 | 2.1 | 0.0 | 0.0 | 0.0 | 0.0 |
 | start-seed1-authors-s2125 | NVIDIA A10 | 2,125 / 2,125 | warmup 10% / decay 10% to 1%, clip 1.0 | 44.8 | 44.8 | 0.0 | 0.0 | 0.0 | 0.0 |
+| start-seed1-authors-s2200 | NVIDIA A10G | 2,200 / 2,200 | warmup 10% / decay 10% to 1%, clip 1.0 | 37.7 | 37.7 | 0.0 | 0.0 | 0.0 | 0.0 |
 | start-seed1-authors-s2250 | NVIDIA A10 | 2,250 / 2,250 | warmup 10% / decay 10% to 1%, clip 1.0 | 95.9 | 95.9 | 24.6 | 23.3 | 0.0 | 0.0 |
+| start-seed1-authors-s2300 | NVIDIA A10G | 2,300 / 2,300 | warmup 10% / decay 10% to 1%, clip 1.0 | 14.7 | 14.7 | 0.0 | 0.0 | 0.0 | 0.0 |
 | start-seed1-authors-s2375 | NVIDIA A10 | 2,375 / 2,375 | warmup 10% / decay 10% to 1%, clip 1.0 | 2.1 | 2.1 | 0.0 | 0.0 | 0.0 | 0.0 |
 | start-seed1-authors-s2500 | NVIDIA A10 | 2,500 / 2,500 | warmup 10% / decay 10% to 1%, clip 1.0 | 57.7 | 57.7 | 0.0 | 0.0 | 0.0 | 0.0 |
 | start-seed1-authors-s2625 | NVIDIA A10 | 2,625 / 2,625 | warmup 10% / decay 10% to 1%, clip 1.0 | 99.8 | 99.8 | 83.7 | 82.8 | 0.0 | 0.0 |
@@ -28,7 +30,10 @@ unless marked otherwise, all on held-out test sets (definitions and what each ru
 | start-seed1-authors-s2875 | NVIDIA A10 | 2,875 / 2,875 | warmup 10% / decay 10% to 1%, clip 1.0 | 22.4 | 22.4 | 0.0 | 0.0 | 0.0 | 0.0 |
 | start-seed1-authors-s3000 | NVIDIA A10 | 3,000 / 3,000 | warmup 10% / decay 10% to 1%, clip 1.0 | 99.9 | 99.9 | 9.8 | 9.7 | 0.0 | 0.0 |
 | start-seed1-authors-s3250 | NVIDIA A10 | 3,250 / 3,250 | warmup 10% / decay 10% to 1%, clip 1.0 | 22.3 | 22.3 | 0.0 | 0.0 | 0.0 | 0.0 |
+| start-seed1-authors-s3400 | NVIDIA A10 | 3,400 / 3,400 | warmup 10% / decay 10% to 1%, clip 1.0 | 61.5 | 61.5 | 0.1 | 0.2 | 0.0 | 0.0 |
+| start-seed1-authors-s3450 | NVIDIA A10 | 3,450 / 3,450 | warmup 10% / decay 10% to 1%, clip 1.0 | 99.7 | 99.7 | 41.2 | 49.9 | 0.0 | 0.0 |
 | start-seed1-authors-s3500 | NVIDIA A10 | 3,500 / 3,500 | warmup 10% / decay 10% to 1%, clip 1.0 | 97.5 | 97.5 | 0.0 | 0.0 | 0.0 | 0.0 |
+| start-seed1-authors-s3600 | NVIDIA A10 | 3,600 / 3,600 | warmup 10% / decay 10% to 1%, clip 1.0 | 99.8 | 99.8 | 5.9 | 6.2 | 0.0 | 0.0 |
 | start-seed1-authors-s4000 | NVIDIA A10 | 4,000 / 4,000 | warmup 10% / decay 10% to 1%, clip 1.0 | 99.5 | 99.5 | 0.3 | 0.8 | 0.0 | 0.0 |
 | start-seed1-authors-s5000 | NVIDIA A10 | 5,000 / 5,000 | warmup 10% / decay 10% to 1%, clip 1.0 | 100.0 | 100.0 | 5.0 | 6.0 | 0.0 | 0.0 |
 | start-seed1-authors-s6000 | NVIDIA A10 | 6,000 / 6,000 | warmup 10% / decay 10% to 1%, clip 1.0 | 99.9 | 99.9 | 0.0 | 0.0 | 0.0 | 0.0 |
@@ -581,6 +586,38 @@ Training stability:
 | stable | 212–1,913 | 2.3 | 28.4 | 8.70e-01 |
 | decay | 1,913–2,125 | 1.04 | 16.5 | 4.71e-01 |
 
+## start-seed1-authors-s2200
+
+- Device: NVIDIA A10G, torch 2.15.0+cu132
+- Steps: 2,200 planned, finished; batch 256, seed 1
+- Recipe: warmup 10% / decay 10% to 1%, clip 1.0
+- Test sets: full
+- Time: 1.8 min training, 0.2 min evaluating
+
+Easy addition (3–7 digits, check 0; pass mark 99% for starting training): final **37.7%** at step 2,200; best 37.7% at step 2,200.
+
+| step | 3 | 4 | 5 | 6 | 7 | all |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1,000 | 0.7 | 0.1 | 0.0 | 0.0 | 0.0 | 0.2 |
+| 2,000 | 76.2 | 8.3 | 0.6 | 0.0 | 0.0 | 17.0 |
+| 2,200 | 94.9 | 86.7 | 6.8 | 0.3 | 0.0 | 37.7 |
+
+Starting point (8–9 digits asked directly, split by carry across cut 1; P9 expects ~0%):
+
+| step | 8/no-carry | 8/carry | 9/no-carry | 9/carry | all |
+| --- | --- | --- | --- | --- | --- |
+| 1,000 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+| 2,000 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+| 2,200 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+
+Training stability:
+
+| phase | steps | largest batch loss | largest grad norm | loss at end |
+| --- | --- | --- | --- | --- |
+| warm-up | 0–220 | 3.64 | 50.1 | 2.01e+00 |
+| stable | 220–1,980 | 2.44 | 31.1 | 8.76e-01 |
+| decay | 1,980–2,200 | 0.937 | 24 | 5.33e-01 |
+
 ## start-seed1-authors-s2250
 
 - Device: NVIDIA A10, torch 2.15.0+cu132
@@ -612,6 +649,38 @@ Training stability:
 | warm-up | 0–225 | 3.64 | 84.5 | 1.95e+00 |
 | stable | 225–2,025 | 2.07 | 81.9 | 3.63e-01 |
 | decay | 2,025–2,250 | 0.76 | 51.2 | 1.92e-02 |
+
+## start-seed1-authors-s2300
+
+- Device: NVIDIA A10G, torch 2.15.0+cu132
+- Steps: 2,300 planned, finished; batch 256, seed 1
+- Recipe: warmup 10% / decay 10% to 1%, clip 1.0
+- Test sets: full
+- Time: 1.8 min training, 0.2 min evaluating
+
+Easy addition (3–7 digits, check 0; pass mark 99% for starting training): final **14.7%** at step 2,300; best 14.7% at step 2,300.
+
+| step | 3 | 4 | 5 | 6 | 7 | all |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1,000 | 0.3 | 0.0 | 0.0 | 0.0 | 0.0 | 0.1 |
+| 2,000 | 8.8 | 0.9 | 0.0 | 0.0 | 0.0 | 1.9 |
+| 2,300 | 67.5 | 5.6 | 0.4 | 0.0 | 0.0 | 14.7 |
+
+Starting point (8–9 digits asked directly, split by carry across cut 1; P9 expects ~0%):
+
+| step | 8/no-carry | 8/carry | 9/no-carry | 9/carry | all |
+| --- | --- | --- | --- | --- | --- |
+| 1,000 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+| 2,000 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+| 2,300 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+
+Training stability:
+
+| phase | steps | largest batch loss | largest grad norm | loss at end |
+| --- | --- | --- | --- | --- |
+| warm-up | 0–230 | 3.64 | 77.8 | 2.00e+00 |
+| stable | 230–2,070 | 2.55 | 50.7 | 1.13e+00 |
+| decay | 2,070–2,300 | 1.62 | 65.9 | 8.55e-01 |
 
 ## start-seed1-authors-s2375
 
@@ -839,6 +908,74 @@ Training stability:
 | stable | 325–2,925 | 2.15 | 83.5 | 7.94e-01 |
 | decay | 2,925–3,250 | 0.934 | 29.1 | 7.10e-01 |
 
+## start-seed1-authors-s3400
+
+- Device: NVIDIA A10, torch 2.15.0+cu132
+- Steps: 3,400 planned, finished; batch 256, seed 1
+- Recipe: warmup 10% / decay 10% to 1%, clip 1.0
+- Test sets: full
+- Time: 2.6 min training, 0.2 min evaluating
+
+Easy addition (3–7 digits, check 0; pass mark 99% for starting training): final **61.5%** at step 3,400; best 61.5% at step 3,400.
+
+| step | 3 | 4 | 5 | 6 | 7 | all |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1,000 | 1.0 | 0.0 | 0.0 | 0.0 | 0.0 | 0.2 |
+| 2,000 | 96.1 | 63.9 | 4.1 | 0.4 | 0.0 | 32.9 |
+| 3,000 | 97.3 | 96.5 | 74.7 | 6.2 | 0.4 | 55.0 |
+| 3,400 | 99.9 | 99.8 | 98.8 | 8.5 | 0.3 | 61.5 |
+
+Starting point (8–9 digits asked directly, split by carry across cut 1; P9 expects ~0%):
+
+| step | 8/no-carry | 8/carry | 9/no-carry | 9/carry | all |
+| --- | --- | --- | --- | --- | --- |
+| 1,000 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+| 2,000 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+| 3,000 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+| 3,400 | 0.1 | 0.2 | 0.0 | 0.0 | 0.1 |
+
+Training stability:
+
+| phase | steps | largest batch loss | largest grad norm | loss at end |
+| --- | --- | --- | --- | --- |
+| warm-up | 0–340 | 3.64 | 79.3 | 1.81e+00 |
+| stable | 340–3,060 | 2.21 | 149 | 3.55e-01 |
+| decay | 3,060–3,400 | 0.559 | 31.7 | 2.26e-01 |
+
+## start-seed1-authors-s3450
+
+- Device: NVIDIA A10, torch 2.15.0+cu132
+- Steps: 3,450 planned, finished; batch 256, seed 1
+- Recipe: warmup 10% / decay 10% to 1%, clip 1.0
+- Test sets: full
+- Time: 2.6 min training, 0.2 min evaluating
+
+Easy addition (3–7 digits, check 0; pass mark 99% for starting training): final **99.7%** at step 3,450; best 99.7% at step 3,450.
+
+| step | 3 | 4 | 5 | 6 | 7 | all |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1,000 | 6.9 | 0.2 | 0.0 | 0.0 | 0.0 | 1.4 |
+| 2,000 | 99.2 | 96.1 | 93.3 | 89.2 | 80.5 | 91.7 |
+| 3,000 | 97.5 | 94.8 | 92.5 | 81.0 | 68.9 | 86.9 |
+| 3,450 | 100.0 | 100.0 | 99.7 | 99.5 | 99.3 | 99.7 |
+
+Starting point (8–9 digits asked directly, split by carry across cut 1; P9 expects ~0%):
+
+| step | 8/no-carry | 8/carry | 9/no-carry | 9/carry | all |
+| --- | --- | --- | --- | --- | --- |
+| 1,000 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+| 2,000 | 5.7 | 5.2 | 0.0 | 0.0 | 2.7 |
+| 3,000 | 2.4 | 1.6 | 0.0 | 0.0 | 1.0 |
+| 3,450 | 41.2 | 49.9 | 0.0 | 0.0 | 22.8 |
+
+Training stability:
+
+| phase | steps | largest batch loss | largest grad norm | loss at end |
+| --- | --- | --- | --- | --- |
+| warm-up | 0–345 | 3.64 | 85.3 | 1.81e+00 |
+| stable | 345–3,105 | 2.06 | 128 | 1.02e-01 |
+| decay | 3,105–3,450 | 0.412 | 25.3 | 1.67e-03 |
+
 ## start-seed1-authors-s3500
 
 - Device: NVIDIA A10, torch 2.15.0+cu132
@@ -872,6 +1009,40 @@ Training stability:
 | warm-up | 0–350 | 3.64 | 99.2 | 1.81e+00 |
 | stable | 350–3,150 | 2.02 | 66.3 | 1.28e-01 |
 | decay | 3,150–3,500 | 0.86 | 79.4 | 1.13e-02 |
+
+## start-seed1-authors-s3600
+
+- Device: NVIDIA A10, torch 2.15.0+cu132
+- Steps: 3,600 planned, finished; batch 256, seed 1
+- Recipe: warmup 10% / decay 10% to 1%, clip 1.0
+- Test sets: full
+- Time: 2.7 min training, 0.2 min evaluating
+
+Easy addition (3–7 digits, check 0; pass mark 99% for starting training): final **99.8%** at step 3,600; best 99.8% at step 3,600.
+
+| step | 3 | 4 | 5 | 6 | 7 | all |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1,000 | 7.4 | 1.0 | 0.0 | 0.0 | 0.0 | 1.7 |
+| 2,000 | 98.7 | 95.6 | 91.5 | 81.0 | 62.0 | 85.8 |
+| 3,000 | 71.4 | 71.8 | 70.4 | 68.0 | 58.0 | 67.9 |
+| 3,600 | 100.0 | 100.0 | 100.0 | 99.8 | 99.1 | 99.8 |
+
+Starting point (8–9 digits asked directly, split by carry across cut 1; P9 expects ~0%):
+
+| step | 8/no-carry | 8/carry | 9/no-carry | 9/carry | all |
+| --- | --- | --- | --- | --- | --- |
+| 1,000 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+| 2,000 | 5.7 | 5.6 | 0.2 | 0.2 | 2.9 |
+| 3,000 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+| 3,600 | 5.9 | 6.2 | 0.0 | 0.0 | 3.0 |
+
+Training stability:
+
+| phase | steps | largest batch loss | largest grad norm | loss at end |
+| --- | --- | --- | --- | --- |
+| warm-up | 0–360 | 3.64 | 71.6 | 1.77e+00 |
+| stable | 360–3,240 | 2.26 | 119 | 7.40e-02 |
+| decay | 3,240–3,600 | 1.12 | 84.1 | 1.47e-03 |
 
 ## start-seed1-authors-s4000
 

@@ -1,0 +1,11 @@
+{"event": "eval", "round": 0, "set": "easy", "accuracy": {"3": 0.998, "4": 0.997, "5": 0.977, "6": 0.953, "7": 0.95, "all": 0.975}}
+{"event": "eval", "round": 0, "set": "study", "accuracy": {"8/no-carry": 0.0, "8/carry": 0.0, "9/no-carry": 0.0, "9/carry": 0.0, "10/no-carry": 0.0, "10/carry": 0.0, "11/no-carry": 0.0, "11/carry": 0.0, "12/no-carry": 0.0, "12/carry": 0.0, "13/no-carry": 0.0, "13/carry": 0.0, "14/no-carry": 0.0, "14/carry": 0.0, "15/no-carry": 0.0, "15/carry": 0.0, "all": 0.0}}
+{"event": "build", "round": 1, "digits": 8, "drawn": 26039, "kept": 10000, "shortfall": 0, "kept_share": 0.3840393256269442, "kept_right": 0.9924, "stopped_by_time": false, "seconds": 11.079785935, "generated_tokens": 301148}
+{"event": "build", "round": 1, "digits": 9, "drawn": 26444, "kept": 10000, "shortfall": 0, "kept_share": 0.37815761609438814, "kept_right": 0.9571, "stopped_by_time": false, "seconds": 14.047807000999999, "generated_tokens": 335027}
+{"event": "replay", "round": 1, "problems": 25000, "readable": 25000, "right": 0.97628}
+{"event": "checks", "round": 1, "digits": 8, "problems": 2000, "kept": 760, "check_1": 1.0, "teachable": 0.38, "check_2_kept": 0.3395, "check_2_set_aside": 0.6605, "check_2b": 0.7105263157894737}
+{"event": "checks", "round": 1, "digits": 9, "problems": 2000, "kept": 734, "check_1": 1.0, "teachable": 0.367, "check_2_kept": 0.3425, "check_2_set_aside": 0.6575, "check_2b": 0.6485013623978202}
+{"event": "eval", "round": 1, "set": "easy", "accuracy": {"3": 1.0, "4": 0.999, "5": 0.981, "6": 0.962, "7": 0.972, "all": 0.9828}}
+{"event": "eval", "round": 1, "set": "study", "accuracy": {"8/no-carry": 0.999, "8/carry": 0.907, "9/no-carry": 0.967, "9/carry": 0.856, "10/no-carry": 0.0, "10/carry": 0.0, "11/no-carry": 0.0, "11/carry": 0.0, "12/no-carry": 0.0, "12/carry": 0.0, "13/no-carry": 0.0, "13/carry": 0.0, "14/no-carry": 0.0, "14/carry": 0.0, "15/no-carry": 0.0, "15/carry": 0.0, "all": 0.2330625}}
+{"event": "round_done", "round": 1, "examples": 45000, "seconds": {"build": 32.369236458, "checks": 9.56458612099999}, "generated_tokens": 1021920}
+{"event": "done"}
