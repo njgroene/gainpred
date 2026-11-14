@@ -67,7 +67,7 @@ Plus two lists: **what was decided by rule** since the last report, and **what w
 
 ### B. After decision point 1
 
-Confirming runs for starting points 2–4: starting training, every addition arm, the weak starting models, run f, sample and vote, longest run. Score P9b.
+Confirming runs for starting points 2–4: starting training, every addition arm (five cuts at 13–15), the weak starting models (matched on target accuracy, 60% and 97.5%), run f, sample and vote, longest run (three teachers, plus the withheld version of join at the cut). Score P9b.
 
 ### Decision point 2
 
