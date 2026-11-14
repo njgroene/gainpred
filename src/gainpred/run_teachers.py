@@ -79,7 +79,7 @@ from gainpred.run_data import HardRun
 from gainpred.teachers import majority
 
 DIAGNOSTIC_OFFSET = 3
-"""P4: the two diagnostic cuts sit this many positions either side of the join."""
+"""The original reading of P4 (join +- 3), replaced at decision point 1; kept for comparison."""
 
 EDGE_SYMBOLS_FROM = "string"
 """Where join at the cut reads "the left piece's right-edge symbol" and "the
@@ -364,12 +364,26 @@ class RunBuilt:
     answer: RunAnswer
 
 
-def diagnostic_positions(problem: HardRun, offset: int = DIAGNOSTIC_OFFSET) -> tuple[int, int, int]:
-    """P4: (join, join - 3, join + 3). Index 0 is the cut that supplies training answers."""
-    return problem.join, problem.join - offset, problem.join + offset
+def diagnostic_positions(problem: HardRun, offset: int | None = None) -> tuple[int, ...]:
+    """P4 diagnostic cuts. Index 0 is the join, the cut that supplies training answers.
+
+    Decided at decision point 1 (15 November 2026): the two diagnostic cuts are
+    the nearest alternative splits that keep both pieces 6-10 symbols long, the
+    lengths the model was trained on (ties: the left one first). The original
+    reading, the join +- 3, mostly made pieces of 3-13 symbols; pass ``offset=3``
+    to get it back. Short strings have fewer alternatives: length 12 has none,
+    13 has one, so check 2 there rests on fewer cuts.
+    """
+    if offset is not None:
+        return problem.join, problem.join - offset, problem.join + offset
+    n = len(problem.string)
+    splits = [p for p in range(max(6, n - 10), min(10, n - 6) + 1) if p != problem.join]
+    nearest = sorted(splits, key=lambda p: (abs(p - problem.join), p))[:2]
+    return (problem.join, *nearest)
 
 
-def build_diagnostic(problems: list[HardRun], solver: RunSolver, rule: str = "join_at_the_cut") -> list[list[RunBuilt]]:
+def build_diagnostic(problems: list[HardRun], solver: RunSolver, rule: str = "join_at_the_cut",
+                     offset: int | None = None) -> list[list[RunBuilt]]:
     """Built answers at the three cuts of P4, with ONE solver call.
 
     ``rule`` is how each cut's piece answers are combined. P4 does not say;
@@ -377,7 +391,7 @@ def build_diagnostic(problems: list[HardRun], solver: RunSolver, rule: str = "jo
     its piece answers are, so disagreement between cuts points at wrong piece
     answers rather than at the rule (open question in the report).
     """
-    positions = [diagnostic_positions(p) for p in problems]
+    positions = [diagnostic_positions(p, offset) for p in problems]
     asked = ask_pieces(problems, positions, solver, edges=(rule == "join_at_the_cut"))
     return [[RunBuilt(pc.position, pc, build(p, pc, rule)) for pc in row] for p, row in zip(problems, asked)]
 

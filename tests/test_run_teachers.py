@@ -138,8 +138,14 @@ def test_check_3():
 # --- the check-2 diagnostic (P4) ------------------------------------------------------
 
 
-def test_diagnostic_cuts_are_three_either_side_of_the_join():
-    assert diagnostic_positions(ACROSS) == (6, 3, 9)
+def test_diagnostic_cuts_are_the_nearest_6_to_10_splits():
+    """Decision point 1: the nearest alternative splits keeping both pieces 6-10 long."""
+    assert diagnostic_positions(ACROSS) == (6,)  # length 12: 6|6 is the only split
+    assert diagnostic_positions(ACROSS, offset=3) == (6, 3, 9)  # the original reading
+    long = HardRun("1234567890123456", 8, "random_join")
+    assert diagnostic_positions(long) == (8, 7, 9)
+    edge = HardRun("1234567890123456", 6, "random_join")  # 16: splits 6..10
+    assert diagnostic_positions(edge) == (6, 7, 8)
 
 
 def test_diagnostic_agreement_with_a_perfect_solver_is_complete():
@@ -150,7 +156,7 @@ def test_diagnostic_agreement_with_a_perfect_solver_is_complete():
 
 
 def test_diagnostic_with_pick_the_longer_disagrees_on_runs_across_the_join():
-    built = build_diagnostic([ACROSS], PERFECT, rule="pick_the_longer")
+    built = build_diagnostic([ACROSS], PERFECT, rule="pick_the_longer", offset=3)  # the original reading
     # cut at 6: 7|3; cut at 3 ("493" | "077777476"): 7|5; cut at 9 ("493077777" | "476"): 7|5.
     assert [b.answer for b in built[0]] == [Run("7", 3), Run("7", 5), Run("7", 5)]
     assert agreement_from_built([ACROSS], built)[0].kept == Run("7", 5)
