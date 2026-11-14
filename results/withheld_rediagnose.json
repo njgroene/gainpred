@@ -1,0 +1,146 @@
+{
+ "seed0 12": {
+  "check_2_kept_new": 0.0,
+  "check_2b_new": 0.0,
+  "check_2_kept_old": 1.0,
+  "check_2b_old": 1.0,
+  "check_1_new": 0.05426356589147287,
+  "check_1_old": 0.05490956072351421
+ },
+ "seed0 13": {
+  "check_2_kept_new": 0.9973045822102425,
+  "check_2b_new": 0.9973045822102425,
+  "check_2_kept_old": 1.0,
+  "check_2b_old": 0.9979784366576819,
+  "check_1_new": 0.05862533692722372,
+  "check_1_old": 0.057951482479784364
+ },
+ "seed0 14": {
+  "check_2_kept_new": 1.0,
+  "check_2b_new": 0.998703823720026,
+  "check_2_kept_old": 1.0,
+  "check_2b_old": 0.9980557355800389,
+  "check_1_new": 0.0829552819183409,
+  "check_1_old": 0.0829552819183409
+ },
+ "seed0 15": {
+  "check_2_kept_new": 1.0,
+  "check_2b_new": 0.9993390614672836,
+  "check_2_kept_old": 1.0,
+  "check_2b_old": 0.998678122934567,
+  "check_1_new": 0.09253139458030403,
+  "check_1_old": 0.09187045604758758
+ },
+ "seed0 16": {
+  "check_2_kept_new": 1.0,
+  "check_2b_new": 0.9993425378040762,
+  "check_2_kept_old": 1.0,
+  "check_2b_old": 0.9914529914529915,
+  "check_1_new": 0.14135437212360288,
+  "check_1_old": 0.14135437212360288
+ },
+ "seed0 17": {
+  "check_2_kept_new": 1.0,
+  "check_2b_new": 0.9993390614672836,
+  "check_2_kept_old": 1.0,
+  "check_2b_old": 0.985459352280238,
+  "check_1_new": 0.16391275611368142,
+  "check_1_old": 0.16457369464639787
+ },
+ "seed0 18": {
+  "check_2_kept_new": 1.0,
+  "check_2b_new": 0.9986842105263158,
+  "check_2_kept_old": 1.0,
+  "check_2b_old": 0.9881578947368421,
+  "check_1_new": 0.1875,
+  "check_1_old": 0.1868421052631579
+ },
+ "seed0 19": {
+  "check_2_kept_new": 1.0,
+  "check_2b_new": 1.0,
+  "check_2_kept_old": 0.9986622073578595,
+  "check_2b_old": 0.9739130434782609,
+  "check_1_new": 0.22274247491638796,
+  "check_1_old": 0.22408026755852842
+ },
+ "seed0 20": {
+  "check_2_kept_new": 0.0,
+  "check_2b_new": 0.0,
+  "check_2_kept_old": 0.9993364299933643,
+  "check_2b_old": 0.9747843397478434,
+  "check_1_new": 0.24485733244857333,
+  "check_1_old": 0.24419376244193763
+ },
+ "seed1 12": {
+  "check_2_kept_new": 0.0,
+  "check_2b_new": 0.0,
+  "check_2_kept_old": 1.0,
+  "check_2b_old": 0.9986568166554735,
+  "check_1_new": 0.0745466756212223,
+  "check_1_old": 0.07588985896574882
+ },
+ "seed1 13": {
+  "check_2_kept_new": 0.9954158480681073,
+  "check_2b_new": 0.9954158480681073,
+  "check_2_kept_old": 1.0,
+  "check_2b_old": 1.0,
+  "check_1_new": 0.07269155206286837,
+  "check_1_old": 0.07269155206286837
+ },
+ "seed1 14": {
+  "check_2_kept_new": 1.0,
+  "check_2b_new": 0.9972789115646259,
+  "check_2_kept_old": 1.0,
+  "check_2b_old": 0.9959183673469387,
+  "check_1_new": 0.09115646258503401,
+  "check_1_old": 0.09047619047619047
+ },
+ "seed1 15": {
+  "check_2_kept_new": 1.0,
+  "check_2b_new": 0.9980353634577603,
+  "check_2_kept_old": 1.0,
+  "check_2b_old": 0.9973804846103471,
+  "check_1_new": 0.09233791748526522,
+  "check_1_old": 0.09233791748526522
+ },
+ "seed1 16": {
+  "check_2_kept_new": 1.0,
+  "check_2b_new": 0.9980276134122288,
+  "check_2_kept_old": 1.0,
+  "check_2b_old": 0.9953977646285339,
+  "check_1_new": 0.0992767915844839,
+  "check_1_old": 0.10059171597633136
+ },
+ "seed1 17": {
+  "check_2_kept_new": 1.0,
+  "check_2b_new": 0.9953977646285339,
+  "check_2_kept_old": 0.9993425378040762,
+  "check_2b_old": 0.9855358316896778,
+  "check_1_new": 0.12360289283366206,
+  "check_1_old": 0.12491781722550953
+ },
+ "seed1 18": {
+  "check_2_kept_new": 1.0,
+  "check_2b_new": 0.9986754966887417,
+  "check_2_kept_old": 0.9993377483443708,
+  "check_2b_old": 0.9933774834437086,
+  "check_1_new": 0.11324503311258279,
+  "check_1_old": 0.11390728476821192
+ },
+ "seed1 19": {
+  "check_2_kept_new": 0.995345744680851,
+  "check_2b_new": 0.995345744680851,
+  "check_2_kept_old": 1.0,
+  "check_2b_old": 0.9833776595744681,
+  "check_1_new": 0.1622340425531915,
+  "check_1_old": 0.16090425531914893
+ },
+ "seed1 20": {
+  "check_2_kept_new": 0.0,
+  "check_2b_new": 0.0,
+  "check_2_kept_old": 0.999344262295082,
+  "check_2b_old": 0.981639344262295,
+  "check_1_new": 0.17311475409836066,
+  "check_1_old": 0.1718032786885246
+ }
+}
