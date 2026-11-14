@@ -239,7 +239,12 @@ def main() -> None:
     parser.add_argument("--level-2b", type=float, help="the 2b level (still to decide)")
     parser.add_argument("--level-1", type=float, default=LEVEL_1)
     args = parser.parse_args()
-    cells = [c for run in load_rounds() if included(run) for c in cells_of(run)]
+    runs = [run for run in load_rounds() if included(run)]
+    names = {run.name for run in runs}
+    # Rounds 3-4 of a three-cut run are superseded by its five-cut rerun (decision point 1),
+    # which continues from the same round-2 checkpoint: keep rounds 1-2 of the original.
+    cells = [c for run in runs for c in cells_of(run)
+             if not (c.round >= 3 and run.name.replace("-authors", "-5cut") in names - {run.name})]
     score_outcomes(cells)
     levels = (args.level_2b, args.level_1) if args.level_2b is not None else None
     if levels:
