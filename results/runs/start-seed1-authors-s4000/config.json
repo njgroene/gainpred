@@ -1,0 +1,59 @@
+{
+  "model": {
+    "vocab_size": 33,
+    "pad_id": 31,
+    "n_layers": 6,
+    "d_model": 384,
+    "n_heads": 6,
+    "d_ff": 1536,
+    "max_len": 128,
+    "init_std": 0.02,
+    "norm_eps": 1e-06,
+    "lr": 0.0005,
+    "betas": [
+      0.9,
+      0.99
+    ],
+    "eps": 1e-12,
+    "weight_decay": 0.1
+  },
+  "train": {
+    "steps": 4000,
+    "batch_size": 256,
+    "seed": 1,
+    "log_every": 50,
+    "eval_every": 1000,
+    "eval_per_length": null,
+    "eval_batch_size": 1000,
+    "checkpoint_every": 2000,
+    "warmup_fraction": 0.1,
+    "decay_fraction": 0.1,
+    "min_lr_ratio": 0.01,
+    "grad_clip": 1.0
+  },
+  "device": "NVIDIA A10",
+  "torch": "2.15.0+cu132",
+  "task": "addition/starting-training",
+  "data": {
+    "test_study": {
+      "seed": 1001,
+      "rows": 16000,
+      "sha256": "27272dece2e2644a8b2ac0765c76e8abe8989ba74b7b921e45aebb453b124b28"
+    },
+    "test_reproduction": {
+      "seed": 1002,
+      "rows": 1300,
+      "sha256": "30e86244025f33a818228c32a3bbf804ab73dcc0c3e417b8b370410d3021a840"
+    },
+    "test_easy": {
+      "seed": 1003,
+      "rows": 5000,
+      "sha256": "383152bad978a884461f0078b5ebd8a3b8f42fa427f74d0997d0c14e1a569179"
+    },
+    "train_start": {
+      "seed": 2001,
+      "rows": 250000,
+      "sha256": "1f43a85d4e1958c8276236f4c31b53a048bee98d6abe00aed79a367622dac325"
+    }
+  }
+}
