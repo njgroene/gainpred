@@ -34,6 +34,7 @@ unless marked otherwise, all on held-out test sets (definitions and what each ru
 | start-seed1-authors-s3450 | NVIDIA A10 | 3,450 / 3,450 | warmup 10% / decay 10% to 1%, clip 1.0 | 99.7 | 99.7 | 41.2 | 49.9 | 0.0 | 0.0 |
 | start-seed1-authors-s3500 | NVIDIA A10 | 3,500 / 3,500 | warmup 10% / decay 10% to 1%, clip 1.0 | 97.5 | 97.5 | 0.0 | 0.0 | 0.0 | 0.0 |
 | start-seed1-authors-s3600 | NVIDIA A10 | 3,600 / 3,600 | warmup 10% / decay 10% to 1%, clip 1.0 | 99.8 | 99.8 | 5.9 | 6.2 | 0.0 | 0.0 |
+| start-seed1-authors-s3750 | NVIDIA A10G | 3,750 / 3,750 | warmup 10% / decay 10% to 1%, clip 1.0 | 62.1 | 62.1 | 0.0 | 0.0 | 0.0 | 0.0 |
 | start-seed1-authors-s4000 | NVIDIA A10 | 4,000 / 4,000 | warmup 10% / decay 10% to 1%, clip 1.0 | 99.5 | 99.5 | 0.3 | 0.8 | 0.0 | 0.0 |
 | start-seed1-authors-s5000 | NVIDIA A10 | 5,000 / 5,000 | warmup 10% / decay 10% to 1%, clip 1.0 | 100.0 | 100.0 | 5.0 | 6.0 | 0.0 | 0.0 |
 | start-seed1-authors-s6000 | NVIDIA A10 | 6,000 / 6,000 | warmup 10% / decay 10% to 1%, clip 1.0 | 99.9 | 99.9 | 0.0 | 0.0 | 0.0 | 0.0 |
@@ -1043,6 +1044,40 @@ Training stability:
 | warm-up | 0–360 | 3.64 | 71.6 | 1.77e+00 |
 | stable | 360–3,240 | 2.26 | 119 | 7.40e-02 |
 | decay | 3,240–3,600 | 1.12 | 84.1 | 1.47e-03 |
+
+## start-seed1-authors-s3750
+
+- Device: NVIDIA A10G, torch 2.15.0+cu132
+- Steps: 3,750 planned, finished; batch 256, seed 1
+- Recipe: warmup 10% / decay 10% to 1%, clip 1.0
+- Test sets: full
+- Time: 3.0 min training, 0.2 min evaluating
+
+Easy addition (3–7 digits, check 0; pass mark 99% for starting training): final **62.1%** at step 3,750; best 62.1% at step 3,750.
+
+| step | 3 | 4 | 5 | 6 | 7 | all |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1,000 | 5.3 | 0.4 | 0.0 | 0.0 | 0.0 | 1.1 |
+| 2,000 | 93.6 | 57.8 | 7.5 | 0.8 | 0.1 | 32.0 |
+| 3,000 | 99.9 | 99.4 | 88.8 | 9.7 | 0.6 | 59.7 |
+| 3,750 | 100.0 | 100.0 | 99.9 | 10.5 | 0.2 | 62.1 |
+
+Starting point (8–9 digits asked directly, split by carry across cut 1; P9 expects ~0%):
+
+| step | 8/no-carry | 8/carry | 9/no-carry | 9/carry | all |
+| --- | --- | --- | --- | --- | --- |
+| 1,000 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+| 2,000 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+| 3,000 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+| 3,750 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+
+Training stability:
+
+| phase | steps | largest batch loss | largest grad norm | loss at end |
+| --- | --- | --- | --- | --- |
+| warm-up | 0–375 | 3.64 | 85.7 | 1.73e+00 |
+| stable | 375–3,375 | 2.16 | 79.4 | 3.12e-01 |
+| decay | 3,375–3,750 | 0.764 | 48.4 | 2.11e-01 |
 
 ## start-seed1-authors-s4000
 

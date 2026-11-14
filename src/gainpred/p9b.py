@@ -90,7 +90,9 @@ def length_accuracy(acc: dict[str, float], digits: int) -> float | None:
 
 
 def included(run: RoundsRun) -> bool:
-    return run.name.endswith("-authors") or str(run.config.get("start_run", "")).endswith("-authors")
+    # Runs from an authors'-setup model: the starting models themselves are named
+    # start-seed<k>-authors[-s<steps>] (the weak ones carry a step count).
+    return run.name.endswith("-authors") or "-authors" in str(run.config.get("start_run", ""))
 
 
 def cells_of(run: RoundsRun) -> list[Cell]:

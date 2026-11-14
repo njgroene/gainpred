@@ -45,3 +45,11 @@ def test_easy_drop_is_harm_and_verdict_order():
     give_verdicts(cells, level_2b=0.5, level_1=0.1)
     c8 = next(c for c in cells if c.digits == 8)
     assert c8.outcome == "did harm" and c8.verdict == "does harm"  # 2b below the level comes first
+
+
+def test_weak_model_runs_are_included():
+    from gainpred.p9b import included
+
+    weak = RoundsRun("si-nocarry-weak-s3400-seed1", {"start_run": "start-seed1-authors-s3400", "rounds": {}}, [])
+    old = RoundsRun("si-nocarry-seed1", {"start_run": "start-seed1-stable", "rounds": {}}, [])
+    assert included(weak) and not included(old)

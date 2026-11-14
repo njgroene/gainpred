@@ -51,6 +51,54 @@ Label-free checks (P8), before the round's training:
 | 1 | 19 | 14.5 | 100.0 | 100.0 | 6.3 | 93.8 |
 | 1 | 20 | 16.4 | 100.0 | 100.0 | 7.5 | 93.5 |
 
+## runs-join_at_the_cut-seed0
+
+- Task: longest run. Teacher: **join at the cut** (`join_at_the_cut`); starting run `runs-start-seed0` (seed 0)
+- Rounds: 1 of 1 finished; 2,000 kept per length, starting rows replayed with true answers, 3,000 updates per round
+- Device: NVIDIA A10
+
+Easy questions (check 0), accuracy (%) per round (round 0 = the starting model):
+
+| round | runlen/6 | runlen/7 | runlen/8 | runlen/9 | runlen/10 | leftrun/6 | leftrun/7 | leftrun/8 | leftrun/9 | leftrun/10 | rightrun/6 | rightrun/7 | rightrun/8 | rightrun/9 | rightrun/10 | all |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 |
+| 1 | 100.0 | 100.0 | 99.9 | 99.9 | 99.9 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 99.9 | 100.0 | 99.9 | 99.8 | 100.0 |
+
+Study strings asked directly, accuracy (%) per round (round 0 = the starting model):
+
+| round | random_join | joined_length_2 | joined_length_3 | joined_length_4 | joined_length_5 | joined_length_6 | joined_length_7 | joined_length_8 | left_part_1-2 | left_part_3-4 | all |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 0 | 94.8 | 97.3 | 97.6 | 96.1 | 46.7 | 0.0 | 0.0 | 0.0 | 67.8 | 28.0 | 52.8 |
+| 1 | 96.8 | 98.4 | 98.7 | 99.4 | 98.7 | 97.7 | 92.6 | 87.5 | 98.8 | 95.7 | 96.4 |
+
+Training answers built by the teacher ("right" is an audit):
+
+| round | length | drawn | kept | kept % | right % | shortfall |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 12 | 2,000 | 2,000 | 100.0 | 100.0 | 0 |
+| 1 | 13 | 2,000 | 2,000 | 100.0 | 100.0 | 0 |
+| 1 | 14 | 2,000 | 2,000 | 100.0 | 100.0 | 0 |
+| 1 | 15 | 2,000 | 2,000 | 100.0 | 99.9 | 0 |
+| 1 | 16 | 2,000 | 2,000 | 100.0 | 99.8 | 0 |
+| 1 | 17 | 2,000 | 2,000 | 100.0 | 99.9 | 0 |
+| 1 | 18 | 2,000 | 2,000 | 100.0 | 100.0 | 0 |
+| 1 | 19 | 2,000 | 2,000 | 100.0 | 99.8 | 0 |
+| 1 | 20 | 2,000 | 2,000 | 100.0 | 99.9 | 0 |
+
+Label-free checks (P8), before the round's training:
+
+| round | length | check 1 | 2b | check 3 | teachable | check 2 keeps |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 12 | 22.8 | 85.9 | 47.1 | 22.8 | 94.0 |
+| 1 | 13 | 24.8 | 84.5 | 47.2 | 24.8 | 93.0 |
+| 1 | 14 | 24.4 | 85.9 | 50.1 | 24.4 | 94.0 |
+| 1 | 15 | 25.9 | 84.3 | 48.8 | 25.9 | 94.2 |
+| 1 | 16 | 29.1 | 84.4 | 49.7 | 29.1 | 94.0 |
+| 1 | 17 | 30.1 | 84.4 | 49.1 | 30.1 | 94.3 |
+| 1 | 18 | 31.2 | 85.2 | 49.4 | 31.2 | 94.2 |
+| 1 | 19 | 34.2 | 83.5 | 49.5 | 34.2 | 93.8 |
+| 1 | 20 | 35.3 | 83.5 | 50.4 | 35.3 | 93.5 |
+
 ## runs-pick_the_longer-seed0
 
 - Task: longest run. Teacher: **pick the longer** (`pick_the_longer`); starting run `runs-start-seed0` (seed 0)
@@ -695,6 +743,45 @@ Cost per round (seconds; tokens = characters the model generated for building an
 | round | examples | build s | checks s | train s | generated tokens |
 | --- | --- | --- | --- | --- | --- |
 | 1 | 45,000 | 32 | 10 | 153 | 1,021,681 |
+
+## si-nocarry-weak-s3400-seed1
+
+- Teacher: **the no-carry rule** (`no_carry`); starting run `start-seed1-authors-s3400` (seed 1)
+- Rounds: 1 of 1 finished; 10,000 kept per length, 5,000 replay per easy length, 3,000 updates per round
+- Device: NVIDIA A10
+
+Test accuracy (%) after each round (round 0 = the starting model); carry = across cut 1:
+
+| round | easy (3–7) | 8: no carry / carry | 9: no carry / carry | 10: no carry / carry | 11: no carry / carry | 12: no carry / carry | 13: no carry / carry | 14: no carry / carry | 15: no carry / carry |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 0 | 61.5 | 0.1 / 0.2 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 |
+| 1 | 61.5 | 96.7 / 45.5 | 6.5 / 3.3 | 0.1 / 0.2 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 |
+
+Training answers built by the teacher ("right" is an audit; the teacher never sees it):
+
+| round | digits | drawn | kept | kept % | right % | shortfall |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 8 | 26,034 | 10,000 | 38.4 | 99.5 | 0 |
+| 1 | 9 | 26,442 | 10,000 | 37.8 | 8.8 | 0 |
+
+Easy replay answered by the current model:
+
+| round | problems | readable | right % |
+| --- | --- | --- | --- |
+| 1 | 25,000 | 25,000 | 61.9 |
+
+Label-free checks (P8) on 2,000 fresh problems per length, before the round's training (runs before 13 November 2026: new lengths only, no 2b):
+
+| round | digits | check 1: kept ≠ direct | 2b: confirmed | teachable | check 2: agreement rule keeps |
+| --- | --- | --- | --- | --- | --- |
+| 1 | 8 | 100.0 | 72.0 | 38.0 | 34.4 |
+| 1 | 9 | 100.0 | 6.1 | 36.6 | 20.2 |
+
+Cost per round (seconds; tokens = characters the model generated for building and checks):
+
+| round | examples | build s | checks s | train s | generated tokens |
+| --- | --- | --- | --- | --- | --- |
+| 1 | 45,000 | 32 | 10 | 154 | 1,029,396 |
 
 ## si-nocarry-weak-s3500-seed1
 

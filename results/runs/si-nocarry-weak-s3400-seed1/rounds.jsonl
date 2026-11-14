@@ -1,0 +1,11 @@
+{"event": "eval", "round": 0, "set": "easy", "accuracy": {"3": 0.999, "4": 0.998, "5": 0.988, "6": 0.085, "7": 0.003, "all": 0.6146}}
+{"event": "eval", "round": 0, "set": "study", "accuracy": {"8/no-carry": 0.001, "8/carry": 0.002, "9/no-carry": 0.0, "9/carry": 0.0, "10/no-carry": 0.0, "10/carry": 0.0, "11/no-carry": 0.0, "11/carry": 0.0, "12/no-carry": 0.0, "12/carry": 0.0, "13/no-carry": 0.0, "13/carry": 0.0, "14/no-carry": 0.0, "14/carry": 0.0, "15/no-carry": 0.0, "15/carry": 0.0, "all": 0.0001875}}
+{"event": "build", "round": 1, "digits": 8, "drawn": 26034, "kept": 10000, "shortfall": 0, "kept_share": 0.3841130828916033, "kept_right": 0.9949, "stopped_by_time": false, "seconds": 11.118682139, "generated_tokens": 301109}
+{"event": "build", "round": 1, "digits": 9, "drawn": 26442, "kept": 10000, "shortfall": 0, "kept_share": 0.3781862188941835, "kept_right": 0.0876, "stopped_by_time": false, "seconds": 14.370961931000004, "generated_tokens": 335069}
+{"event": "replay", "round": 1, "problems": 25000, "readable": 25000, "right": 0.61888}
+{"event": "checks", "round": 1, "digits": 8, "problems": 2000, "kept": 760, "check_1": 1.0, "teachable": 0.38, "check_2_kept": 0.3435, "check_2_set_aside": 0.6565, "check_2b": 0.7197368421052631}
+{"event": "checks", "round": 1, "digits": 9, "problems": 2000, "kept": 733, "check_1": 1.0, "teachable": 0.3665, "check_2_kept": 0.202, "check_2_set_aside": 0.798, "check_2b": 0.061391541609822645}
+{"event": "eval", "round": 1, "set": "easy", "accuracy": {"3": 1.0, "4": 1.0, "5": 0.987, "6": 0.082, "7": 0.007, "all": 0.6152}}
+{"event": "eval", "round": 1, "set": "study", "accuracy": {"8/no-carry": 0.967, "8/carry": 0.455, "9/no-carry": 0.065, "9/carry": 0.033, "10/no-carry": 0.001, "10/carry": 0.002, "11/no-carry": 0.0, "11/carry": 0.0, "12/no-carry": 0.0, "12/carry": 0.0, "13/no-carry": 0.0, "13/carry": 0.0, "14/no-carry": 0.0, "14/carry": 0.0, "15/no-carry": 0.0, "15/carry": 0.0, "all": 0.0951875}}
+{"event": "round_done", "round": 1, "examples": 45000, "seconds": {"build": 32.466109620000005, "checks": 9.775773331000003}, "generated_tokens": 1029396}
+{"event": "done"}
