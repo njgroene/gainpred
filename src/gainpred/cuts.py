@@ -44,7 +44,7 @@ EASY_DIGITS = range(3, 8)
 """Sizes the model learns directly (P1: "both numbers 3-7 digits"). Every piece
 of every cut must be one of these, so that each piece looks like an easy problem."""
 
-ADDITION_CUTS: dict[int, tuple[Cut, Cut, Cut]] = {
+THREE_CUTS: dict[int, tuple[Cut, Cut, Cut]] = {
     #   size:  (cut 1,      cut 2,      cut 3)        -- P4, verbatim
     8: ((4, 4), (3, 5), (5, 3)),
     9: ((3, 6), (4, 5), (5, 4)),
@@ -55,9 +55,29 @@ ADDITION_CUTS: dict[int, tuple[Cut, Cut, Cut]] = {
     14: ((7, 7), (4, 5, 5), (6, 4, 4)),
     15: ((5, 5, 5), (4, 7, 4), (6, 3, 6)),
 }
-"""P4. Cut 1 (index 0) supplies the answer for "the no-carry rule" and "no selection"."""
+"""P4 as frozen on 12 November 2026: three cuts per size. Cut 1 (index 0) supplies
+the answer for "the no-carry rule" and "no selection". Kept because the original
+study test set (``test_study``) was drawn under these cuts' no-zero rule and must
+regenerate byte for byte."""
 
-HARD_DIGITS = range(min(ADDITION_CUTS), max(ADDITION_CUTS) + 1)
+FIVE_CUT_EXTRAS: dict[int, tuple[Cut, Cut]] = {
+    # Decided by the owner at decision point 1 (15 November 2026): five cuts at
+    # 13-15 digits. Chosen in scripts/cuts_sim.py; they keep P4's two rules
+    # (pieces 3-7 digits; no position shared with any other cut of the size).
+    13: ((5, 3, 5), (3, 7, 3)),
+    14: ((5, 6, 3), (3, 5, 6)),
+    15: ((7, 5, 3), (3, 5, 7)),
+}
+
+ADDITION_CUTS: dict[int, tuple[Cut, ...]] = {
+    size: cuts + FIVE_CUT_EXTRAS.get(size, ()) for size, cuts in THREE_CUTS.items()
+}
+"""The cuts in use (P4): three per size at 8-12 digits, five at 13-15. Cut 1 is
+unchanged, so the no-carry rule and the carry-across-cut-1 test groups are too.
+More cuts raise the agreement rule's yield (15 digits: 13.8 -> 5.8 draws per
+kept answer) and check 2b's power (results/cuts_question.md)."""
+
+HARD_DIGITS = range(min(THREE_CUTS), max(THREE_CUTS) + 1)
 """Sizes the model must learn by self-improvement: 8-15 digits (P3)."""
 
 

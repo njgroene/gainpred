@@ -56,7 +56,7 @@ import random
 from collections.abc import Callable, Iterable
 from pathlib import Path
 
-from gainpred.cuts import ADDITION_CUTS, EASY_DIGITS, HARD_DIGITS, carry_crosses, piece_starts
+from gainpred.cuts import ADDITION_CUTS, EASY_DIGITS, HARD_DIGITS, THREE_CUTS, Cut, carry_crosses, piece_starts
 from gainpred.formats import Addition, solve
 
 # ----------------------------------------------------------------------------
@@ -66,11 +66,13 @@ SEEDS = {
     "test_study": 1_001,
     "test_reproduction": 1_002,
     "test_easy": 1_003,
+    "test_study_5cut": 1_004,
     "train_start": 2_001,
 }
 """One fixed seed per set. Test sets have their own seeds (P7)."""
 
 TEST_STUDY_PER_GROUP = 1_000  # P7
+FIVE_CUT_DIGITS = range(13, 16)  # lengths with five cuts (decision point 1)
 TEST_REPRODUCTION_PER_LENGTH = 100  # P7
 TEST_REPRODUCTION_DIGITS = range(3, 16)  # P7: lengths 3-15
 TEST_EASY_PER_LENGTH = 1_000  # P7
@@ -106,9 +108,9 @@ def draw_number(rng: random.Random, digits: int, nonzero_at: Iterable[int]) -> i
     return value
 
 
-def hard_nonzero_positions(digits: int) -> frozenset[int]:
-    """Positions that start a piece under any of the three cuts of this size."""
-    return frozenset().union(*(piece_starts(cut) for cut in ADDITION_CUTS[digits]))
+def hard_nonzero_positions(digits: int, cuts: dict[int, tuple[Cut, ...]] = ADDITION_CUTS) -> frozenset[int]:
+    """Positions that start a piece under any cut of this size (the cuts in use by default)."""
+    return frozenset().union(*(piece_starts(cut) for cut in cuts[digits]))
 
 
 def draw_easy(rng: random.Random, digits: int) -> Addition:
@@ -116,9 +118,13 @@ def draw_easy(rng: random.Random, digits: int) -> Addition:
     return Addition(draw_number(rng, digits, {0}), draw_number(rng, digits, {0}))
 
 
-def draw_hard(rng: random.Random, digits: int) -> Addition:
-    """A hard (8-15 digit) problem with no piece starting with 0 under any cut (P2)."""
-    nonzero = hard_nonzero_positions(digits)
+def draw_hard(rng: random.Random, digits: int, cuts: dict[int, tuple[Cut, ...]] = ADDITION_CUTS) -> Addition:
+    """A hard (8-15 digit) problem with no piece starting with 0 under any cut (P2).
+
+    ``cuts`` = the cuts whose piece starts must be nonzero: the cuts in use by
+    default; ``THREE_CUTS`` to regenerate the original study test set.
+    """
+    nonzero = hard_nonzero_positions(digits, cuts)
     return Addition(draw_number(rng, digits, nonzero), draw_number(rng, digits, nonzero))
 
 
@@ -153,20 +159,27 @@ def record(problem: Addition, **extra: int | bool) -> Record:
     return {"a": problem.a, "b": problem.b, "answer": solve(problem), "digits": problem.n_digits, **extra}
 
 
-def make_test_study(exclude: set[Addition]) -> list[Record]:
-    """P7: per length 8-15, 1,000 problems with a carry across cut 1, 1,000 without.
+def make_test_study(exclude: set[Addition], seed_name: str = "test_study", digit_range: range = HARD_DIGITS,
+                    cuts: dict[int, tuple[Cut, ...]] = THREE_CUTS) -> list[Record]:
+    """P7: per length, 1,000 problems with a carry across cut 1, 1,000 without.
 
     Problems are drawn one at a time and put in whichever group they belong
     to, until both groups are full. Roughly half of random problems have a
     carry across a 2-piece cut, so this wastes few draws.
+
+    The original set (``test_study``, 8-15 digits) is drawn under the three-cut
+    no-zero rule and stays frozen. ``test_study_5cut`` (13-15 digits, decided at
+    decision point 1) is drawn the same way under the five-cut rule, from its
+    own seed; it is the primary test set at 13-15 digits from then on, and the
+    original 13-15 groups are kept as secondary.
     """
-    rng = random.Random(SEEDS["test_study"])
+    rng = random.Random(SEEDS[seed_name])
     records = []
-    for digits in HARD_DIGITS:
-        cut_1 = ADDITION_CUTS[digits][0]
+    for digits in digit_range:
+        cut_1 = cuts[digits][0]
         groups: dict[bool, list[Addition]] = {True: [], False: []}
         while any(len(g) < TEST_STUDY_PER_GROUP for g in groups.values()):
-            problem = draw_hard(rng, digits)
+            problem = draw_hard(rng, digits, cuts)
             group = groups[carry_crosses(problem, cut_1)]
             if problem not in exclude and len(group) < TEST_STUDY_PER_GROUP:
                 exclude.add(problem)
@@ -202,6 +215,9 @@ def make_all() -> dict[str, list[Record]]:
         "test_reproduction", TEST_REPRODUCTION_DIGITS, TEST_REPRODUCTION_PER_LENGTH, draw_easy, exclude
     )
     sets["test_easy"] = make_per_length("test_easy", EASY_DIGITS, TEST_EASY_PER_LENGTH, draw_easy, exclude)
+    # Added at decision point 1 (15 November 2026). Placed after the easy test
+    # set, so every set generated before it is unchanged byte for byte.
+    sets["test_study_5cut"] = make_test_study(exclude, "test_study_5cut", FIVE_CUT_DIGITS, ADDITION_CUTS)
     sets["train_start"] = make_per_length("train_start", EASY_DIGITS, TRAIN_START_PER_LENGTH, draw_easy, exclude)
     return sets
 

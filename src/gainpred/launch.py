@@ -158,6 +158,7 @@ def main() -> None:
     rr.add_argument("--teacher", required=True,
                     choices=["edges_differ", "pick_the_longer", "join_at_the_cut", "no_selection"])
     rr.add_argument("--build-seconds", type=float, default=0.0)
+    rr.add_argument("--withheld", action="store_true", help="P6 withheld version (no a = 3-4 run-across problems)")
     sub.add_parser("status", help="state of every spawned run")
     args = parser.parse_args()
 
@@ -176,7 +177,8 @@ def main() -> None:
             "decay_fraction": args.decay_fraction}, task="longest_run")
     elif args.command == "runs-rounds":
         spawn("self_improve_runs", args.run, {
-            "start": args.start, "teacher": args.teacher, "build_seconds": args.build_seconds}, task="longest_run")
+            "start": args.start, "teacher": args.teacher, "build_seconds": args.build_seconds,
+            "withheld": args.withheld}, task="longest_run")
     else:
         spawn("self_improve", args.run, {
             "start": args.start, "teacher": args.teacher, "rounds": args.rounds,

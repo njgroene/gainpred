@@ -198,7 +198,9 @@ def test_paper_test_matches_the_protocol():
     # P3: about three draws per kept answer up to 12 digits, about fourteen at 15.
     for digits in range(8, 13):
         assert 1 / table["agreement"][digits]["kept"] == pytest.approx(3, abs=0.4)
-    assert 1 / table["agreement"][15]["kept"] == pytest.approx(14, abs=2)
+    # Five cuts at 13-15 digits (decision point 1): about 5.8 draws per kept answer at 15
+    # (three cuts gave about 14; results/cuts_question.md).
+    assert 1 / table["agreement"][15]["kept"] == pytest.approx(5.8, abs=1)
 
 
 def test_rule_errors_match_shin_et_al_table_7():
@@ -246,4 +248,6 @@ def test_paper_test_2b():
         nc = table["no_carry"][digits]
         assert table["no_selection"][digits]["confirmed"] == pytest.approx(nc["kept"] * nc["confirmed"], abs=1e-9)
     assert table["no_carry"][8]["confirmed"] == pytest.approx(0.697, abs=0.03)  # P8 / user's simulation
-    assert table["no_selection"][15]["confirmed"] == pytest.approx(0.054, abs=0.015)
+    # Five cuts at 15 digits: no selection's 2b is the no-carry rule's keep rate (~15%)
+    # times its 2b (~53%), about 8% (three cuts: about 5%).
+    assert table["no_selection"][15]["confirmed"] == pytest.approx(0.079, abs=0.02)

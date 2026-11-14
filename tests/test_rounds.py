@@ -99,3 +99,11 @@ def test_one_tiny_round_runs_end_to_end(tmp_path):
     assert {e["digits"] for e in events_f if e["event"] == "build"} == set(range(8, 12))  # round 2: 8-11
     assert json.loads((runs / "f" / "config.json").read_text())["start_round"] == 1
 
+
+
+def test_carry_positions_counts_carries_out_of_each_place():
+    from gainpred.formats import Addition
+    from gainpred.rounds import carry_positions
+
+    # 15 + 25: units 5+5 carries; tens 1+2+1 = 4 does not.  99 + 1: both places carry.
+    assert carry_positions([Addition(15, 25), Addition(99, 1)]) == [2, 1]

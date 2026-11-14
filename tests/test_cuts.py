@@ -36,8 +36,8 @@ def test_no_two_cuts_share_a_position(size):
     """Rule 2: otherwise a carry at the shared position would make two cuts
     wrong in the same way, and their agreement would be no evidence (P5)."""
     cuts = ADDITION_CUTS[size]
-    for i in range(3):
-        for j in range(i + 1, 3):
+    for i in range(len(cuts)):
+        for j in range(i + 1, len(cuts)):
             assert not cut_positions(cuts[i]) & cut_positions(cuts[j]), (size, cuts[i], cuts[j])
 
 
@@ -100,3 +100,12 @@ def test_leading_piece_may_overflow():
     problem = Addition(99991111, 99991111)  # 9999 + 9999 = 19998 in the leading piece
     assert not carry_crosses(problem, (4, 4))
     assert side_by_side(problem, (4, 4)) == solve(problem)
+
+
+def test_five_cuts_at_13_to_15_and_cut_1_unchanged():
+    """Decision point 1: five cuts at 13-15 digits, three elsewhere; cut 1 is the old one."""
+    from gainpred.cuts import THREE_CUTS
+
+    assert {size: len(cuts) for size, cuts in ADDITION_CUTS.items()} == {
+        8: 3, 9: 3, 10: 3, 11: 3, 12: 3, 13: 5, 14: 5, 15: 5}
+    assert all(ADDITION_CUTS[s][:3] == THREE_CUTS[s] for s in THREE_CUTS)

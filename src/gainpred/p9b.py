@@ -13,16 +13,19 @@ round will *pay off*, *do nothing* or *do harm* at that length. After
 training, the test accuracy gives the **outcome**. Experiment 3 asks how often
 the verdict matches the outcome. A "cell" is one run, round and length.
 
-Verdict (P9b), decided in this order
-====================================
+Verdict (P9b, as decided at decision point 1), in this order
+============================================================
 1. *Does harm* if check 0 fails (easy accuracy under 98% at some length,
-   measured before the round) or check 2b is below ``level_2b``.
-2. *Does nothing* if check 1 is below ``level_1``.
-3. *Pays off* otherwise.
+   measured before the round).
+2. *Does nothing* if the teacher kept under 5% of the check sample (it has
+   almost nothing to teach), or check 1 is below ``LEVEL_1`` (0.50).
+3. *Does harm* if check 2b is below ``level_2b``.
+4. *Pays off* otherwise.
 
-The two levels are *to decide* on the learning runs, then frozen (P9b). Until
-then this module reports the raw check values next to each outcome, so the
-levels can be chosen from data, and scores verdicts only for levels given on
+Check 1 comes before 2b because "nothing new to teach" outranks "what it
+teaches is unconfirmed": sample and vote, and no selection at lengths it
+has already taught wrong, have low 2b yet change nothing. The 2b level is
+still *to decide*; until then verdicts are scored only for a level given on
 the command line.
 
 Outcome (P9b, as amended 13 November 2026)
@@ -38,7 +41,16 @@ previous round (round 0 = the starting model); "after" is this round's.
   the best teacher from the same starting point in the same round: *paid off*
   if up at least 20 points and within 10 points of the best; *taught wrong
   answers* (counted with did harm) if up but 30 or more points below the best;
-  *did nothing* if up less than 3 points.
+  *did nothing* if up less than 10 points (decision point 1: a gain under 10
+  points is 'did nothing' regardless of the gap).
+* A new length whose accuracy before the round is above 50% is scored like a
+  length already trained on (decision point 1).
+* At 13-15 digits accuracy comes from the five-cut test set (``study5``)
+  where a run has it; the original set's 13-15 groups are secondary.
+
+Case "new length started midway" (decision point 1, replacing "run 0 at 8
+digits against 9"): every new-length cell whose accuracy before the round
+is between 20% and 80% is tagged ``mid_start``, whatever seed or round.
 * Anything else (e.g. up 3-20 points, or 10-30 points below the best, or up
   more than 3 at an already-trained length) is *unclassified* and reported.
 
@@ -61,6 +73,9 @@ from gainpred.teachers import teacher_key
 
 MAX_DIGITS_BY_ROUND = (9, 11, 13, 15)
 EASY_PASS = 0.98  # check 0 pass mark (P8)
+LEVEL_1 = 0.50  # check-1 level, decided at decision point 1
+MIN_KEPT_SHARE = 0.05  # under this share of the check sample kept: 'does nothing'
+FIVE_CUT_DIGITS = range(13, 16)
 
 
 @dataclass
@@ -76,10 +91,13 @@ class Cell:
     check_2b: float | None
     check_2_kept: float | None
     teachable: float | None
+    kept_share: float | None  # share of the check sample the teacher kept
+    test_set: str  # 'study5' (five-cut set, 13-15 digits) or 'study'
     before: float | None
     after: float | None
     easy_change: float | None
     best_after: float | None = None
+    mid_start: bool = False  # new length starting between 20% and 80%
     outcome: str = ""
     verdict: str = ""
 
@@ -97,6 +115,7 @@ def included(run: RoundsRun) -> bool:
 
 def cells_of(run: RoundsRun) -> list[Cell]:
     study = {e["round"]: e["accuracy"] for e in run.of("eval") if e["set"] == "study"}
+    study5 = {e["round"]: e["accuracy"] for e in run.of("eval") if e["set"] == "study5"}
     easy = {e["round"]: e["accuracy"] for e in run.of("eval") if e["set"] == "easy"}
     checks = {(e["round"], e["digits"]): e for e in run.of("checks")}
     cfg = run.config["rounds"]
@@ -107,11 +126,18 @@ def cells_of(run: RoundsRun) -> list[Cell]:
         check_0 = (all(v >= EASY_PASS for k, v in easy_before.items() if k != "all") if easy_before else None)
         for digits in range(8, MAX_DIGITS_BY_ROUND[rnd - 1] + 1):
             c = checks.get((rnd, digits), {})
+            five = digits in FIVE_CUT_DIGITS and rnd in study5 and rnd - 1 in study5
+            src = study5 if five else study
+            before = length_accuracy(src[rnd - 1], digits)
+            new = digits > previous_max
             out.append(Cell(
                 run=run.name, teacher=teacher_key(cfg["teacher"]), seed=cfg["seed"], round=rnd, digits=digits,
-                new_length=digits > previous_max, check_0=check_0, check_1=c.get("check_1"),
+                new_length=new, check_0=check_0, check_1=c.get("check_1"),
                 check_2b=c.get("check_2b"), check_2_kept=c.get("check_2_kept"), teachable=c.get("teachable"),
-                before=length_accuracy(study[rnd - 1], digits), after=length_accuracy(study[rnd], digits),
+                kept_share=(c["kept"] / c["problems"]) if c.get("problems") else None,
+                test_set="study5" if five else "study",
+                mid_start=new and before is not None and 0.20 <= before <= 0.80,
+                before=before, after=length_accuracy(src[rnd], digits),
                 easy_change=(easy[rnd]["all"] - easy_before["all"]) if rnd in easy and easy_before else None))
     return out
 
@@ -129,7 +155,7 @@ def score_outcomes(cells: list[Cell]) -> None:
             continue
         change = c.after - c.before
         easy_harm = c.easy_change is not None and c.easy_change < -0.03
-        if not c.new_length:
+        if not c.new_length or c.before > 0.50:  # learned, or new but started above 50%
             if change < -0.03 or easy_harm:
                 c.outcome = "did harm"
             elif abs(change) <= 0.03:
@@ -141,7 +167,7 @@ def score_outcomes(cells: list[Cell]) -> None:
         gap = (c.best_after or 0.0) - c.after
         if easy_harm:
             c.outcome = "did harm"
-        elif change < 0.03:
+        elif change < 0.10:
             c.outcome = "did nothing"
         elif change >= 0.20 and gap <= 0.10:
             c.outcome = "paid off"
@@ -151,12 +177,15 @@ def score_outcomes(cells: list[Cell]) -> None:
             c.outcome = "unclassified"
 
 
-def give_verdicts(cells: list[Cell], level_2b: float, level_1: float) -> None:
+def give_verdicts(cells: list[Cell], level_2b: float, level_1: float = LEVEL_1) -> None:
     for c in cells:
-        if c.check_0 is False or (c.check_2b is not None and c.check_2b < level_2b):
+        if c.check_0 is False:
             c.verdict = "does harm"
-        elif c.check_1 is not None and c.check_1 < level_1:
+        elif (c.kept_share is not None and c.kept_share < MIN_KEPT_SHARE) or c.check_1 is None \
+                or c.check_1 < level_1:
             c.verdict = "does nothing"
+        elif c.check_2b is not None and c.check_2b < level_2b:
+            c.verdict = "does harm"
         else:
             c.verdict = "pays off"
 
@@ -177,16 +206,27 @@ def to_markdown(cells: list[Cell], levels: tuple[float, float] | None) -> str:
         hits = sum(c.outcome in MATCH[c.verdict] for c in scored)
         lines += [f"**Verdicts at levels 2b < {levels[0]}, check 1 < {levels[1]}:** "
                   f"{hits} of {len(scored)} classified cells match ({100 * hits / max(len(scored), 1):.0f}%).", ""]
+        groups = {"paid off": ["paid off"], "did nothing": ["did nothing"],
+                  "did harm or taught wrong answers": ["did harm", "taught wrong answers"]}
+        lines += ["| Outcome group | Cells | Verdict matches |", "| --- | --- | --- |"]
+        for name, members in groups.items():
+            g = [c for c in scored if c.outcome in members]
+            m = sum(c.outcome in MATCH[c.verdict] for c in g)
+            lines.append(f"| {name} | {len(g)} | {m} ({100 * m / max(len(g), 1):.0f}%) |")
+        mid = [c for c in scored if c.mid_start]
+        lines += ["", f"Case 'new length started midway' (20-80% before): {len(mid)} cells, "
+                  f"{sum(c.outcome in MATCH[c.verdict] for c in mid)} matched.", ""]
     counts: dict[str, int] = {}
     for c in cells:
         counts[c.outcome] = counts.get(c.outcome, 0) + 1
     lines += ["Outcomes: " + ", ".join(f"{k} {v}" for k, v in sorted(counts.items())), ""]
-    header = ["run", "round", "digits", "new", "check 0", "check 1", "2b", "check 2", "teachable",
+    header = ["run", "round", "digits", "new", "test set", "check 0", "kept", "check 1", "2b", "check 2", "teachable",
               "before", "after", "best", "outcome"] + (["verdict"] if levels else [])
     lines += ["| " + " | ".join(header) + " |", "| " + " | ".join("---" for _ in header) + " |"]
     for c in cells:
-        row = [c.run, str(c.round), str(c.digits), "yes" if c.new_length else "",
-               {True: "pass", False: "FAIL", None: "–"}[c.check_0], pct(c.check_1), pct(c.check_2b),
+        row = [c.run, str(c.round), str(c.digits), ("mid" if c.mid_start else "yes") if c.new_length else "",
+               c.test_set, {True: "pass", False: "FAIL", None: "–"}[c.check_0], pct(c.kept_share),
+               pct(c.check_1), pct(c.check_2b),
                pct(c.check_2_kept), pct(c.teachable), pct(c.before), pct(c.after), pct(c.best_after), c.outcome]
         if levels:
             row.append(c.verdict)
@@ -196,12 +236,12 @@ def to_markdown(cells: list[Cell], levels: tuple[float, float] | None) -> str:
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--level-2b", type=float)
-    parser.add_argument("--level-1", type=float)
+    parser.add_argument("--level-2b", type=float, help="the 2b level (still to decide)")
+    parser.add_argument("--level-1", type=float, default=LEVEL_1)
     args = parser.parse_args()
     cells = [c for run in load_rounds() if included(run) for c in cells_of(run)]
     score_outcomes(cells)
-    levels = (args.level_2b, args.level_1) if args.level_2b is not None and args.level_1 is not None else None
+    levels = (args.level_2b, args.level_1) if args.level_2b is not None else None
     if levels:
         give_verdicts(cells, *levels)
     (RESULTS_DIR / "p9b.md").write_text(to_markdown(cells, levels))

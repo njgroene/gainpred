@@ -65,6 +65,7 @@ def test_set_sizes(sets):
     assert per_length("test_study") == {d: 2 * TEST_STUDY_PER_GROUP for d in HARD_DIGITS}
     assert per_length("test_reproduction") == {d: TEST_REPRODUCTION_PER_LENGTH for d in TEST_REPRODUCTION_DIGITS}
     assert per_length("test_easy") == {d: TEST_EASY_PER_LENGTH for d in EASY_DIGITS}
+    assert per_length("test_study_5cut") == {d: 2 * TEST_STUDY_PER_GROUP for d in (13, 14, 15)}
     assert per_length("train_start") == {d: TRAIN_START_PER_LENGTH for d in EASY_DIGITS}
 
 
@@ -77,20 +78,26 @@ def test_both_numbers_have_the_stated_length(sets):
 def test_study_groups_are_labelled_correctly(sets):
     """Each study problem's label matches whether a carry really crosses cut 1,
     and each length has exactly 1,000 of each."""
-    counts = Counter()
-    for r in sets["test_study"]:
-        problem = Addition(r["a"], r["b"])
-        assert carry_crosses(problem, ADDITION_CUTS[r["digits"]][0]) == r["carry_across_cut1"]
-        counts[r["digits"], r["carry_across_cut1"]] += 1
-    assert set(counts.values()) == {TEST_STUDY_PER_GROUP}
+    for name in ("test_study", "test_study_5cut"):
+        counts = Counter()
+        for r in sets[name]:
+            problem = Addition(r["a"], r["b"])
+            assert carry_crosses(problem, ADDITION_CUTS[r["digits"]][0]) == r["carry_across_cut1"]
+            counts[r["digits"], r["carry_across_cut1"]] += 1
+        assert set(counts.values()) == {TEST_STUDY_PER_GROUP}
 
 
 def test_hard_problems_have_no_piece_starting_with_zero(sets):
-    """P2: under each of the three cuts, no piece of either number starts with 0."""
-    for r in sets["test_study"]:
-        for number in (r["a"], r["b"]):
-            digits = str(number)
-            assert all(digits[i] != "0" for i in hard_nonzero_positions(r["digits"])), r
+    """P2: under each cut, no piece of either number starts with 0. The original
+    study set obeys the three-cut rule it was drawn under; the five-cut set (13-15
+    digits) obeys the five-cut rule."""
+    from gainpred.cuts import THREE_CUTS
+
+    for name, cuts in (("test_study", THREE_CUTS), ("test_study_5cut", ADDITION_CUTS)):
+        for r in sets[name]:
+            for number in (r["a"], r["b"]):
+                digits = str(number)
+                assert all(digits[i] != "0" for i in hard_nonzero_positions(r["digits"], cuts)), r
 
 
 # ----------------------------------------------------------------------------
@@ -133,6 +140,7 @@ FROZEN_SHA256 = {
     "test_study": "27272dece2e2644a8b2ac0765c76e8abe8989ba74b7b921e45aebb453b124b28",
     "test_reproduction": "30e86244025f33a818228c32a3bbf804ab73dcc0c3e417b8b370410d3021a840",
     "test_easy": "383152bad978a884461f0078b5ebd8a3b8f42fa427f74d0997d0c14e1a569179",
+    "test_study_5cut": "f72b92588a33ba37ccf192aa38b029f9ae4233b101c743a2fccc31947e6d4811",  # added 15 Nov 2026
     "train_start": "1f43a85d4e1958c8276236f4c31b53a048bee98d6abe00aed79a367622dac325",
 }
 

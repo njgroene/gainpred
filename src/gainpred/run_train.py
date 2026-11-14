@@ -79,7 +79,7 @@ from gainpred.formats import RUN_QUESTIONS, Run, RunQuestion, longest_run, parse
 from gainpred.model import Transformer, pick_device
 from gainpred.rounds import collect_kept, start_checkpoint_of, start_seed
 from gainpred.run_data import DEFAULT_OUT_DIR as DATA_DIR
-from gainpred.run_data import HARD_LENGTHS, HardRun, draw_pool
+from gainpred.run_data import HARD_LENGTHS, HardRun, draw_pool, withheld
 from gainpred.run_teachers import RUN_TEACHERS, RunModelSolver, RunSolver
 from gainpred.formats import max_run_answer_chars
 from gainpred.tokenizer import EOS_ID, PAD_ID, VOCAB_SIZE, make_prompts, read_generated
@@ -233,6 +233,11 @@ class RunRoundConfig:
     solver_batch_size: int = 1_000
     build_seconds_per_length: float | None = None
     max_chunk: int = 20_000
+    withheld: bool = False
+    """The withheld version of experiment 2 (P6): every candidate and check problem is
+    drawn from the same pool, then run-across-the-join problems with a left part of
+    3 or 4 are discarded, so the model is never taught them. Tested on joined runs
+    of 7-8 (the study groups joined_length_7 and joined_length_8)."""
 
     def train_config(self, round_: int) -> TrainConfig:
         return TrainConfig(steps=self.steps, batch_size=self.batch_size, seed=self.seed * 1_000 + round_,
@@ -249,6 +254,15 @@ def rng_for(seed: int, round_: int, length: int, purpose: str) -> random.Random:
 def draw_fresh(rng: random.Random, length: int, n: int, exclude: set[str]) -> list[HardRun]:
     """``n`` new pool strings of this length (P6), none in ``exclude`` (which grows)."""
     return draw_pool(rng, length, n, exclude)
+
+
+def draw_withheld(rng: random.Random, length: int, n: int, exclude: set[str]) -> list[HardRun]:
+    """The same pool draw, minus run-across problems with a of 3 or 4 (P6, withheld version).
+
+    Returns fewer than ``n`` (about n x 0.75); the round counts only problems the
+    teacher actually saw as drawn, so draws per kept answer stay comparable.
+    """
+    return withheld(draw_pool(rng, length, n, exclude))
 
 
 def known_strings(data_dir: Path) -> set[str]:
@@ -317,7 +331,7 @@ def self_improve_runs(cfg: RunRoundConfig, run_name: str, start_run: str, data_d
                 kept, drawn, timed_out = collect_kept(
                     teacher, solver, rng_for(cfg.seed, round_, length, "build"), length, cfg.kept_per_length,
                     cfg.draw_cap_factor * cfg.kept_per_length, exclude, cfg.build_seconds_per_length,
-                    cfg.max_chunk, draw=draw_fresh)
+                    cfg.max_chunk, draw=draw_withheld if cfg.withheld else draw_fresh)
             right = sum(answer == longest_run(p.string) for p, answer in kept)  # audit only
             kinds = {k: sum(p.kind == k for p, _ in kept) for k in ("random_join", "run_across")}
             log({"event": "build", "round": round_, "length": length, "drawn": drawn, "kept": len(kept),
@@ -337,7 +351,8 @@ def self_improve_runs(cfg: RunRoundConfig, run_name: str, start_run: str, data_d
 
         # 3. Checks (P8) at every length, before training.
         for length in lengths:
-            sample = draw_fresh(rng_for(cfg.seed, round_, length, "checks"), length, cfg.check_sample, exclude)
+            draw = draw_withheld if cfg.withheld else draw_fresh
+            sample = draw(rng_for(cfg.seed, round_, length, "checks"), length, cfg.check_sample, exclude)
             with watch.time("checks"):
                 report = run_checks_longest_run(teacher(sample, solver), solver, cfg.check_2_rule)
             log({"event": "checks", "round": round_, "length": length, **asdict(report)})

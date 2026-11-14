@@ -53,3 +53,21 @@ def test_weak_model_runs_are_included():
     weak = RoundsRun("si-nocarry-weak-s3400-seed1", {"start_run": "start-seed1-authors-s3400", "rounds": {}}, [])
     old = RoundsRun("si-nocarry-seed1", {"start_run": "start-seed1-stable", "rounds": {}}, [])
     assert included(weak) and not included(old)
+
+
+def test_decision_point_1_rules():
+    """Check 1 before 2b; under 5% kept is 'does nothing'; a new length starting above 50% is
+    scored as learned; a gain under 10 points is 'did nothing'; 20-80% starts are tagged."""
+    vote = run("v", "sample_and_vote", {0: study(0, 0), 1: study(0, 0.05)},
+               {(1, 8): {**CHECK, "check_1": 0.1, "check_2b": 0.0},
+                (1, 9): {**CHECK, "check_1": 0.9, "check_2b": 0.0, "kept": 20, "problems": 2000}})
+    started = run("s", "no_carry", {0: study(0.82, 0.5), 1: study(0.99, 0.99)}, {(1, 8): CHECK, (1, 9): CHECK})
+    cells = cells_of(vote) + cells_of(started)
+    score_outcomes(cells)
+    give_verdicts(cells, level_2b=0.3)
+    c = {(x.run, x.digits): x for x in cells}
+    assert c[("v", 8)].verdict == "does nothing"   # low check 1 wins over 2b = 0
+    assert c[("v", 9)].verdict == "does nothing"   # kept 1% of the check sample
+    assert c[("v", 9)].outcome == "did nothing"    # +5 points: under 10
+    assert c[("s", 8)].outcome == "unclassified"   # started at 82%: scored as learned, +17
+    assert c[("s", 9)].mid_start and not c[("s", 8)].mid_start

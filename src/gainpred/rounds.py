@@ -178,18 +178,41 @@ def collect_kept(teacher: Teacher, solver: Solver, rng: random.Random, digits: i
     return kept, drawn, False
 
 
+def carry_positions(problems: list[Addition]) -> list[int]:
+    """How many of these problems carry out of each place (0 = units, 1 = tens, ...).
+
+    A carry out of place i means the column sum at i (plus any incoming carry)
+    is 10 or more. Logged for the kept answers of each teacher, per length,
+    to compare what carries each teacher's training data contains (owner's
+    request at decision point 1: agreement rule against no-carry rule).
+    """
+    width = max((p.n_digits for p in problems), default=0)
+    counts = [0] * width
+    for p in problems:
+        a, b, carry = p.a, p.b, 0
+        for place in range(width):
+            carry = 1 if a % 10 + b % 10 + carry >= 10 else 0
+            counts[place] += carry
+            a, b = a // 10, b // 10
+    return counts
+
+
 def eval_sets(data_dir: Path, per_length: int | None) -> dict[str, EvalSet]:
     return {
         "easy": EvalSet(select(load(data_dir / "test_easy.jsonl"), by_length, per_length), by_length),
         "study": EvalSet(select(load(data_dir / "test_study.jsonl"), by_length_and_carry, per_length),
                          by_length_and_carry),
+        # Decision point 1: the primary test set at 13-15 digits (five-cut no-zero rule).
+        **({"study5": EvalSet(select(load(data_dir / "test_study_5cut.jsonl"), by_length_and_carry, per_length),
+                              by_length_and_carry)} if (data_dir / "test_study_5cut.jsonl").exists() else {}),
     }
 
 
 def known_problems(data_dir: Path) -> set[Addition]:
     """Every test and starting-training problem: rounds must never draw these (P7)."""
-    names = ("test_study", "test_reproduction", "test_easy", "train_start")
-    return {p for name in names for p in problems_of(load(data_dir / f"{name}.jsonl"))}
+    names = ("test_study", "test_reproduction", "test_easy", "test_study_5cut", "train_start")
+    return {p for name in names if (data_dir / f"{name}.jsonl").exists()
+            for p in problems_of(load(data_dir / f"{name}.jsonl"))}
 
 
 def start_checkpoint_of(runs_dir: Path, start_run: str, start_round: int | None = None) -> Path:
@@ -276,9 +299,11 @@ def self_improve(cfg: RoundConfig, run_name: str, start_run: str, data_dir: Path
                     cfg.draw_cap_factor * cfg.kept_per_length, exclude, cfg.build_seconds_per_length,
                     cfg.max_chunk)
             right = sum(answer == solve(p) for p, answer in kept)  # audit only
+            carries = carry_positions([p for p, _ in kept])  # audit only
             log({"event": "build", "round": round_, "digits": digits, "drawn": drawn, "kept": len(kept),
                  "shortfall": cfg.kept_per_length - len(kept), "kept_share": len(kept) / drawn if drawn else 0.0,
                  "kept_right": right / len(kept) if kept else None, "stopped_by_time": timed_out,
+                 "carries_by_place": carries,
                  "seconds": watch.totals["build"] - build_before,
                  "generated_tokens": getattr(solver, 'generated_tokens', 0) - tokens_before})
             print(f"  round {round_} {digits} digits: drew {drawn:,}, kept {len(kept):,} "

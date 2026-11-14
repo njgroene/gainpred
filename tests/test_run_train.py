@@ -136,3 +136,15 @@ def test_starting_training_and_one_round_run_end_to_end(tmp_path, small_data, mo
     (rounds_run,) = report.load_rounds(results)
     text = "\n".join(report.summarise_rounds_run(rounds_run))
     assert "join at the cut" in text and "check 3" in text
+
+
+def test_withheld_draw_never_returns_a_3_or_4_run_across():
+    import random
+
+    from gainpred.run_data import RUN_ACROSS
+    from gainpred.run_train import draw_withheld
+
+    drawn = draw_withheld(random.Random(0), 16, 2_000, set())
+    assert 1_400 < len(drawn) < 1_600  # half run-across, half of those dropped
+    assert not any(p.kind == RUN_ACROSS and p.a in (3, 4) for p in drawn)
+    assert any(p.kind == RUN_ACROSS and p.a in (1, 2) for p in drawn)
