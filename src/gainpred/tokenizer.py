@@ -29,9 +29,14 @@ from __future__ import annotations
 
 import torch
 
+from collections.abc import Callable
+
 from gainpred.formats import (
     Addition,
     Answer,
+    Run,
+    RunAnswer,
+    RunQuestion,
     Unreadable,
     answer_text,
     parse_answer,
@@ -81,15 +86,22 @@ def decode(ids: list[int]) -> str:
 # ----------------------------------------------------------------------------
 
 
-def make_prompts(problems: list[Addition]) -> list[list[int]]:
-    """Token ids of each prompt (question + "\\nA: "), ready for model.generate."""
+def make_prompts(problems: list[Addition] | list[RunQuestion]) -> list[list[int]]:
+    """Token ids of each prompt (question + "\\nA: "), ready for model.generate.
+
+    Works for both tasks: ``formats.prompt_text`` writes an addition or a
+    longest-run question as needed.
+    """
     return [encode(prompt_text(problem)) for problem in problems]
 
 
 def make_training_batch(
-    examples: list[tuple[Addition, int]], device: torch.device | str = "cpu"
+    examples: list[tuple[Addition, int]] | list[tuple[RunQuestion, Run]], device: torch.device | str = "cpu"
 ) -> tuple[torch.Tensor, torch.Tensor]:
     """Turn (problem, answer to train on) pairs into model inputs.
+
+    Either task: ``(Addition, int)`` or ``(RunQuestion, Run)`` pairs, since
+    ``formats.prompt_text`` and ``formats.answer_text`` handle both.
 
     Each row is ``prompt + answer + EOS``, right-padded with PAD to the longest
     row in the batch. Right padding is fine for training: thanks to the causal
@@ -121,8 +133,12 @@ def make_training_batch(
     return tokens, loss_mask
 
 
-def read_generated(ids: list[int]) -> Answer:
+def read_generated(ids: list[int], parse: Callable[[str], Answer | RunAnswer] = parse_answer) -> Answer | RunAnswer:
     """Turn what model.generate produced into an answer (P2).
+
+    ``parse`` reads the answer text; the default reads an addition answer.
+    For longest-run questions pass ``formats.parse_run_answer``. (The model's
+    output alone does not say which task it answered, so the caller must.)
 
     The output is readable only if the model *stopped by itself*, i.e. the ids
     end with EOS. Without that check, a model that runs on writing digits until
@@ -140,7 +156,7 @@ def read_generated(ids: list[int]) -> Answer:
     body = ids[:-1]
     if any(i >= len(CHARACTERS) for i in body):
         return unreadable
-    answer = parse_answer(decode(body))
+    answer = parse(decode(body))
     return unreadable if isinstance(answer, Unreadable) else answer
 
 
