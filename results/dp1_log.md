@@ -16,6 +16,8 @@ Kept as work proceeds (runbook section 5). Each entry: date, what, evidence.
 
 ## Surprises
 
+- **Control arm (14 Nov): familiar answer lengths do not protect joined runs of 7-8.** With long-run strings in starting training the model answers joined runs of 7 at 87-96% and of 8 at 31-60% before any round (0% without them). The withheld round (joined runs up to 6 only) then cuts joined runs of 7 to 34-44% and leaves 8 at 33-50%, while joined runs of 6 go 0-1% -> 94-98%. Random joins also start lower with the long-run strings (86% against 94-97%).
+
 - **Withheld version of experiment 2 (both seeds): no generalisation to longer joined runs.** Join at the cut on the pool without run-across problems of left part 3–4 lifts joined runs of 6 to 95–100% but leaves joined runs of 7–8 at 0% (full pool: 93–99% and 75–98%). Its check-2 diagnostic used the old ±3 cuts (launched minutes before the change).
 
 - **Longest run behaves exactly as designed, on both seeds** (30,000-update models, one round): join at the cut lifts the study set 56% → 95–99% (joined runs of 6: 0 → 97–100%); the edges-differ rule barely moves it (55–59%) and never teaches joined runs of 6+ (check 3: hands back); pick the longer harms (56% → 24–27%; joined runs of 4: 89–94% → 2–3%). Check 1 for the edges-differ rule is low (0.04–0.08) and it did little: a 'does nothing' case for P9b's longest-run analogue.
