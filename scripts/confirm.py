@@ -92,6 +92,7 @@ def frozen_ok() -> bool:
 def easy_accuracy(run: str) -> float | None:
     log = Path("runs") / run / "log.jsonl"
     if not log.exists():
+        log.parent.mkdir(parents=True, exist_ok=True)  # else the download writes a file named after the run
         subprocess.run(["uv", "run", "modal", "volume", "get", "gainpred", f"runs/{run}/log.jsonl",
                         f"runs/{run}/"], capture_output=True)
     if not log.exists():
