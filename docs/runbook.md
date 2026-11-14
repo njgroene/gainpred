@@ -10,7 +10,7 @@ Within these, work proceeds without asking.
 - **Commit and push to main**: code, tests, results, and protocol edits of the kinds allowed in section 2.
 - **Fix bugs that do not change what is measured** (crashes, launch failures, reporting errors), add a test, relaunch once.
 
-**Budget.** $50 for Modal in total. Notify the owner at $40. Spending is tracked in the status section of `results/README.md`.
+**Budget.** $60 for Modal in total (raised from $50 on 15 November 2026; no separate notice level). Stop and ask before exceeding it. Spending is tracked in the status section of `results/README.md`.
 
 ## 2. Hard lines: never without the owner
 
