@@ -79,7 +79,7 @@ Results tables, plots, and how P9b turned out.
 
 ## 6. Mechanics
 
-- **Launching**: `uv run python -m gainpred.launch` (staggers Modal launches, retries on the app-creation limit, confirms each run reached its GPU stage). Modal entry points: `modal_app.py::main` (starting training) and `modal_app.py::rounds` (self-improvement).
+- **Launching**: `uv run python -m gainpred.launch main|rounds NAME ...` deploys the app (when the commit changed) and *spawns* the run on Modal, so it survives this laptop being off; `uv run python -m gainpred.launch status` shows every spawned run as running, done or failed. Never use `modal run --detach` for real runs: on 13 November such runs died when the laptop was switched off.
 - **Status**: a generated section at the top of `results/README.md`: runs in flight, done, failed or parked; spending; open tripwires; decisions waiting.
 - **Decision documents**: a page the owner can comment on.
 - **Pacing**: runs are checked every 20–30 minutes while a session is open; finished runs are downloaded and reported, and newly unblocked runs are launched. Modal runs continue when the laptop is off; the session's own work pauses until it is reopened, and resumes from this runbook and the status section.
