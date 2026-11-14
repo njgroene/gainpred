@@ -225,3 +225,13 @@ def test_run_model_solver_returns_answers_in_order():
     forward = RunModelSolver(model, cpu)(questions)
     backward = RunModelSolver(model, cpu)(questions[::-1])
     assert len(forward) == 3 and text(forward) == text(backward[::-1])
+
+
+def test_check_2_is_undefined_without_a_second_cut():
+    """Length 12 has only the 6|6 split: checks 2 and 2b are None there, not 0."""
+    rng = random.Random(5)
+    problems = [draw_hard(rng, 12) for _ in range(50)]
+    report = run_checks_longest_run(join_at_the_cut(problems, PERFECT), PERFECT)
+    assert report.check_2_kept is None and report.check_2b is None
+    problems = [draw_hard(rng, 16) for _ in range(50)]
+    assert run_checks_longest_run(join_at_the_cut(problems, PERFECT), PERFECT).check_2_kept == 1.0

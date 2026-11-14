@@ -192,9 +192,12 @@ def make_run_data() -> dict:
     """Generate the longest-run datasets on the volume (once) and return the manifest."""
     from gainpred.run_data import write_all
 
+    from gainpred.run_data import SEEDS
+
     out_dir = VOLUME_PATH / "data" / "longest_run"
     manifest_path = out_dir / "manifest.json"
-    if manifest_path.exists():
+    # Regenerate when a set was added since the volume's copy (e.g. train_start_longruns).
+    if manifest_path.exists() and set(json.loads(manifest_path.read_text())) == set(SEEDS):
         return json.loads(manifest_path.read_text())
     manifest = write_all(out_dir)
     volume.commit()
@@ -203,7 +206,7 @@ def make_run_data() -> dict:
 
 @app.function(image=image, gpu=GPU, volumes={str(VOLUME_PATH): volume}, timeout=6 * 60 * 60)
 def train_start_runs(run: str, seed: int, steps: int = 15_000, eval_every: int = 1_000, checkpoint_every: int = 3_000,
-                     norm_eps: float = 1e-6, decay_fraction: float = 0.1) -> None:
+                     norm_eps: float = 1e-6, decay_fraction: float = 0.1, long_runs: bool = False) -> None:
     """Longest-run starting training (P1) on one GPU. Output goes to /vol/runs/<run>/."""
     import torch
 
@@ -216,13 +219,14 @@ def train_start_runs(run: str, seed: int, steps: int = 15_000, eval_every: int =
                       decay_fraction=decay_fraction)
     try:
         starting_training_runs(cfg, run, data_dir=VOLUME_PATH / "data" / "longest_run", device=torch.device("cuda"),
-                               runs_dir=VOLUME_PATH / "runs", norm_eps=norm_eps or None)
+                               runs_dir=VOLUME_PATH / "runs", norm_eps=norm_eps or None, long_runs=long_runs)
     finally:
         volume.commit()
 
 
 @app.function(image=image, gpu=GPU, volumes={str(VOLUME_PATH): volume}, timeout=12 * 60 * 60)
-def self_improve_runs(run: str, start: str, teacher: str, build_seconds: float = 0.0, withheld: bool = False) -> None:
+def self_improve_runs(run: str, start: str, teacher: str, build_seconds: float = 0.0, withheld: bool = False,
+                      long_runs: bool = False) -> None:
     """One longest-run round (P3) on one GPU, from a starting run on the volume."""
     import torch
 
@@ -233,7 +237,8 @@ def self_improve_runs(run: str, start: str, teacher: str, build_seconds: float =
     make_run_data.local()
     runs_dir = VOLUME_PATH / "runs"
     cfg = RunRoundConfig(teacher=teacher, seed=start_seed(runs_dir, start), solver_batch_size=4_096,
-                         build_seconds_per_length=build_seconds or None, withheld=withheld)
+                         build_seconds_per_length=build_seconds or None, withheld=withheld,
+                         long_runs=long_runs)
     try:
         run_rounds(cfg, run, start, data_dir=VOLUME_PATH / "data" / "longest_run", device=torch.device("cuda"),
                    runs_dir=runs_dir)

@@ -117,7 +117,10 @@ def test_starting_training_and_one_round_run_end_to_end(tmp_path, small_data, mo
     assert all(e["kept"] == 10 and e["kept_right"] == 1.0 and not e["stopped_by_time"] for e in builds)
     checks = [e for e in events if e["event"] == "checks"]
     assert [e["length"] for e in checks] == list(range(12, 21))
-    assert all(e["check_1"] is not None and "check_3" in e and e["check_2b"] == 1.0 for e in checks)
+    assert all(e["check_1"] is not None and "check_3" in e for e in checks)
+    # Lengths 12 and 20 have no second 6-10 split: checks 2 and 2b are undefined there.
+    assert all((e["check_2b"] is None) == (e["length"] in (12, 20)) for e in checks)
+    assert all(e["check_2b"] == 1.0 for e in checks if e["length"] not in (12, 20))
     replay = next(e for e in events if e["event"] == "replay")
     assert replay["problems"] == 40 * 5 * 3  # every starting row, true answers
     # Checks come before the round's evaluation (status tripwire 5).

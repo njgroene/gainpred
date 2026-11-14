@@ -187,9 +187,15 @@ def start_examples(records: list[Record], questions: tuple[str, ...] | None = No
     return out
 
 
+def start_rows(data_dir: Path, long_runs: bool) -> list[Record]:
+    """The starting-training rows: ``train_start``, plus the control arm's long-run strings."""
+    rows = load(data_dir / "train_start.jsonl")
+    return rows + load(data_dir / "train_start_longruns.jsonl") if long_runs else rows
+
+
 def starting_training_runs(cfg: TrainConfig, run_name: str, data_dir: Path = DATA_DIR,
                            device: torch.device | None = None, runs_dir: Path = RUNS_DIR,
-                           norm_eps: float | None = START_NORM_EPS) -> Transformer:
+                           norm_eps: float | None = START_NORM_EPS, long_runs: bool = False) -> Transformer:
     """Train a fresh model on 6-10 symbol strings, all three questions, true answers (P1, P3).
 
     ``cfg`` should carry ``steps`` 15,000 and ``decay_fraction`` 0.1 for the
@@ -197,7 +203,7 @@ def starting_training_runs(cfg: TrainConfig, run_name: str, data_dir: Path = DAT
     ModelConfig's default.
     """
     device = device or pick_device()
-    examples = start_examples(load(data_dir / "train_start.jsonl"))
+    examples = start_examples(start_rows(data_dir, long_runs))
     tests = eval_sets(data_dir, cfg.eval_per_length)
     torch.manual_seed(cfg.seed)  # initial weights depend on the starting point (P9)
     extra = {} if norm_eps is None else {"norm_eps": norm_eps}
@@ -205,7 +211,7 @@ def starting_training_runs(cfg: TrainConfig, run_name: str, data_dir: Path = DAT
     manifest = json.loads((data_dir / "manifest.json").read_text())
     print(f"{run_name}: {model.num_params():,} parameters, {len(examples):,} examples, device {device}")
     return train(model, examples, cfg, runs_dir / run_name, tests, device,
-                 extra_config={"task": "longest_run/starting-training", "data": manifest})
+                 extra_config={"task": "longest_run/starting-training", "data": manifest, "long_runs": long_runs})
 
 
 # ----------------------------------------------------------------------------
@@ -233,6 +239,9 @@ class RunRoundConfig:
     solver_batch_size: int = 1_000
     build_seconds_per_length: float | None = None
     max_chunk: int = 20_000
+    long_runs: bool = False
+    """Control arm (P6): the starting model also saw strings with a run of 7-8, and the
+    round replays them too (they are its starting strings)."""
     withheld: bool = False
     """The withheld version of experiment 2 (P6): every candidate and check problem is
     drawn from the same pool, then run-across-the-join problems with a left part of
@@ -267,8 +276,8 @@ def draw_withheld(rng: random.Random, length: int, n: int, exclude: set[str]) ->
 
 def known_strings(data_dir: Path) -> set[str]:
     """Every test and starting-training string: rounds never draw these (P7)."""
-    return {str(r["string"]) for name in ("test_study", "test_easy", "train_start")
-            for r in load(data_dir / f"{name}.jsonl")}
+    return {str(r["string"]) for name in ("test_study", "test_easy", "train_start", "train_start_longruns")
+            if (data_dir / f"{name}.jsonl").exists() for r in load(data_dir / f"{name}.jsonl")}
 
 
 def self_improve_runs(cfg: RunRoundConfig, run_name: str, start_run: str, data_dir: Path = DATA_DIR,
@@ -302,7 +311,7 @@ def self_improve_runs(cfg: RunRoundConfig, run_name: str, start_run: str, data_d
         log_file.flush()
 
     tests = eval_sets(data_dir, cfg.eval_per_length)
-    replay = start_examples(load(data_dir / "train_start.jsonl"), cfg.replay_questions)
+    replay = start_examples(start_rows(data_dir, cfg.long_runs), cfg.replay_questions)
     exclude = known_strings(data_dir)
 
     def run_evals(round_: int) -> None:
@@ -358,7 +367,7 @@ def self_improve_runs(cfg: RunRoundConfig, run_name: str, start_run: str, data_d
             log({"event": "checks", "round": round_, "length": length, **asdict(report)})
             print(f"  round {round_} checks {length}: check 1 {report.check_1}, 2b {report.check_2b}, "
                   f"check 3 {report.check_3}, teachable {report.teachable:.1%}, "
-                  f"check 2 keeps {report.check_2_kept:.1%}")
+                  f"check 2 keeps {'-' if report.check_2_kept is None else f'{report.check_2_kept:.1%}'}")
 
         # 4. Train.
         model = train(model, examples, cfg.train_config(round_), run_dir / f"round_{round_}", {}, device,

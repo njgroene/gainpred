@@ -103,6 +103,12 @@ def test_no_string_appears_twice_in_any_set_or_across_sets(sets):
     seen: dict[str, str] = {}
     for name, records in sets.items():
         strings = {r["string"] for r in records}
+        if name == "train_start_longruns":
+            # Control arm: repeats are allowed within the set (few such strings exist),
+            # but it never uses a string of the test sets.
+            tests = {s for n in ("test_study", "test_easy") for s in (r["string"] for r in sets[n])}
+            assert not strings & tests
+            continue
         if name != "train_start":  # train_start repeats each string once per question
             assert len(strings) == len(records), name
         for s in strings:
@@ -170,6 +176,7 @@ FROZEN_SHA256 = {
     "test_study": "31091c9a29e4fe0a80bb547b786132bf1f44fa8c51d8d596cbe3442063a2d415",
     "test_easy": "ad6b083844945031ee111e3a142efd5da52f73b669b55de997b6fb5615fe6769",
     "train_start": "26a7ece9ab919965763b1cb8d125c3441c41cc368b1b89ebcf236b79c12c6998",
+    "train_start_longruns": "09c484db274055ede151d876f41c8b00a54155e244bb6231fa5a568f485fd1e9",  # control arm, added 14 Nov 2026
 }
 
 
@@ -177,3 +184,23 @@ def test_datasets_are_frozen(tmp_path):
     """Fingerprints as first generated on 14 November 2026. Change only on purpose, with a P10 amendment."""
     manifest = write_all(tmp_path)
     assert {name: info["sha256"] for name, info in manifest.items()} == FROZEN_SHA256
+
+
+def test_long_run_strings_have_a_longest_run_of_7_or_8():
+    """Control arm (P6): every extra starting string's longest run is 7 or 8, inside the string."""
+    import random
+    from collections import Counter
+
+    from gainpred.formats import longest_run
+    from gainpred.run_data import draw_long_run_string
+
+    rng = random.Random(0)
+    seen = Counter()
+    for length in range(7, 11):
+        for _ in range(500):
+            s = draw_long_run_string(rng, length)
+            assert len(s) == length
+            run = longest_run(s).length
+            assert run in (7, 8) and run <= length
+            seen[length, run] += 1
+    assert seen[7, 8] == 0 and seen[8, 8] > 0 and seen[10, 7] > 0

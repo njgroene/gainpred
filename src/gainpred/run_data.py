@@ -91,6 +91,7 @@ SEEDS = {
     "test_study": 1_101,
     "test_easy": 1_102,
     "train_start": 2_101,
+    "train_start_longruns": 2_102,
 }
 """One fixed seed per set. Chosen not to clash with addition's seeds (1001-1003,
 2001, 3001, and 7,000,000+ for rounds)."""
@@ -106,6 +107,9 @@ TEST_STUDY_PER_GROUP = 1_000  # P7
 TEST_EASY_PER_GROUP = 1_000  # P7: per question type and length
 TRAIN_START_PER_LENGTH = 50_000  # P1
 TRAIN_START_QUESTIONS: tuple[str, ...] = RUN_QUESTIONS
+LONG_RUN_LENGTHS = (7, 8)  # control arm (P6): runs this long inside a single piece
+LONG_RUN_STRING_LENGTHS = range(7, 11)  # string lengths that can hold such a run
+LONG_RUNS_PER_LENGTH = 5_000  # control arm: extra starting strings per length 7-10
 """Which questions each starting-training string is asked. P3's stated default:
 all three. Set to ("runlen",) to train as Shin et al. did (P10 departure)."""
 
@@ -426,6 +430,53 @@ def make_train_start(
     return records
 
 
+def draw_long_run_string(rng: random.Random, length: int) -> str:
+    """A 7-10 symbol string whose longest run, of 7 or 8 symbols, lies inside it (control arm, P6).
+
+    The run length is uniform over 7 and 8 where it fits (a 7-symbol string can
+    only hold 7), the symbol uniform, the start uniform over the positions that
+    fit; the other symbols are uniform, except that a symbol just outside the run
+    that equals it is redrawn from the other nine, so the run has exactly that
+    length. At most three other symbols remain, so no other run can be as long.
+    """
+    run = _uniform(rng, [r for r in LONG_RUN_LENGTHS if r <= length])
+    symbol = str(_digit(rng, nonzero=False))
+    start = _uniform(rng, range(0, length - run + 1))
+    chars = list(draw_string(rng, length))
+    chars[start:start + run] = symbol * run
+    for i in (start - 1, start + run):
+        if 0 <= i < length and chars[i] == symbol:
+            chars[i] = _other_symbol(rng, symbol)
+    return "".join(chars)
+
+
+def make_train_start_longruns(exclude: set[str], per_length: int = LONG_RUNS_PER_LENGTH,
+                              questions: tuple[str, ...] = TRAIN_START_QUESTIONS) -> list[Record]:
+    """Control arm (P6, decided 14 November 2026): extra starting strings with a run of 7-8.
+
+    Used only by the control starting models, on top of ``train_start``, so that
+    answers of length 7-8 are familiar before the withheld round. Each string is
+    asked all three questions, like the other starting strings. Unlike the other
+    sets, strings may repeat within it (see the loop), and it adds nothing to
+    ``exclude``.
+    """
+    rng = random.Random(SEEDS["train_start_longruns"])
+    records = []
+    for length in LONG_RUN_STRING_LENGTHS:
+        made = 0
+        # Repeats are allowed within this set: few such strings exist (a 7-symbol
+        # string with a run of 7 is one symbol repeated: 10 strings; length 8 has
+        # about 190). Strings of earlier sets (the test sets) are still skipped.
+        while made < per_length:
+            string = draw_long_run_string(rng, length)
+            if string in exclude:
+                continue
+            made += 1
+            answers = answers_of(string)
+            records += [easy_record(kind, string, answers[kind]) for kind in questions]
+    return records
+
+
 def make_all(train_start_questions: tuple[str, ...] = TRAIN_START_QUESTIONS) -> dict[str, list[Record]]:
     """Every longest-run set, in protocol order: test sets first, then training.
 
@@ -437,6 +488,8 @@ def make_all(train_start_questions: tuple[str, ...] = TRAIN_START_QUESTIONS) -> 
         "test_study": make_test_study(exclude),
         "test_easy": make_test_easy(exclude),
         "train_start": make_train_start(exclude, questions=train_start_questions),
+        # Added 14 November 2026, after every earlier set, so their bytes are unchanged.
+        "train_start_longruns": make_train_start_longruns(exclude, questions=train_start_questions),
     }
 
 

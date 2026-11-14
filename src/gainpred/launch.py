@@ -152,6 +152,7 @@ def main() -> None:
     rm.add_argument("--checkpoint-every", type=int, default=3_000)
     rm.add_argument("--norm-eps", type=float, default=1e-6)
     rm.add_argument("--decay-fraction", type=float, default=0.1)
+    rm.add_argument("--long-runs", action="store_true", help="control arm: add strings with a run of 7-8 (P6)")
     rr = sub.add_parser("runs-rounds", help="one longest-run self-improvement round")
     rr.add_argument("run")
     rr.add_argument("--start", required=True)
@@ -159,6 +160,7 @@ def main() -> None:
                     choices=["edges_differ", "pick_the_longer", "join_at_the_cut", "no_selection"])
     rr.add_argument("--build-seconds", type=float, default=0.0)
     rr.add_argument("--withheld", action="store_true", help="P6 withheld version (no a = 3-4 run-across problems)")
+    rr.add_argument("--long-runs", action="store_true", help="control arm: replay includes the long-run strings")
     sub.add_parser("status", help="state of every spawned run")
     args = parser.parse_args()
 
@@ -174,11 +176,11 @@ def main() -> None:
         spawn("train_start_runs", args.run, {
             "seed": args.seed, "steps": args.steps, "eval_every": args.eval_every,
             "checkpoint_every": args.checkpoint_every, "norm_eps": args.norm_eps,
-            "decay_fraction": args.decay_fraction}, task="longest_run")
+            "decay_fraction": args.decay_fraction, "long_runs": args.long_runs}, task="longest_run")
     elif args.command == "runs-rounds":
         spawn("self_improve_runs", args.run, {
             "start": args.start, "teacher": args.teacher, "build_seconds": args.build_seconds,
-            "withheld": args.withheld}, task="longest_run")
+            "withheld": args.withheld, "long_runs": args.long_runs}, task="longest_run")
     else:
         spawn("self_improve", args.run, {
             "start": args.start, "teacher": args.teacher, "rounds": args.rounds,

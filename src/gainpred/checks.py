@@ -145,15 +145,24 @@ def run_checks_longest_run(decisions: list, solver, check_2_rule: str = "join_at
     direct = solver([p.question for p in problems])
     check_1, teachable = check_1_and_teachable(decisions, direct)
     built = build_diagnostic(problems, solver, rule=check_2_rule)
-    agree = agreement_from_built(problems, built)
-    kept_2 = sum(d.kept is not None for d in agree) / len(agree)
+    # Checks 2 and 2b need a second cut. Lengths 12 (6|6) and 20 (10|10) have no
+    # alternative split keeping both pieces 6-10, so there they are not defined
+    # (None), not 0: nothing could agree. Only problems with a second cut count.
+    two = [i for i, b in enumerate(built) if len(b) >= 2]
+    if two:
+        sub_problems, sub_built = [problems[i] for i in two], [built[i] for i in two]
+        agree = agreement_from_built(sub_problems, sub_built)
+        kept_2 = sum(d.kept is not None for d in agree) / len(agree)
+        check_2b = confirmed_share([decisions[i] for i in two], sub_built)
+    else:
+        kept_2 = check_2b = None
     return RunCheckReport(
         problems=len(decisions),
         kept=sum(d.kept is not None for d in decisions),
         check_1=check_1,
         teachable=teachable,
-        check_2_kept=kept_2,
-        check_2_set_aside=1 - kept_2,
-        check_2b=confirmed_share(decisions, built),
+        check_2_kept=kept_2,  # type: ignore[arg-type]
+        check_2_set_aside=None if kept_2 is None else 1 - kept_2,  # type: ignore[arg-type]
+        check_2b=check_2b,
         check_3=check_3((d.kept, d.pieces) for d in decisions),
     )
