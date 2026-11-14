@@ -14,6 +14,10 @@ Kept as work proceeds (runbook section 5). Each entry: date, what, evidence.
 - 14 Nov. **Weak starting model, 87.5% target: left open** after 26 step counts (none within 5 points; nearest 95.9% and 62.1%).
 - 14 Nov. Longest-run readings where the protocol is silent: recorded as P10 assumptions (see `longest_run_readings.md`).
 
+## Confirming runs (from 14-15 Nov)
+
+- Weak models by rule: seed 3: 3,500 steps (59.9%) and 3,450 steps (99.1%); seed 4: 3,000 steps (61.5%) and 2,250 steps (97.6%); seed 2: 2,200 steps (97.3%) for 97.5%, and for 60% nothing within 5 points after 34 step counts (nearest 47.1% at 1,400); one more batch of 8 (1,310-1,490) launched; if none lands, the target stays open for seed 2 (my bound, not the rule).
+
 ## Surprises
 
 - **Control arm (14 Nov): familiar answer lengths do not protect joined runs of 7-8.** With long-run strings in starting training the model answers joined runs of 7 at 87-96% and of 8 at 31-60% before any round (0% without them). The withheld round (joined runs up to 6 only) then cuts joined runs of 7 to 34-44% and leaves 8 at 33-50%, while joined runs of 6 go 0-1% -> 94-98%. Random joins also start lower with the long-run strings (86% against 94-97%).
