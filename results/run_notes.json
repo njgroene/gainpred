@@ -1,0 +1,17 @@
+{
+  "quick-m2": {"state": "done", "note": "wiring check on the laptop"},
+  "local-1500": {"state": "stopped", "note": "laptop run stopped at step 800 in favour of Modal"},
+  "start-seed0": {"state": "done", "note": "constant learning rate; failed check 0 (77%); led to the WSD schedule"},
+  "si-quick-m2": {"state": "done", "note": "wiring check, a tenth of the data"},
+  "si-agreement-seed1": {"state": "died", "note": "modal run --detach; died when the laptop was switched off on 13 Nov (in round 2); old starting model; superseded by si-agreement-seed1-authors"},
+  "si-nocarry-seed1-v2": {"state": "died", "note": "modal run --detach; died when the laptop was switched off on 13 Nov (in round 3); old starting model; superseded by si-nocarry-seed1-authors"},
+  "si-vote-seed1": {"state": "died", "note": "modal run --detach; died when the laptop was switched off on 13 Nov (in round 2); old starting model; superseded by si-vote-seed1-authors"},
+  "start-seed1-s8000": {"state": "died", "note": "died at step 6,950 when the laptop was switched off; old recipe; superseded by start-seed1-authors-s8000"},
+  "si-noselect-seed1": {"state": "stopped", "note": "never started on 13 Nov (Modal app-creation limit); relaunched 14 Nov, then stopped as superseded by the authors' setup"},
+  "si-nocarry-seed0": {"state": "stopped", "note": "never started on 13 Nov (Modal app-creation limit); relaunched 14 Nov, then stopped as superseded by the authors' setup"},
+  "si-noselect-after-nocarry-seed1": {"state": "done", "note": "run f on the old starting model (from si-nocarry-seed1 round 2); finished 14 Nov before the stop; superseded for P9b by the authors'-setup run f"},
+  "start-seed0-stable": {"state": "done", "note": "old recipe (norm_eps 1e-5, 2,000-step decay); superseded by start-seed0-authors"},
+  "start-seed1-stable": {"state": "done", "note": "old recipe; superseded by start-seed1-authors"},
+  "si-their-seed1-r1": {"state": "done", "note": "round-1 acceptance test, old starting model"},
+  "si-nocarry-seed1": {"state": "done", "note": "the gate, old starting model"}
+}

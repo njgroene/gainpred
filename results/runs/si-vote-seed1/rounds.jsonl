@@ -1,0 +1,12 @@
+{"event": "eval", "round": 0, "set": "easy", "accuracy": {"3": 1.0, "4": 1.0, "5": 1.0, "6": 1.0, "7": 0.998, "all": 0.9996}}
+{"event": "eval", "round": 0, "set": "study", "accuracy": {"8/no-carry": 0.0, "8/carry": 0.0, "9/no-carry": 0.0, "9/carry": 0.0, "10/no-carry": 0.0, "10/carry": 0.0, "11/no-carry": 0.0, "11/carry": 0.0, "12/no-carry": 0.0, "12/carry": 0.0, "13/no-carry": 0.0, "13/carry": 0.0, "14/no-carry": 0.0, "14/carry": 0.0, "15/no-carry": 0.0, "15/carry": 0.0, "all": 0.0}}
+{"event": "build", "round": 1, "digits": 8, "drawn": 14101, "kept": 10000, "shortfall": 0, "kept_share": 0.7091695624423799, "kept_right": 0.0, "stopped_by_time": false, "seconds": 41.028331253000005, "generated_tokens": 859931}
+{"event": "build", "round": 1, "digits": 9, "drawn": 92416, "kept": 10000, "shortfall": 0, "kept_share": 0.10820637119113573, "kept_right": 0.0, "stopped_by_time": false, "seconds": 247.79876011800005, "generated_tokens": 2862339}
+{"event": "replay", "round": 1, "problems": 25000, "readable": 25000, "right": 0.99908}
+{"event": "checks", "round": 1, "digits": 8, "problems": 2000, "kept": 1436, "check_1": 0.11838440111420613, "teachable": 0.085, "check_2_kept": 0.346, "check_2_set_aside": 0.654, "check_2b": 0.0}
+{"event": "checks", "round": 1, "digits": 9, "problems": 2000, "kept": 221, "check_1": 0.14027149321266968, "teachable": 0.0155, "check_2_kept": 0.354, "check_2_set_aside": 0.646, "check_2b": 0.0}
+{"event": "eval", "round": 1, "set": "easy", "accuracy": {"3": 1.0, "4": 1.0, "5": 0.997, "6": 1.0, "7": 0.991, "all": 0.9976}}
+{"event": "eval", "round": 1, "set": "study", "accuracy": {"8/no-carry": 0.0, "8/carry": 0.0, "9/no-carry": 0.0, "9/carry": 0.0, "10/no-carry": 0.0, "10/carry": 0.0, "11/no-carry": 0.0, "11/carry": 0.0, "12/no-carry": 0.0, "12/carry": 0.0, "13/no-carry": 0.0, "13/carry": 0.0, "14/no-carry": 0.0, "14/carry": 0.0, "15/no-carry": 0.0, "15/carry": 0.0, "all": 0.0}}
+{"event": "round_done", "round": 1, "examples": 45000, "seconds": {"build": 295.8557898370001, "checks": 17.015961940999944}, "generated_tokens": 4202883}
+{"event": "build", "round": 2, "digits": 8, "drawn": 12407, "kept": 10000, "shortfall": 0, "kept_share": 0.8059966148142178, "kept_right": 0.0, "stopped_by_time": false, "seconds": 40.73182937800004, "generated_tokens": 860468}
+{"event": "build", "round": 2, "digits": 9, "drawn": 27230, "kept": 10000, "shortfall": 0, "kept_share": 0.3672420124862284, "kept_right": 0.0, "stopped_by_time": false, "seconds": 62.347504721000064, "generated_tokens": 859860}
