@@ -36,3 +36,6 @@ lightning_logs/
 
 # gainpred.launch logs (local only)
 launch-logs/
+
+# agent worktrees
+.claude/worktrees/
