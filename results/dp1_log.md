@@ -10,6 +10,8 @@ Kept as work proceeds (runbook section 5). Each entry: date, what, evidence.
 - 14 Nov. **Weak starting model, 60% target: now 3,400 steps** (61.5%), replacing 2,500 steps (57.7%) once a closer candidate appeared; both rounds run and reported.
 - 14 Nov. **Weak starting model, 87.5% target: no candidate within 5 points** after 20 step counts (1,000–8,000); a further six launched (2,200–3,750). If none lands within 5 points, the target stays open for decision point 1 (I will not keep searching indefinitely; this bound is my judgment, not a rule).
 - 14 Nov. **Longest-run starting training raised to 30,000 updates** (P3: "updates raised until check 0 passes"): `runs-start-seed1` failed check 0 in one group (run length 5: 3 of 7 right) though 100.0% overall. Both seeds retrained at 30,000 so the recipe stays equal; seed 0's rounds from the 15,000-update model run meanwhile as learning data.
+- 14 Nov. **Longest-run starting training: 30,000 updates adopted** (P3 rule): `runs-start-seed0-u30000` and `runs-start-seed1-u30000` pass check 0 in every group (100.0%). Rounds for both seeds rerun from them; seed 0's rounds from the 15,000-update model are kept and labelled superseded.
+- 14 Nov. **Weak starting model, 87.5% target: left open** after 26 step counts (none within 5 points; nearest 95.9% and 62.1%).
 - 14 Nov. Longest-run readings where the protocol is silent: recorded as P10 assumptions (see `longest_run_readings.md`).
 
 ## Surprises

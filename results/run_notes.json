@@ -1,17 +1,90 @@
 {
-  "quick-m2": {"state": "done", "note": "wiring check on the laptop"},
-  "local-1500": {"state": "stopped", "note": "laptop run stopped at step 800 in favour of Modal"},
-  "start-seed0": {"state": "done", "note": "constant learning rate; failed check 0 (77%); led to the WSD schedule"},
-  "si-quick-m2": {"state": "done", "note": "wiring check, a tenth of the data"},
-  "si-agreement-seed1": {"state": "died", "note": "modal run --detach; died when the laptop was switched off on 13 Nov (in round 2); old starting model; superseded by si-agreement-seed1-authors"},
-  "si-nocarry-seed1-v2": {"state": "died", "note": "modal run --detach; died when the laptop was switched off on 13 Nov (in round 3); old starting model; superseded by si-nocarry-seed1-authors"},
-  "si-vote-seed1": {"state": "died", "note": "modal run --detach; died when the laptop was switched off on 13 Nov (in round 2); old starting model; superseded by si-vote-seed1-authors"},
-  "start-seed1-s8000": {"state": "died", "note": "died at step 6,950 when the laptop was switched off; old recipe; superseded by start-seed1-authors-s8000"},
-  "si-noselect-seed1": {"state": "stopped", "note": "never started on 13 Nov (Modal app-creation limit); relaunched 14 Nov, then stopped as superseded by the authors' setup"},
-  "si-nocarry-seed0": {"state": "stopped", "note": "never started on 13 Nov (Modal app-creation limit); relaunched 14 Nov, then stopped as superseded by the authors' setup"},
-  "si-noselect-after-nocarry-seed1": {"state": "done", "note": "run f on the old starting model (from si-nocarry-seed1 round 2); finished 14 Nov before the stop; superseded for P9b by the authors'-setup run f"},
-  "start-seed0-stable": {"state": "done", "note": "old recipe (norm_eps 1e-5, 2,000-step decay); superseded by start-seed0-authors"},
-  "start-seed1-stable": {"state": "done", "note": "old recipe; superseded by start-seed1-authors"},
-  "si-their-seed1-r1": {"state": "done", "note": "round-1 acceptance test, old starting model"},
-  "si-nocarry-seed1": {"state": "done", "note": "the gate, old starting model"}
+  "quick-m2": {
+    "state": "done",
+    "note": "wiring check on the laptop"
+  },
+  "local-1500": {
+    "state": "stopped",
+    "note": "laptop run stopped at step 800 in favour of Modal"
+  },
+  "start-seed0": {
+    "state": "done",
+    "note": "constant learning rate; failed check 0 (77%); led to the WSD schedule"
+  },
+  "si-quick-m2": {
+    "state": "done",
+    "note": "wiring check, a tenth of the data"
+  },
+  "si-agreement-seed1": {
+    "state": "died",
+    "note": "modal run --detach; died when the laptop was switched off on 13 Nov (in round 2); old starting model; superseded by si-agreement-seed1-authors"
+  },
+  "si-nocarry-seed1-v2": {
+    "state": "died",
+    "note": "modal run --detach; died when the laptop was switched off on 13 Nov (in round 3); old starting model; superseded by si-nocarry-seed1-authors"
+  },
+  "si-vote-seed1": {
+    "state": "died",
+    "note": "modal run --detach; died when the laptop was switched off on 13 Nov (in round 2); old starting model; superseded by si-vote-seed1-authors"
+  },
+  "start-seed1-s8000": {
+    "state": "died",
+    "note": "died at step 6,950 when the laptop was switched off; old recipe; superseded by start-seed1-authors-s8000"
+  },
+  "si-noselect-seed1": {
+    "state": "stopped",
+    "note": "never started on 13 Nov (Modal app-creation limit); relaunched 14 Nov, then stopped as superseded by the authors' setup"
+  },
+  "si-nocarry-seed0": {
+    "state": "stopped",
+    "note": "never started on 13 Nov (Modal app-creation limit); relaunched 14 Nov, then stopped as superseded by the authors' setup"
+  },
+  "si-noselect-after-nocarry-seed1": {
+    "state": "done",
+    "note": "run f on the old starting model (from si-nocarry-seed1 round 2); finished 14 Nov before the stop; superseded for P9b by the authors'-setup run f"
+  },
+  "start-seed0-stable": {
+    "state": "done",
+    "note": "old recipe (norm_eps 1e-5, 2,000-step decay); superseded by start-seed0-authors"
+  },
+  "start-seed1-stable": {
+    "state": "done",
+    "note": "old recipe; superseded by start-seed1-authors"
+  },
+  "si-their-seed1-r1": {
+    "state": "done",
+    "note": "round-1 acceptance test, old starting model"
+  },
+  "si-nocarry-seed1": {
+    "state": "done",
+    "note": "the gate, old starting model"
+  },
+  "runs-edges_differ-seed0": {
+    "state": "done",
+    "note": "from the 15,000-update longest-run model; superseded by the 30,000-update recipe"
+  },
+  "runs-pick_the_longer-seed0": {
+    "state": "done",
+    "note": "from the 15,000-update longest-run model; superseded by the 30,000-update recipe"
+  },
+  "runs-join_at_the_cut-seed0": {
+    "state": "done",
+    "note": "from the 15,000-update longest-run model; superseded by the 30,000-update recipe"
+  },
+  "runs-start-seed0": {
+    "state": "done",
+    "note": "15,000 updates; passed check 0; superseded by the 30,000-update recipe"
+  },
+  "runs-start-seed1": {
+    "state": "done",
+    "note": "15,000 updates; failed check 0 in one 7-problem group (run length 5); led to 30,000 updates"
+  },
+  "si-nocarry-weak-s2250-seed1": {
+    "state": "done",
+    "note": "first 97.5% pick (95.9%); replaced by 3,500 steps (97.5%)"
+  },
+  "si-nocarry-weak-s2500-seed1": {
+    "state": "done",
+    "note": "first 60% pick (57.7%); replaced by 3,400 steps (61.5%)"
+  }
 }

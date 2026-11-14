@@ -1,0 +1,59 @@
+{
+  "model": {
+    "vocab_size": 33,
+    "pad_id": 31,
+    "n_layers": 6,
+    "d_model": 384,
+    "n_heads": 6,
+    "d_ff": 1536,
+    "max_len": 128,
+    "init_std": 0.02,
+    "norm_eps": 1e-06,
+    "lr": 0.0005,
+    "betas": [
+      0.9,
+      0.99
+    ],
+    "eps": 1e-12,
+    "weight_decay": 0.1
+  },
+  "train": {
+    "steps": 30000,
+    "batch_size": 256,
+    "seed": 1,
+    "log_every": 50,
+    "eval_every": 1000,
+    "eval_per_length": null,
+    "eval_batch_size": 1000,
+    "checkpoint_every": 3000,
+    "warmup_fraction": 0.1,
+    "decay_fraction": 0.1,
+    "min_lr_ratio": 0.01,
+    "grad_clip": 1.0
+  },
+  "device": "NVIDIA A10",
+  "torch": "2.15.0+cu132",
+  "task": "longest_run/starting-training",
+  "data": {
+    "test_study": {
+      "seed": 1101,
+      "rows": 10000,
+      "sha256": "31091c9a29e4fe0a80bb547b786132bf1f44fa8c51d8d596cbe3442063a2d415"
+    },
+    "test_easy": {
+      "seed": 1102,
+      "rows": 15000,
+      "sha256": "ad6b083844945031ee111e3a142efd5da52f73b669b55de997b6fb5615fe6769"
+    },
+    "train_start": {
+      "seed": 2101,
+      "rows": 750000,
+      "sha256": "26a7ece9ab919965763b1cb8d125c3441c41cc368b1b89ebcf236b79c12c6998",
+      "questions": [
+        "runlen",
+        "leftrun",
+        "rightrun"
+      ]
+    }
+  }
+}
