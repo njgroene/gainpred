@@ -1,1 +1,2 @@
 - Decision point 1 is not ready yet (runbook work list A in progress).
+- For review now, no answer needed before the learning runs: longest-run paper test and readings, `results/longest_run_readings.md` (runbook A5).
