@@ -216,6 +216,8 @@ def summarise_run(run: Run) -> list[str]:
     lines.append("")
 
     easy = run.evals_of("easy")
+    if is_longest_run(run.config):
+        return lines + longest_run_start_sections(run)
     if easy:
         best = max(easy, key=lambda e: e["accuracy"]["all"])
         final = easy[-1]
@@ -282,7 +284,69 @@ def write_evals_csv(runs: list[Run], results_dir: Path = RESULTS_DIR) -> None:
                     writer.writerow([run.name, e["step"], e["set"], group, acc])
 
 
+def is_longest_run(config: dict) -> bool:
+    """Longest-run runs (``gainpred.run_train``) record a task starting with "longest_run"."""
+    return str(config.get("task", "")).startswith("longest_run")
+
+
+def longest_run_start_sections(run: Run) -> list[str]:
+    """Starting-training sections for a longest-run run: check 0 by question and length, study groups."""
+    lines = []
+    easy = run.evals_of("easy")
+    if easy:
+        final = easy[-1]
+        lines.append(f"Easy longest-run questions (6–10 symbols, check 0; pass mark 98%): "
+                     f"final **{pct(final['accuracy']['all'])}%** at step {final['step']:,}.")
+        main = [{**e, "accuracy": {k: v for k, v in e["accuracy"].items() if "/run=" not in k}} for e in easy]
+        lines += ["", *accuracy_table(main), ""]
+        by_run = {k: v for k, v in final["accuracy"].items() if "/run=" in k}
+        if by_run:
+            lines += ["By run length of the answer, final evaluation:", "",
+                      *table(list(by_run), [[pct(v) for v in by_run.values()]]), ""]
+    study = run.evals_of("study")
+    if study:
+        lines += ["Study strings (12–20 symbols) asked directly, by group:", "", *accuracy_table(study), ""]
+    lines += ["Training stability:", "", *stability(run), ""]
+    return lines
+
+
+def summarise_longest_run_rounds(run: RoundsRun) -> list[str]:
+    """A longest-run self-improvement run (sizes under "length", study groups by kind)."""
+    from gainpred.run_teachers import RUN_TEACHER_NAMES
+
+    c = run.config["rounds"]
+    done = run.of("round_done")
+    lines = [f"## {run.name}", "",
+             f"- Task: longest run. Teacher: **{RUN_TEACHER_NAMES.get(c['teacher'], c['teacher'])}** "
+             f"(`{c['teacher']}`); starting run `{run.config['start_run']}` (seed {c['seed']})",
+             f"- Rounds: {len(done)} of {c['rounds']} finished; {c['kept_per_length']:,} kept per length, "
+             f"starting rows replayed with true answers, {c['steps']:,} updates per round",
+             f"- Device: {run.config.get('device', '?')}", ""]
+    for name, title in (("easy", "Easy questions (check 0)"), ("study", "Study strings asked directly")):
+        evals = [e for e in run.of("eval") if e["set"] == name]
+        if evals:
+            groups = [g for g in evals[0]["accuracy"] if g != "all" and "/run=" not in g] + ["all"]
+            rows = [[str(e["round"])] + [pct(e["accuracy"].get(g)) for g in groups] for e in evals]
+            lines += [f"{title}, accuracy (%) per round (round 0 = the starting model):", "",
+                      *table(["round"] + groups, rows), ""]
+    builds = run.of("build")
+    if builds:
+        rows = [[str(e["round"]), str(e["length"]), f"{e['drawn']:,}", f"{e['kept']:,}", pct(e["kept_share"]),
+                 pct(e["kept_right"]), f"{e['shortfall']:,}"] for e in builds]
+        lines += ["Training answers built by the teacher (\"right\" is an audit):", "",
+                  *table(["round", "length", "drawn", "kept", "kept %", "right %", "shortfall"], rows), ""]
+    checks = run.of("checks")
+    if checks:
+        rows = [[str(e["round"]), str(e["length"]), pct(e["check_1"]), pct(e.get("check_2b")), pct(e.get("check_3")),
+                 pct(e["teachable"]), pct(e["check_2_kept"])] for e in checks]
+        lines += ["Label-free checks (P8), before the round's training:", "",
+                  *table(["round", "length", "check 1", "2b", "check 3", "teachable", "check 2 keeps"], rows), ""]
+    return lines
+
+
 def summarise_rounds_run(run: RoundsRun) -> list[str]:
+    if is_longest_run(run.config):
+        return summarise_longest_run_rounds(run)
     c = run.config["rounds"]
     done = run.of("round_done")
     lines = [f"## {run.name}", "",

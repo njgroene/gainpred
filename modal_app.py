@@ -28,7 +28,10 @@ Three pieces are declared below:
   container. It outlives the container, so datasets and runs survive between
   calls. Layout: ``/vol/data/addition/`` and ``/vol/runs/<run>/``.
 * **Functions** -- ``make_data`` (CPU only), ``train_start`` and
-  ``self_improve`` (on a GPU). ``main`` and ``rounds`` are *local
+  ``self_improve`` (on a GPU); for longest run, ``make_run_data``,
+  ``train_start_runs`` and ``self_improve_runs`` (data in
+  ``/vol/data/longest_run/``; launched with ``gainpred.launch runs-main`` and
+  ``runs-rounds``). ``main`` and ``rounds`` are *local
   entrypoints*: they run on your machine and call the remote functions with
   ``.remote(...)``. ``modal run modal_app.py`` runs ``main``;
   ``modal run modal_app.py::rounds`` runs ``rounds``.
@@ -173,3 +176,63 @@ def rounds(run: str, start: str, teacher: str = "no_carry", rounds: int = 4, sta
     print("datasets match local fingerprints")  # gainpred.launch waits for this line
     self_improve.remote(run, start, teacher, rounds, start_round, build_seconds)
     print(f"done. download with: uv run modal volume get gainpred runs/{run} runs/")
+
+
+# ----------------------------------------------------------------------------
+# Longest run (experiment 2): data, starting training, one round.
+# Launched with ``uv run python -m gainpred.launch runs-main ...`` / ``runs-rounds ...``.
+# ----------------------------------------------------------------------------
+
+
+@app.function(image=image, volumes={str(VOLUME_PATH): volume}, timeout=15 * 60)
+def make_run_data() -> dict:
+    """Generate the longest-run datasets on the volume (once) and return the manifest."""
+    from gainpred.run_data import write_all
+
+    out_dir = VOLUME_PATH / "data" / "longest_run"
+    manifest_path = out_dir / "manifest.json"
+    if manifest_path.exists():
+        return json.loads(manifest_path.read_text())
+    manifest = write_all(out_dir)
+    volume.commit()
+    return manifest
+
+
+@app.function(image=image, gpu=GPU, volumes={str(VOLUME_PATH): volume}, timeout=6 * 60 * 60)
+def train_start_runs(run: str, seed: int, steps: int = 15_000, eval_every: int = 1_000, checkpoint_every: int = 3_000,
+                     norm_eps: float = 1e-6, decay_fraction: float = 0.1) -> None:
+    """Longest-run starting training (P1) on one GPU. Output goes to /vol/runs/<run>/."""
+    import torch
+
+    from gainpred.run_train import starting_training_runs
+    from gainpred.train import TrainConfig
+
+    print(f"GPU: {torch.cuda.get_device_name()}  torch {torch.__version__}")
+    make_run_data.local()  # data on the volume, generated here if missing
+    cfg = TrainConfig(steps=steps, seed=seed, eval_every=eval_every, checkpoint_every=checkpoint_every,
+                      decay_fraction=decay_fraction)
+    try:
+        starting_training_runs(cfg, run, data_dir=VOLUME_PATH / "data" / "longest_run", device=torch.device("cuda"),
+                               runs_dir=VOLUME_PATH / "runs", norm_eps=norm_eps or None)
+    finally:
+        volume.commit()
+
+
+@app.function(image=image, gpu=GPU, volumes={str(VOLUME_PATH): volume}, timeout=12 * 60 * 60)
+def self_improve_runs(run: str, start: str, teacher: str, build_seconds: float = 0.0) -> None:
+    """One longest-run round (P3) on one GPU, from a starting run on the volume."""
+    import torch
+
+    from gainpred.rounds import start_seed
+    from gainpred.run_train import RunRoundConfig, self_improve_runs as run_rounds
+
+    print(f"GPU: {torch.cuda.get_device_name()}  torch {torch.__version__}")
+    make_run_data.local()
+    runs_dir = VOLUME_PATH / "runs"
+    cfg = RunRoundConfig(teacher=teacher, seed=start_seed(runs_dir, start), solver_batch_size=4_096,
+                         build_seconds_per_length=build_seconds or None)
+    try:
+        run_rounds(cfg, run, start, data_dir=VOLUME_PATH / "data" / "longest_run", device=torch.device("cuda"),
+                   runs_dir=runs_dir)
+    finally:
+        volume.commit()
