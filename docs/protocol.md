@@ -1,6 +1,6 @@
 ## Appendix: Protocol
 
-The working rules for building and running the experiments. Draft of 13 November 2026. It is frozen stage by stage, before that stage's confirming runs; after that, changes go only in the amendments log at the end, with a date and a reason. Items marked *to decide* are settled on the learning runs.
+The working rules for building and running the experiments. Draft of 13 November 2026. **Stage 1 frozen on 14 November 2026** at git tag `stage1-freeze`, after the owner signed decision point 1; 2b level 0.38. Confirming runs (starting points 2–4) run from that tag or a descendant that changes nothing measured. It is frozen stage by stage, before that stage's confirming runs; after that, changes go only in the amendments log at the end, with a date and a reason. Items marked *to decide* are settled on the learning runs.
 
 ### P1. Settings taken from Shin et al.
 
