@@ -291,6 +291,102 @@ Label-free checks (P8), before the round's training:
 | 1 | 19 | 29.8 | 85.2 | 49.4 | 29.8 | 93.0 |
 | 1 | 20 | 30.0 | 86.3 | 49.0 | 30.0 | 93.6 |
 
+## runs-join_at_the_cut-withheld-seed0-u30000
+
+- Task: longest run. Teacher: **join at the cut** (`join_at_the_cut`); starting run `runs-start-seed0-u30000` (seed 0)
+- Rounds: 1 of 1 finished; 2,000 kept per length, starting rows replayed with true answers, 3,000 updates per round
+- Device: NVIDIA A10
+
+Easy questions (check 0), accuracy (%) per round (round 0 = the starting model):
+
+| round | runlen/6 | runlen/7 | runlen/8 | runlen/9 | runlen/10 | leftrun/6 | leftrun/7 | leftrun/8 | leftrun/9 | leftrun/10 | rightrun/6 | rightrun/7 | rightrun/8 | rightrun/9 | rightrun/10 | all |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 |
+| 1 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 99.9 | 100.0 | 100.0 | 100.0 | 100.0 |
+
+Study strings asked directly, accuracy (%) per round (round 0 = the starting model):
+
+| round | random_join | joined_length_2 | joined_length_3 | joined_length_4 | joined_length_5 | joined_length_6 | joined_length_7 | joined_length_8 | left_part_1-2 | left_part_3-4 | all |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 0 | 94.4 | 97.9 | 98.3 | 89.4 | 70.9 | 0.0 | 0.0 | 0.0 | 72.4 | 36.5 | 56.0 |
+| 1 | 99.8 | 99.8 | 99.8 | 99.7 | 99.4 | 99.7 | 0.0 | 0.0 | 99.5 | 62.1 | 76.0 |
+
+Training answers built by the teacher ("right" is an audit):
+
+| round | length | drawn | kept | kept % | right % | shortfall |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 12 | 2,000 | 2,000 | 100.0 | 100.0 | 0 |
+| 1 | 13 | 2,000 | 2,000 | 100.0 | 100.0 | 0 |
+| 1 | 14 | 2,000 | 2,000 | 100.0 | 100.0 | 0 |
+| 1 | 15 | 2,000 | 2,000 | 100.0 | 100.0 | 0 |
+| 1 | 16 | 2,000 | 2,000 | 100.0 | 100.0 | 0 |
+| 1 | 17 | 2,000 | 2,000 | 100.0 | 99.9 | 0 |
+| 1 | 18 | 2,000 | 2,000 | 100.0 | 100.0 | 0 |
+| 1 | 19 | 2,000 | 2,000 | 100.0 | 100.0 | 0 |
+| 1 | 20 | 2,000 | 2,000 | 100.0 | 100.0 | 0 |
+
+Label-free checks (P8), before the round's training:
+
+| round | length | check 1 | 2b | check 3 | teachable | check 2 keeps |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 12 | 5.5 | 100.0 | 60.9 | 5.5 | 100.0 |
+| 1 | 13 | 5.8 | 99.8 | 63.7 | 5.8 | 100.0 |
+| 1 | 14 | 8.3 | 99.8 | 64.9 | 8.3 | 100.0 |
+| 1 | 15 | 9.2 | 99.9 | 64.5 | 9.2 | 100.0 |
+| 1 | 16 | 14.1 | 99.1 | 65.4 | 14.1 | 100.0 |
+| 1 | 17 | 16.5 | 98.5 | 64.9 | 16.5 | 100.0 |
+| 1 | 18 | 18.7 | 98.8 | 64.9 | 18.7 | 100.0 |
+| 1 | 19 | 22.4 | 97.4 | 66.0 | 22.4 | 99.9 |
+| 1 | 20 | 24.4 | 97.5 | 67.0 | 24.4 | 99.9 |
+
+## runs-join_at_the_cut-withheld-seed1-u30000
+
+- Task: longest run. Teacher: **join at the cut** (`join_at_the_cut`); starting run `runs-start-seed1-u30000` (seed 1)
+- Rounds: 1 of 1 finished; 2,000 kept per length, starting rows replayed with true answers, 3,000 updates per round
+- Device: NVIDIA A10
+
+Easy questions (check 0), accuracy (%) per round (round 0 = the starting model):
+
+| round | runlen/6 | runlen/7 | runlen/8 | runlen/9 | runlen/10 | leftrun/6 | leftrun/7 | leftrun/8 | leftrun/9 | leftrun/10 | rightrun/6 | rightrun/7 | rightrun/8 | rightrun/9 | rightrun/10 | all |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 |
+| 1 | 100.0 | 99.8 | 100.0 | 99.9 | 99.8 | 100.0 | 100.0 | 100.0 | 100.0 | 99.9 | 99.9 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 |
+
+Study strings asked directly, accuracy (%) per round (round 0 = the starting model):
+
+| round | random_join | joined_length_2 | joined_length_3 | joined_length_4 | joined_length_5 | joined_length_6 | joined_length_7 | joined_length_8 | left_part_1-2 | left_part_3-4 | all |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 0 | 96.6 | 98.2 | 98.3 | 94.4 | 68.6 | 0.0 | 0.0 | 0.3 | 74.4 | 33.4 | 56.4 |
+| 1 | 99.0 | 99.4 | 98.3 | 98.1 | 97.8 | 95.3 | 0.0 | 0.0 | 97.7 | 60.6 | 74.6 |
+
+Training answers built by the teacher ("right" is an audit):
+
+| round | length | drawn | kept | kept % | right % | shortfall |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 12 | 2,000 | 2,000 | 100.0 | 100.0 | 0 |
+| 1 | 13 | 2,000 | 2,000 | 100.0 | 99.9 | 0 |
+| 1 | 14 | 2,000 | 2,000 | 100.0 | 100.0 | 0 |
+| 1 | 15 | 2,000 | 2,000 | 100.0 | 100.0 | 0 |
+| 1 | 16 | 2,000 | 2,000 | 100.0 | 100.0 | 0 |
+| 1 | 17 | 2,000 | 2,000 | 100.0 | 100.0 | 0 |
+| 1 | 18 | 2,000 | 2,000 | 100.0 | 100.0 | 0 |
+| 1 | 19 | 2,000 | 2,000 | 100.0 | 99.9 | 0 |
+| 1 | 20 | 2,000 | 2,000 | 100.0 | 99.9 | 0 |
+
+Label-free checks (P8), before the round's training:
+
+| round | length | check 1 | 2b | check 3 | teachable | check 2 keeps |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 12 | 7.6 | 99.9 | 64.3 | 7.6 | 100.0 |
+| 1 | 13 | 7.3 | 100.0 | 64.9 | 7.3 | 100.0 |
+| 1 | 14 | 9.0 | 99.6 | 61.4 | 9.0 | 100.0 |
+| 1 | 15 | 9.2 | 99.7 | 64.4 | 9.2 | 100.0 |
+| 1 | 16 | 10.1 | 99.5 | 64.3 | 10.1 | 100.0 |
+| 1 | 17 | 12.5 | 98.6 | 64.8 | 12.5 | 99.9 |
+| 1 | 18 | 11.4 | 99.3 | 66.8 | 11.4 | 99.9 |
+| 1 | 19 | 16.1 | 98.3 | 65.5 | 16.1 | 100.0 |
+| 1 | 20 | 17.2 | 98.2 | 64.3 | 17.2 | 99.9 |
+
 ## runs-pick_the_longer-seed0
 
 - Task: longest run. Teacher: **pick the longer** (`pick_the_longer`); starting run `runs-start-seed0` (seed 0)
