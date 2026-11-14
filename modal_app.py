@@ -86,7 +86,8 @@ def make_data() -> dict:
 
 
 @app.function(image=image, gpu=GPU, volumes={str(VOLUME_PATH): volume}, timeout=4 * 60 * 60)
-def train_start(run: str, seed: int, steps: int, eval_every: int, eval_per_length: int, checkpoint_every: int) -> None:
+def train_start(run: str, seed: int, steps: int, eval_every: int, eval_per_length: int, checkpoint_every: int,
+                norm_eps: float = 0.0, decay_fraction: float = 0.2) -> None:
     """P1 starting training on one GPU. Output goes to /vol/runs/<run>/."""
     import torch
 
@@ -99,11 +100,13 @@ def train_start(run: str, seed: int, steps: int, eval_every: int, eval_per_lengt
         eval_every=eval_every,
         eval_per_length=eval_per_length or None,  # 0 means "full test sets"
         checkpoint_every=checkpoint_every,
+        decay_fraction=decay_fraction,
     )
     try:
         starting_training(
             cfg,
             run,
+            norm_eps=norm_eps or None,  # 0 means the default of ModelConfig
             data_dir=VOLUME_PATH / "data" / "addition",
             device=torch.device("cuda"),
             runs_dir=VOLUME_PATH / "runs",
@@ -120,6 +123,8 @@ def main(
     eval_every: int = 1_000,
     eval_per_length: int = 0,
     checkpoint_every: int = 2_000,
+    norm_eps: float = 0.0,
+    decay_fraction: float = 0.2,
 ) -> None:
     """Check the cloud data matches local data, then train. Runs on your machine."""
     local_manifest = Path("data/addition/manifest.json")
@@ -129,7 +134,7 @@ def main(
     if remote != json.loads(local_manifest.read_text()):
         raise SystemExit("cloud datasets differ from local ones (fingerprints in manifest.json); not training")
     print("datasets match local fingerprints")
-    train_start.remote(run, seed, steps, eval_every, eval_per_length, checkpoint_every)
+    train_start.remote(run, seed, steps, eval_every, eval_per_length, checkpoint_every, norm_eps, decay_fraction)
     print(f"done. download with: uv run modal volume get gainpred runs/{run} runs/")
 
 
@@ -165,5 +170,6 @@ def rounds(run: str, start: str, teacher: str = "no_carry", rounds: int = 4, sta
     remote = make_data.remote()
     if remote != json.loads(Path("data/addition/manifest.json").read_text()):
         raise SystemExit("cloud datasets differ from local ones (fingerprints in manifest.json); not training")
+    print("datasets match local fingerprints")  # gainpred.launch waits for this line
     self_improve.remote(run, start, teacher, rounds, start_round, build_seconds)
     print(f"done. download with: uv run modal volume get gainpred runs/{run} runs/")

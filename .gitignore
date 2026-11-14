@@ -33,3 +33,6 @@ lightning_logs/
 .vscode/
 .idea/
 *.swp
+
+# gainpred.launch logs (local only)
+launch-logs/

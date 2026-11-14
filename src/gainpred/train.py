@@ -491,8 +491,13 @@ def train(
 
 
 def starting_training(cfg: TrainConfig, run_name: str, data_dir: Path = DATA_DIR,
-                      device: torch.device | None = None, runs_dir: Path = RUNS_DIR) -> Transformer:
-    """Train a fresh model on 3-7 digit additions with their true answers."""
+                      device: torch.device | None = None, runs_dir: Path = RUNS_DIR,
+                      norm_eps: float | None = None) -> Transformer:
+    """Train a fresh model on 3-7 digit additions with their true answers.
+
+    ``norm_eps`` overrides the RMSNorm epsilon (None = ModelConfig's default);
+    used to test the authors' setup (runbook A4).
+    """
     device = device or pick_device()
     train_records = load(data_dir / "train_start.jsonl")
     examples = [(p, solve(p)) for p in problems_of(train_records)]
@@ -504,7 +509,8 @@ def starting_training(cfg: TrainConfig, run_name: str, data_dir: Path = DATA_DIR
     }
 
     torch.manual_seed(cfg.seed)  # initial weights depend on the starting point (P9)
-    model = Transformer(ModelConfig(vocab_size=VOCAB_SIZE, pad_id=PAD_ID))
+    extra = {} if norm_eps is None else {"norm_eps": norm_eps}
+    model = Transformer(ModelConfig(vocab_size=VOCAB_SIZE, pad_id=PAD_ID, **extra))
     manifest = json.loads((data_dir / "manifest.json").read_text())
     print(f"{run_name}: {model.num_params():,} parameters, {len(examples):,} examples, device {device}")
     return train(model, examples, cfg, runs_dir / run_name, eval_sets, device,
