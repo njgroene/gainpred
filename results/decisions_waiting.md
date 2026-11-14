@@ -1,2 +1,1 @@
-- **Decision point 1 is ready**: https://claude.ai/artifact/KDSHexikLG8uQUsFoSuyCU (seven items: cuts at 13–15, verdict levels and order, outcome thresholds, weak models, longest run, P10 assumptions, the freeze). Nothing is frozen and no confirming run starts until you sign.
-- Background for item 5: `results/longest_run_readings.md`.
+- None. Stage 1 frozen at `stage1-freeze` (14 Nov 2026); confirming runs for seeds 2–4 launched by `scripts/confirm.py`. Next owner decision: decision point 2 (P9b scoring sign-off), after the confirming runs.
