@@ -5,7 +5,8 @@ Usage (on Modal, through the launcher; one call per original run)::
     uv run python -m gainpred.launch probe probe-si-nocarry-seed2-authors --of si-nocarry-seed2-authors
     uv run python -m gainpred.launch probe probe-runs-edges_differ-seed2-u30000 --of runs-edges_differ-seed2-u30000
 
-Writes ``runs/<probe run>/probe.jsonl`` and one training folder per round.
+Writes ``runs/<probe run>/attempt_<n>/probe.jsonl`` and one training folder per round (probes launched
+before 15 Nov 2026, 10:30, wrote ``runs/<probe run>/probe.jsonl`` directly).
 
 What the baseline is (owner, after decision point 2, 15 November 2026)
 ======================================================================
@@ -58,6 +59,33 @@ from gainpred.train import evaluate, load_model, train
 PROBE_STEPS = 200
 
 
+def attempt_dir(runs_dir: Path, probe: str) -> tuple[Path, set[int]]:
+    """A fresh folder for this attempt, and the rounds earlier attempts already finished.
+
+    Modal retries a call whose container was stopped (15 November 2026: 15 of 58 probes
+    stopped part-way without an error of their own; the retry then refused the existing
+    folder). Each attempt now writes to ``runs/<probe>/attempt_<n>/`` and skips rounds an
+    earlier attempt finished, so a retry neither overwrites nor repeats work.
+    """
+    base = runs_dir / probe
+    base.mkdir(parents=True, exist_ok=True)
+    done: set[int] = set()
+    for log in [base / "probe.jsonl", *sorted(base.glob("attempt_*/probe.jsonl"))]:
+        if log.exists():
+            done |= {json.loads(x)["round"] for x in log.read_text().splitlines() if '"probe_done"' in x}
+    n = 1 + len(list(base.glob("attempt_*")))
+    out = base / f"attempt_{n}"
+    out.mkdir()
+    return out, done
+
+
+def memory() -> dict:
+    """Peak GPU memory and the process's peak resident memory, to diagnose stopped containers."""
+    import resource
+    gpu = torch.cuda.max_memory_allocated() / 2 ** 30 if torch.cuda.is_available() else None
+    return {"gpu_peak_gib": gpu, "host_peak_gib": resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 2 ** 20}
+
+
 def events(run_dir: Path) -> list[dict]:
     return [json.loads(line) for line in (run_dir / "rounds.jsonl").read_text().splitlines()]
 
@@ -94,8 +122,7 @@ def probe_addition(original: str, probe: str, runs_dir: Path, data_dir: Path, de
     cfg = RoundConfig(**{k: v for k, v in config["rounds"].items() if k in known})
     first_round = (config.get("start_round") or 0) + 1
     log_original = events(src)
-    out = runs_dir / probe
-    out.mkdir(parents=True, exist_ok=False)
+    out, finished = attempt_dir(runs_dir, probe)
     (out / "config.json").write_text(json.dumps({"probe_of": original, "steps": PROBE_STEPS, "rounds": config["rounds"],
                                                  "only_rounds": only_rounds, "task": "addition/probe"}, indent=2) + "\n")
     log_file = open(out / "probe.jsonl", "a")
@@ -106,7 +133,7 @@ def probe_addition(original: str, probe: str, runs_dir: Path, data_dir: Path, de
 
     tests = eval_sets(data_dir, cfg.eval_per_length)
     for k in range(first_round, first_round + cfg.rounds):
-        if only_rounds and k not in only_rounds:
+        if (only_rounds and k not in only_rounds) or k in finished:
             continue
         start = (start_checkpoint_of(runs_dir, config["start_run"], config.get("start_round")) if k == first_round
                  else sorted((src / f"round_{k - 1}" / "checkpoints").glob("step_*.pt"))[-1])
@@ -156,7 +183,10 @@ def probe_addition(original: str, probe: str, runs_dir: Path, data_dir: Path, de
                  "accuracy": evaluate(model, eval_set.records, eval_set.group_key, 1_000, device)})
         seconds["eval"] = time.monotonic() - t0
         log({"event": "probe_done", "round": k, "examples": len(examples), "steps": PROBE_STEPS,
-             "seconds": seconds, "generated_tokens": solver.generated_tokens})
+             "seconds": seconds, "generated_tokens": solver.generated_tokens, "memory": memory()})
+        del model, solver, examples
+        if device.type == "cuda":
+            torch.cuda.empty_cache()
         print(f"{probe} round {k}: {seconds}")
     log({"event": "done"})
     log_file.close()
@@ -177,8 +207,9 @@ def probe_runs(original: str, probe: str, runs_dir: Path, data_dir: Path, device
     raw = {k: (tuple(v) if isinstance(v, list) else v) for k, v in config["rounds"].items() if k in known}
     cfg = RunRoundConfig(**raw)
     log_original = events(src)
-    out = runs_dir / probe
-    out.mkdir(parents=True, exist_ok=False)
+    out, finished = attempt_dir(runs_dir, probe)
+    if 1 in finished:
+        return
     (out / "config.json").write_text(json.dumps({"probe_of": original, "steps": PROBE_STEPS, "rounds": config["rounds"],
                                                  "task": "longest_run/probe"}, indent=2) + "\n")
     log_file = open(out / "probe.jsonl", "a")
@@ -223,6 +254,6 @@ def probe_runs(original: str, probe: str, runs_dir: Path, data_dir: Path, device
              "accuracy": evaluate_runs(model, eval_set.records, eval_set.group_key, 1_000, device)})
     seconds["eval"] = time.monotonic() - t0
     log({"event": "probe_done", "round": k, "examples": len(examples), "steps": PROBE_STEPS, "seconds": seconds,
-         "generated_tokens": solver.generated_tokens})
+         "generated_tokens": solver.generated_tokens, "memory": memory()})
     log({"event": "done"})
     log_file.close()

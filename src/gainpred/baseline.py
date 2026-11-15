@@ -53,6 +53,7 @@ from gainpred.report import RESULTS_DIR
 
 RUNS = Path("runs")
 LEVELS = RESULTS_DIR / "baseline_levels.json"
+PROBES = RESULTS_DIR / "probes"
 MATCH = {"does harm": {"did harm", "taught wrong answers"}, "does nothing": {"did nothing"}, "pays off": {"paid off"}}
 LEARNING, CONFIRMING = (0, 1), (2, 3, 4)
 
@@ -62,8 +63,15 @@ def probe_name(run: str) -> str:
 
 
 def probe_evals(run: str) -> dict[tuple[int, str], dict]:
-    path = RUNS / probe_name(run) / "probe.jsonl"
-    if not path.exists():
+    """The probe's accuracies by (round, set). A failed probe is replaced as a whole by its
+    ``-r2`` rerun; a probe without a ``done`` event (stopped part-way) is never scored."""
+    path = None
+    for name in (f"{probe_name(run)}-r2", probe_name(run)):
+        candidate = PROBES / f"{name}.jsonl"
+        if candidate.exists() and '"event": "done"' in candidate.read_text():
+            path = candidate
+            break
+    if path is None:
         return {}
     out = {}
     for line in path.read_text().splitlines():

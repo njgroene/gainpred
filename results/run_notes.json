@@ -94,5 +94,45 @@
   "si-noselect-after-nocarry-seed3-authors": {
     "state": "failed",
     "note": "warm Modal container saw the volume before si-nocarry-seed3-authors was written (FileNotFoundError); rerun as si-noselect-after-nocarry-seed3-authors-r2 after adding volume.reload()"
+  },
+  "probe-si-agreement-seed0-5cut": {
+    "state": "failed",
+    "note": "container stopped part-way without an error of its own; Modal's retry then refused the existing folder (FileExistsError); partial output kept, not scored; rerun as probe-si-agreement-seed0-5cut-r2 awaits the owner (cost passes the $16 line)"
+  },
+  "probe-si-vote-seed0-5cut": {
+    "state": "failed",
+    "note": "container stopped part-way without an error of its own; Modal's retry then refused the existing folder (FileExistsError); partial output kept, not scored; rerun as probe-si-vote-seed0-5cut-r2 awaits the owner (cost passes the $16 line)"
+  },
+  "probe-si-agreement-seed1-5cut": {
+    "state": "failed",
+    "note": "container stopped part-way without an error of its own; Modal's retry then refused the existing folder (FileExistsError); partial output kept, not scored; rerun as probe-si-agreement-seed1-5cut-r2 awaits the owner (cost passes the $16 line)"
+  },
+  "probe-si-vote-seed1-authors": {
+    "state": "failed",
+    "note": "container stopped part-way without an error of its own; Modal's retry then refused the existing folder (FileExistsError); partial output kept, not scored; rerun as probe-si-vote-seed1-authors-r2 awaits the owner (cost passes the $16 line)"
+  },
+  "probe-si-vote-seed1-5cut": {
+    "state": "failed",
+    "note": "container stopped part-way without an error of its own; Modal's retry then refused the existing folder (FileExistsError); partial output kept, not scored; rerun as probe-si-vote-seed1-5cut-r2 awaits the owner (cost passes the $16 line)"
+  },
+  "probe-si-nocarry-seed2-authors": {
+    "state": "failed",
+    "note": "container stopped part-way without an error of its own; Modal's retry then refused the existing folder (FileExistsError); partial output kept, not scored; rerun as probe-si-nocarry-seed2-authors-r2 awaits the owner (cost passes the $16 line)"
+  },
+  "probe-si-agreement-seed2-authors": {
+    "state": "failed",
+    "note": "container stopped part-way without an error of its own; Modal's retry then refused the existing folder (FileExistsError); partial output kept, not scored; rerun as probe-si-agreement-seed2-authors-r2 awaits the owner (cost passes the $16 line)"
+  },
+  "probe-si-noselect-seed2-authors": {
+    "state": "failed",
+    "note": "container stopped part-way without an error of its own; Modal's retry then refused the existing folder (FileExistsError); partial output kept, not scored; rerun as probe-si-noselect-seed2-authors-r2 awaits the owner (cost passes the $16 line)"
+  },
+  "probe-si-vote-seed2-authors": {
+    "state": "failed",
+    "note": "container stopped part-way without an error of its own; Modal's retry then refused the existing folder (FileExistsError); partial output kept, not scored; rerun as probe-si-vote-seed2-authors-r2 awaits the owner (cost passes the $16 line)"
+  },
+  "probe-si-nocarry-seed3-authors": {
+    "state": "failed",
+    "note": "container stopped part-way without an error of its own; Modal's retry then refused the existing folder (FileExistsError); partial output kept, not scored; rerun as probe-si-nocarry-seed3-authors-r2 awaits the owner (cost passes the $16 line)"
   }
 }
