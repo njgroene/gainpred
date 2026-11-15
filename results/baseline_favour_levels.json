@@ -1,0 +1,34 @@
+{
+  "Z": 1,
+  "G": 15,
+  "H": 47,
+  "D": 51,
+  "learning_matches": 170,
+  "learning_cells": 176,
+  "best_quadruples": 3840,
+  "median_of_best": [
+    1.5,
+    15.5,
+    47.5,
+    51.0
+  ],
+  "ranges_of_best": {
+    "Z": [
+      1,
+      2
+    ],
+    "G": [
+      0,
+      35
+    ],
+    "H": [
+      38,
+      57
+    ],
+    "D": [
+      50,
+      52
+    ]
+  },
+  "defined": "after the confirming runs, in the baseline's favour (amendment 21)"
+}

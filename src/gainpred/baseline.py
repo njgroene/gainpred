@@ -55,6 +55,7 @@ from gainpred.report import RESULTS_DIR
 
 RUNS = Path("runs")
 LEVELS = RESULTS_DIR / "baseline_levels.json"
+LEVELS_FAVOUR = RESULTS_DIR / "baseline_favour_levels.json"
 PROBES = RESULTS_DIR / "probes"
 MATCH = {"does harm": {"did harm", "taught wrong answers"}, "does nothing": {"did nothing"}, "pays off": {"paid off"}}
 LEARNING, CONFIRMING = (0, 1), (2, 3, 4)
@@ -132,6 +133,75 @@ def verdict(c: dict, g: float, h: float, d: float) -> str:
     return "does nothing"
 
 
+def verdict_favour(c: dict, z: float, g: float, h: float, d: float) -> str:
+    """Variant defined after the confirming runs, in the baseline's favour (amendment 21).
+
+    The as-run rule tests the gap to the best teacher before asking whether anything
+    changed, so a new length that did not move at all is called harm when the best
+    teacher moved a lot (20 of the as-run baseline's 34 confirming misses, all sample
+    and vote). Our own checks dropped that order at decision point 1. Here:
+    1. harm if easy change < -H, or a learned length's change < -H;
+    2. a learned length otherwise: nothing;
+    3. a new length: nothing if change < Z; else harm if gap > D; else pays off if
+       change >= G; else nothing.
+    """
+    if (c["easy_change"] is not None and c["easy_change"] < -h) or (not c["new"] and c["change"] < -h):
+        return "does harm"
+    if not c["new"]:
+        return "does nothing"
+    if c["change"] < z:
+        return "does nothing"
+    if c["gap"] > d:
+        return "does harm"
+    if c["change"] >= g:
+        return "pays off"
+    return "does nothing"
+
+
+def fit_favour() -> dict:
+    """Exhaustive search over whole-point Z, G, H, D in 0-100 on the learning runs, same tie-break.
+
+    101^4 combinations are scored at once per H with numpy: for each cell the verdict is a
+    simple function of the four levels, so matches are summed over a (Z, G, D) grid.
+    """
+    import numpy as np
+
+    cs = cells(LEARNING)
+    if any(c["probe"] is None for c in cs):
+        raise SystemExit("learning cells without a probe")
+    grid = np.arange(101)
+    Z, G, D = np.meshgrid(grid, grid, grid, indexing="ij")  # axes: z, g, d
+    best, top = -1, []
+    for h in grid:
+        total = np.zeros(Z.shape, dtype=np.int32)
+        for c in cs:
+            harm_first = (c["easy_change"] is not None and c["easy_change"] < -h) or (not c["new"] and c["change"] < -h)
+            if harm_first or not c["new"]:
+                v = "does harm" if harm_first else "does nothing"
+                total += int(c["outcome"] in MATCH[v])
+                continue
+            nothing = (c["change"] < Z) | ((c["gap"] <= D) & (c["change"] < G))
+            harm = (c["change"] >= Z) & (c["gap"] > D)
+            pays = (c["change"] >= Z) & (c["gap"] <= D) & (c["change"] >= G)
+            ok = {"does nothing": nothing, "does harm": harm, "pays off": pays}
+            total += sum(ok[v].astype(np.int32) for v in MATCH if c["outcome"] in MATCH[v])
+        m = int(total.max())
+        idx = np.argwhere(total == m)
+        quads = [(int(z), int(g), int(h), int(d)) for z, g, d in idx]
+        if m > best:
+            best, top = m, quads
+        elif m == best:
+            top += quads
+    med = tuple(float(np.median([t[i] for t in top])) for i in range(4))
+    chosen = med if med in top else min(top, key=lambda t: (sum(abs(a - b) for a, b in zip(t, med)), t))
+    levels = {"Z": chosen[0], "G": chosen[1], "H": chosen[2], "D": chosen[3], "learning_matches": best,
+              "learning_cells": len(cs), "best_quadruples": len(top), "median_of_best": med,
+              "ranges_of_best": {k: [min(t[i] for t in top), max(t[i] for t in top)] for i, k in enumerate("ZGHD")},
+              "defined": "after the confirming runs, in the baseline's favour (amendment 21)"}
+    LEVELS_FAVOUR.write_text(json.dumps(levels, indent=2) + "\n")
+    return levels
+
+
 def matches(cs: list[dict], g: float, h: float, d: float) -> int:
     return sum(c["outcome"] in MATCH[verdict(c, g, h, d)] for c in cs)
 
@@ -162,27 +232,35 @@ def fit() -> None:
 def score() -> dict:
     """Score the confirming runs once with the recorded levels (and the learning runs for reference)."""
     lv = json.loads(LEVELS.read_text())
+    lf = json.loads(LEVELS_FAVOUR.read_text()) if LEVELS_FAVOUR.exists() else None
     out = {}
     for name, seeds in (("learning", LEARNING), ("confirming", CONFIRMING)):
         cs = cells(seeds)
         have = [c for c in cs if c["probe"] is not None]
         for c in have:
             c["baseline_verdict"] = verdict(c, lv["G"], lv["H"], lv["D"])
+            if lf:
+                c["favour_verdict"] = verdict_favour(c, lf["Z"], lf["G"], lf["H"], lf["D"])
         out[name] = {"cells": cs, "scored": have, "missing": len(cs) - len(have)}
     return out
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("command", choices=["fit", "score"])
+    parser.add_argument("command", choices=["fit", "fit-favour", "score"])
     args = parser.parse_args()
     if args.command == "fit":
         fit()
+    elif args.command == "fit-favour":
+        print(json.dumps(fit_favour(), indent=2))
     else:
         res = score()
         for name, r in res.items():
             m = sum(c["outcome"] in MATCH[c["baseline_verdict"]] for c in r["scored"])
             print(f"{name}: {m}/{len(r['scored'])} cells match (missing probes for {r['missing']})")
+            if r["scored"] and "favour_verdict" in r["scored"][0]:
+                f = sum(c["outcome"] in MATCH[c["favour_verdict"]] for c in r["scored"])
+                print(f"{name}, variant in the baseline's favour: {f}/{len(r['scored'])}")
 
 
 if __name__ == "__main__":
