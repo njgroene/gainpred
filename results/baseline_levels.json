@@ -1,0 +1,27 @@
+{
+  "G": 15,
+  "H": 47,
+  "D": 51,
+  "learning_matches": 155,
+  "learning_cells": 176,
+  "best_triples": 1920,
+  "median_of_best": [
+    15.5,
+    47.5,
+    51.0
+  ],
+  "ranges_of_best": {
+    "G": [
+      0,
+      35
+    ],
+    "H": [
+      38,
+      57
+    ],
+    "D": [
+      50,
+      52
+    ]
+  }
+}

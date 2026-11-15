@@ -26,9 +26,11 @@ baseline's version of "taught wrong answers"):
 Choosing G, H and D (owner's rule)
 ==================================
 On the learning runs (starting points 0-1) only: every whole-point value of
-G in 0-60, H in 0-30 and D in 0-100 is scored against the learning outcomes
+G, H and D in 0-100 is scored against the learning outcomes
 (the same classified cells as P9b); the triples with the most matches are
-kept. Ties (there are many) are broken by a rule fixed before fitting: take
+kept. (The first fit searched H only up to 30 and its best H, 29-30, sat at that
+edge; widened to 0-100 on the learning runs, before any confirming probe was
+fetched: 155 rather than 151 of 176 matches.) Ties (there are many) are broken by a rule fixed before fitting: take
 the median of each level over the best triples; if that triple is itself among
 the best, use it, else the best triple nearest to it (sum of absolute
 differences, then smallest G, H, D). The chosen levels are written to
@@ -140,8 +142,8 @@ def fit() -> None:
     if missing:
         raise SystemExit(f"{len(missing)} learning cells have no probe yet, e.g. {missing[0]['run']} r{missing[0]['round']}")
     best, top = -1, []
-    for g in range(0, 61):
-        for h in range(0, 31):
+    for g in range(0, 101):
+        for h in range(0, 101):
             for d in range(0, 101):
                 m = matches(cs, g, h, d)
                 if m > best:
