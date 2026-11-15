@@ -36,7 +36,7 @@ One round from the 30,000-update starting models. Study set, accuracy (%): all g
 
 ## Withheld version and control arm, side by side
 
-Before → after the withheld round of join at the cut (joined runs up to 6 taught; run-across problems of left part 3-4 withheld). Control arm: the same round from a starting model whose training included strings with a longest run of 7-8 inside (P6). The control arm is an observation, not a test.
+Before → after the withheld round of join at the cut (joined runs up to 6 taught; run-across problems of left part 3-4 withheld). Control arm: the same round from a starting model whose training included strings with a longest run of 7-8 inside (P6). The control arm is an observation, not a test. The edges-differ rows (observation) show the same full-pool round of the edges-differ rule, for comparison at joined runs of 5.
 
 **Confirming runs**
 
@@ -44,10 +44,13 @@ Before → after the withheld round of join at the cut (joined runs up to 6 taug
 | --- | --- | --- | --- | --- | --- | --- |
 | Withheld | 2 | 92.7 → 97.9 | 74.5 → 97.7 | 0.0 → 97.6 | 0.0 → 0.0 | 0.0 → 0.0 |
 | Control arm | 2 | 74.1 → 94.2 | 13.6 → 90.2 | 0.1 → 79.8 | 82.3 → 18.7 | 41.3 → 30.2 |
+| Edges-differ rule, full pool (observation) | 2 | 92.7 → 94.4 | 74.5 → 44.8 | 0.0 → 0.0 | 0.0 → 0.0 | 0.0 → 0.0 |
 | Withheld | 3 | 93.3 → 99.2 | 78.2 → 98.8 | 4.5 → 99.5 | 0.0 → 0.0 | 0.0 → 0.0 |
 | Control arm | 3 | 75.6 → 96.9 | 40.8 → 95.1 | 0.3 → 95.8 | 68.3 → 26.2 | 44.7 → 42.2 |
+| Edges-differ rule, full pool (observation) | 3 | 93.3 → 95.5 | 78.2 → 47.7 | 4.5 → 0.0 | 0.0 → 0.0 | 0.0 → 0.0 |
 | Withheld | 4 | 91.6 → 98.8 | 19.1 → 98.5 | 0.0 → 96.8 | 0.0 → 0.0 | 0.0 → 0.0 |
 | Control arm | 4 | 43.3 → 91.4 | 23.2 → 92.7 | 0.0 → 54.5 | 43.8 → 26.3 | 17.0 → 24.5 |
+| Edges-differ rule, full pool (observation) | 4 | 91.6 → 98.2 | 19.1 → 39.6 | 0.0 → 0.0 | 0.0 → 0.0 | 0.0 → 0.0 |
 
 **Learning runs**
 
@@ -55,10 +58,51 @@ Before → after the withheld round of join at the cut (joined runs up to 6 taug
 | --- | --- | --- | --- | --- | --- | --- |
 | Withheld | 0 | 89.4 → 99.7 | 70.9 → 99.4 | 0.0 → 99.7 | 0.0 → 0.0 | 0.0 → 0.0 |
 | Control arm | 0 | 76.3 → 98.9 | 75.4 → 98.4 | 1.2 → 97.6 | 86.9 → 44.3 | 60.4 → 50.0 |
+| Edges-differ rule, full pool (observation) | 0 | 89.4 → 95.1 | 70.9 → 78.9 | 0.0 → 3.6 | 0.0 → 0.0 | 0.0 → 0.0 |
 | Withheld | 1 | 94.4 → 98.1 | 68.6 → 97.8 | 0.0 → 95.3 | 0.0 → 0.0 | 0.3 → 0.0 |
 | Control arm | 1 | 81.4 → 97.0 | 58.7 → 95.2 | 0.1 → 94.3 | 95.5 → 34.4 | 30.9 → 33.3 |
+| Edges-differ rule, full pool (observation) | 1 | 94.4 → 94.5 | 68.6 → 57.4 | 0.0 → 0.0 | 0.0 → 0.0 | 0.3 → 0.0 |
 
 Control arm across all five seeds: joined runs of 6 after the round 55–98% (lowest: seed 4, 55%; the others 80–98%); joined runs of 7 from 44–96% before to 19–44% after; joined runs of 8 from 17–60% to 24–50%.
+
+## Check 3: does the teacher hand back a piece answer?
+
+Share (%) of the teacher's outputs identical to one of the piece answers it was given (P8; "hands back" if 100%), per length, before the round. Computed on the check sample.
+
+**Confirming runs**
+
+| Teacher | Seed | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Join at the cut | 2 | 47.5 | 48.5 | 47.4 | 48.9 | 48.8 | 49.1 | 49.5 | 48.4 | 49.7 |
+| Join at the cut | 3 | 47.3 | 47.5 | 49.0 | 49.5 | 50.9 | 48.5 | 50.9 | 48.6 | 49.0 |
+| Join at the cut | 4 | 47.5 | 49.1 | 48.6 | 49.4 | 50.0 | 49.6 | 48.4 | 50.1 | 51.1 |
+| Edges-differ rule | 2 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 |
+| Edges-differ rule | 3 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 |
+| Edges-differ rule | 4 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 |
+| Pick the longer | 2 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 |
+| Pick the longer | 3 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 |
+| Pick the longer | 4 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 |
+| Join at the cut, withheld | 2 | 64.6 | 65.9 | 63.9 | 65.9 | 65.8 | 63.1 | 66.0 | 65.2 | 66.4 |
+| Join at the cut, withheld | 3 | 63.4 | 62.8 | 64.6 | 66.5 | 68.3 | 63.5 | 67.2 | 64.1 | 65.5 |
+| Join at the cut, withheld | 4 | 62.3 | 63.7 | 64.1 | 66.7 | 66.1 | 66.4 | 63.7 | 67.2 | 66.7 |
+| Join at the cut, withheld, control arm | 2 | 64.6 | 65.9 | 64.0 | 65.8 | 65.8 | 63.0 | 66.2 | 65.4 | 66.6 |
+| Join at the cut, withheld, control arm | 3 | 63.4 | 62.8 | 64.6 | 66.6 | 68.2 | 63.6 | 67.2 | 64.1 | 65.6 |
+| Join at the cut, withheld, control arm | 4 | 62.3 | 63.5 | 64.1 | 66.7 | 66.3 | 66.4 | 63.7 | 67.2 | 66.7 |
+
+**Learning runs**
+
+| Teacher | Seed | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| Join at the cut | 0 | 47.1 | 47.2 | 50.1 | 48.9 | 49.7 | 49.1 | 49.4 | 49.5 | 50.5 |
+| Join at the cut | 1 | 47.9 | 49.5 | 45.1 | 49.2 | 48.9 | 49.4 | 50.5 | 49.4 | 49.0 |
+| Edges-differ rule | 0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 |
+| Edges-differ rule | 1 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 |
+| Pick the longer | 0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 |
+| Pick the longer | 1 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 |
+| Join at the cut, withheld | 0 | 60.9 | 63.7 | 64.9 | 64.5 | 65.4 | 64.9 | 64.9 | 66.0 | 67.0 |
+| Join at the cut, withheld | 1 | 64.3 | 64.9 | 61.4 | 64.4 | 64.3 | 64.8 | 66.8 | 65.5 | 64.3 |
+| Join at the cut, withheld, control arm | 0 | 60.9 | 63.7 | 64.9 | 64.5 | 65.4 | 64.9 | 64.9 | 66.0 | 67.0 |
+| Join at the cut, withheld, control arm | 1 | 64.3 | 64.8 | 61.5 | 64.4 | 64.2 | 64.8 | 66.8 | 65.6 | 64.4 |
 
 ## Withheld split by left part
 
