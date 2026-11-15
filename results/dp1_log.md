@@ -16,7 +16,9 @@ Kept as work proceeds (runbook section 5). Each entry: date, what, evidence.
 
 ## Confirming runs (from 14-15 Nov)
 
-- Weak models by rule: seed 3: 3,500 steps (59.9%) and 3,450 steps (99.1%); seed 4: 3,000 steps (61.5%) and 2,250 steps (97.6%); seed 2: 2,200 steps (97.3%) for 97.5%, and for 60% nothing within 5 points after 34 step counts (nearest 47.1% at 1,400); one more batch of 8 (1,310-1,490) launched; if none lands, the target stays open for seed 2 (my bound, not the rule).
+- Weak models by rule: seed 3: 3,500 steps (59.9%) and 3,450 steps (99.1%); seed 4: 3,000 steps (61.5%) and 2,250 steps (97.6%); seed 2: 2,200 steps (97.3%) for 97.5%, and for 60% nothing within 5 points after 34 step counts (nearest 47.1% at 1,400); one more batch of 8 (1,310-1,490) launched; if none lands, the target stays open for seed 2 (my bound, not the rule). Result: 1,425 steps landed at 62.2% and is seed 2's 60% pick.
+
+- Two runs failed at start (15 Nov, ~00:00): si-nocarry-weak-s1425-seed2 and si-noselect-after-nocarry-seed3-authors could not find their starting run's files because Modal reused a warm container whose view of the volume predated them. Fixed (volume.reload() at the start of round functions, commit a7a2efa); both rerun under -r2 names; the failed runs stay listed.
 
 ## Surprises
 

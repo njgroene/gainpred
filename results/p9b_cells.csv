@@ -39,6 +39,66 @@ si-agreement-seed1-authors,agreement,1,2,8,False,True,0.0,1.0,0.336,0.0,0.336,st
 si-agreement-seed1-authors,agreement,1,2,9,False,True,0.00872093023255814,1.0,0.344,0.003,0.344,study,0.904,0.972,0.0005999999999999339,,False,unclassified,does nothing
 si-agreement-seed1-authors,agreement,1,2,10,True,True,1.0,1.0,0.345,0.345,0.345,study,0.0,0.9744999999999999,0.0005999999999999339,0.994,False,paid off,pays off
 si-agreement-seed1-authors,agreement,1,2,11,True,True,1.0,1.0,0.359,0.359,0.359,study,0.0,0.962,0.0005999999999999339,0.9915,False,paid off,pays off
+si-agreement-seed2-authors,agreement,2,1,8,True,True,0.9761570827489481,1.0,0.3565,0.348,0.3565,study,0.0245,1.0,0.0,1.0,False,paid off,pays off
+si-agreement-seed2-authors,agreement,2,1,9,True,True,1.0,1.0,0.3525,0.3525,0.3525,study,0.0,1.0,0.0,1.0,False,paid off,pays off
+si-agreement-seed2-authors,agreement,2,2,8,False,True,0.0,1.0,0.3445,0.0,0.3445,study,1.0,0.9995,0.0,,False,did nothing,does nothing
+si-agreement-seed2-authors,agreement,2,2,9,False,True,0.0,1.0,0.344,0.0,0.344,study,1.0,0.999,0.0,,False,did nothing,does nothing
+si-agreement-seed2-authors,agreement,2,2,10,True,True,0.274888558692422,1.0,0.3365,0.0925,0.3365,study,0.786,0.9984999999999999,0.0,,True,unclassified,does nothing
+si-agreement-seed2-authors,agreement,2,2,11,True,True,1.0,1.0,0.3425,0.3425,0.3425,study,0.0,0.9995,0.0,0.9995,False,paid off,pays off
+si-agreement-seed2-authors,agreement,2,3,8,False,True,0.0,1.0,0.341,0.0,0.341,study,0.9995,1.0,0.0,,False,did nothing,does nothing
+si-agreement-seed2-authors,agreement,2,3,9,False,True,0.0,1.0,0.3475,0.0,0.3475,study,0.999,1.0,0.0,,False,did nothing,does nothing
+si-agreement-seed2-authors,agreement,2,3,10,False,True,0.0,1.0,0.343,0.0,0.343,study,0.9984999999999999,1.0,0.0,,False,did nothing,does nothing
+si-agreement-seed2-authors,agreement,2,3,11,False,True,0.0,1.0,0.347,0.0,0.347,study,0.9995,0.9995,0.0,,False,did nothing,does nothing
+si-agreement-seed2-authors,agreement,2,3,12,True,True,0.004189944134078212,1.0,0.358,0.0015,0.358,study,0.998,1.0,0.0,,False,did nothing,does nothing
+si-agreement-seed2-authors,agreement,2,3,13,True,True,0.9231863442389758,1.0,0.3515,0.3245,0.3515,study5,0.093,0.9984999999999999,0.0,0.9995,False,paid off,pays off
+si-agreement-seed2-authors,agreement,2,4,8,False,True,0.0,1.0,0.335,0.0,0.335,study,1.0,0.9995,0.0,,False,did nothing,does nothing
+si-agreement-seed2-authors,agreement,2,4,9,False,True,0.0,1.0,0.34,0.0,0.34,study,1.0,1.0,0.0,,False,did nothing,does nothing
+si-agreement-seed2-authors,agreement,2,4,10,False,True,0.0,1.0,0.333,0.0,0.333,study,1.0,1.0,0.0,,False,did nothing,does nothing
+si-agreement-seed2-authors,agreement,2,4,11,False,True,0.0,1.0,0.3475,0.0,0.3475,study,0.9995,1.0,0.0,,False,did nothing,does nothing
+si-agreement-seed2-authors,agreement,2,4,12,False,True,0.0,1.0,0.3395,0.0,0.3395,study,1.0,1.0,0.0,,False,did nothing,does nothing
+si-agreement-seed2-authors,agreement,2,4,13,False,True,0.0,1.0,0.3775,0.0,0.3775,study5,0.9984999999999999,0.998,0.0,,False,did nothing,does nothing
+si-agreement-seed2-authors,agreement,2,4,14,True,True,0.0,1.0,0.232,0.0,0.232,study5,0.999,0.9995,0.0,,False,did nothing,does nothing
+si-agreement-seed2-authors,agreement,2,4,15,True,True,0.9127906976744186,1.0,0.172,0.157,0.172,study5,0.10200000000000001,0.9975,0.0,0.999,False,paid off,pays off
+si-agreement-seed3-authors,agreement,3,1,8,True,True,0.9262166405023547,1.0,0.3185,0.295,0.3185,study,0.0865,0.9984999999999999,0.0,0.9984999999999999,False,paid off,pays off
+si-agreement-seed3-authors,agreement,3,1,9,True,True,1.0,1.0,0.33,0.33,0.33,study,0.0,0.9975,0.0,0.9995,False,paid off,pays off
+si-agreement-seed3-authors,agreement,3,2,8,False,True,0.0,1.0,0.347,0.0,0.347,study,0.9984999999999999,1.0,0.0,,False,did nothing,does nothing
+si-agreement-seed3-authors,agreement,3,2,9,False,True,0.0,1.0,0.339,0.0,0.339,study,0.9975,0.999,0.0,,False,did nothing,does nothing
+si-agreement-seed3-authors,agreement,3,2,10,True,True,0.18085106382978725,1.0,0.329,0.0595,0.329,study,0.7915000000000001,0.9984999999999999,0.0,,True,unclassified,does nothing
+si-agreement-seed3-authors,agreement,3,2,11,True,True,1.0,1.0,0.3465,0.3465,0.3465,study,0.0,0.9984999999999999,0.0,0.9995,False,paid off,pays off
+si-agreement-seed3-authors,agreement,3,3,8,False,True,0.0,1.0,0.349,0.0,0.349,study,1.0,0.9995,0.0,,False,did nothing,does nothing
+si-agreement-seed3-authors,agreement,3,3,9,False,True,0.0,1.0,0.3365,0.0,0.3365,study,0.999,0.999,0.0,,False,did nothing,does nothing
+si-agreement-seed3-authors,agreement,3,3,10,False,True,0.0,1.0,0.346,0.0,0.346,study,0.9984999999999999,0.9995,0.0,,False,did nothing,does nothing
+si-agreement-seed3-authors,agreement,3,3,11,False,True,0.0,1.0,0.3525,0.0,0.3525,study,0.9984999999999999,0.9995,0.0,,False,did nothing,does nothing
+si-agreement-seed3-authors,agreement,3,3,12,True,True,0.03945371775417299,1.0,0.3295,0.013,0.3295,study,0.962,0.9995,0.0,,False,unclassified,does nothing
+si-agreement-seed3-authors,agreement,3,3,13,True,True,0.9725829725829725,1.0,0.3465,0.337,0.3465,study5,0.0215,0.9975,0.0,0.998,False,paid off,pays off
+si-agreement-seed3-authors,agreement,3,4,8,False,True,0.0,1.0,0.3415,0.0,0.3415,study,0.9995,0.9995,0.0,,False,did nothing,does nothing
+si-agreement-seed3-authors,agreement,3,4,9,False,True,0.0,1.0,0.3565,0.0,0.3565,study,0.999,0.9995,0.0,,False,did nothing,does nothing
+si-agreement-seed3-authors,agreement,3,4,10,False,True,0.0,1.0,0.3485,0.0,0.3485,study,0.9995,0.999,0.0,,False,did nothing,does nothing
+si-agreement-seed3-authors,agreement,3,4,11,False,True,0.0,1.0,0.359,0.0,0.359,study,0.9995,0.999,0.0,,False,did nothing,does nothing
+si-agreement-seed3-authors,agreement,3,4,12,False,True,0.0,1.0,0.3215,0.0,0.3215,study,0.9995,0.999,0.0,,False,did nothing,does nothing
+si-agreement-seed3-authors,agreement,3,4,13,False,True,0.0,1.0,0.3735,0.0,0.3735,study5,0.9975,0.9955,0.0,,False,did nothing,does nothing
+si-agreement-seed3-authors,agreement,3,4,14,True,True,0.001953125,1.0,0.256,0.0005,0.256,study5,0.9915,0.996,0.0,,False,did nothing,does nothing
+si-agreement-seed3-authors,agreement,3,4,15,True,True,0.9736070381231672,1.0,0.1705,0.166,0.1705,study5,0.0265,0.997,0.0,0.9995,False,paid off,pays off
+si-agreement-seed4-authors,agreement,4,1,8,True,True,0.709585121602289,1.0,0.3495,0.248,0.3495,study,0.2905,0.9895,0.00039999999999995595,0.9924999999999999,True,paid off,pays off
+si-agreement-seed4-authors,agreement,4,1,9,True,True,1.0,1.0,0.32,0.32,0.32,study,0.0,0.9764999999999999,0.00039999999999995595,0.983,False,paid off,pays off
+si-agreement-seed4-authors,agreement,4,2,8,False,True,0.0,1.0,0.3305,0.0,0.3305,study,0.9895,0.993,0.0,,False,did nothing,does nothing
+si-agreement-seed4-authors,agreement,4,2,9,False,True,0.0,1.0,0.331,0.0,0.331,study,0.9764999999999999,0.985,0.0,,False,did nothing,does nothing
+si-agreement-seed4-authors,agreement,4,2,10,True,True,0.054380664652567974,1.0,0.331,0.018,0.331,study,0.9115,0.985,0.0,,False,unclassified,does nothing
+si-agreement-seed4-authors,agreement,4,2,11,True,True,1.0,1.0,0.3345,0.3345,0.3345,study,0.0,0.9755,0.0,0.9824999999999999,False,paid off,pays off
+si-agreement-seed4-authors,agreement,4,3,8,False,True,0.0,1.0,0.3305,0.0,0.3305,study,0.993,0.9924999999999999,-0.0005999999999999339,,False,did nothing,does nothing
+si-agreement-seed4-authors,agreement,4,3,9,False,True,0.004511278195488722,1.0,0.3325,0.0015,0.3325,study,0.985,0.984,-0.0005999999999999339,,False,did nothing,does nothing
+si-agreement-seed4-authors,agreement,4,3,10,False,True,0.0014285714285714286,1.0,0.35,0.0005,0.35,study,0.985,0.9835,-0.0005999999999999339,,False,did nothing,does nothing
+si-agreement-seed4-authors,agreement,4,3,11,False,True,0.002886002886002886,1.0,0.3465,0.001,0.3465,study,0.9755,0.981,-0.0005999999999999339,,False,did nothing,does nothing
+si-agreement-seed4-authors,agreement,4,3,12,True,True,0.013157894736842105,1.0,0.342,0.0045,0.342,study,0.9755,0.978,-0.0005999999999999339,,False,did nothing,does nothing
+si-agreement-seed4-authors,agreement,4,3,13,True,True,0.9445214979195562,1.0,0.3605,0.3405,0.3605,study5,0.0715,0.9744999999999999,-0.0005999999999999339,0.9824999999999999,False,paid off,pays off
+si-agreement-seed4-authors,agreement,4,4,8,False,True,0.0013774104683195593,1.0,0.363,0.0005,0.363,study,0.9924999999999999,0.9924999999999999,0.0010000000000000009,,False,did nothing,does nothing
+si-agreement-seed4-authors,agreement,4,4,9,False,True,0.0,1.0,0.325,0.0,0.325,study,0.984,0.987,0.0010000000000000009,,False,did nothing,does nothing
+si-agreement-seed4-authors,agreement,4,4,10,False,True,0.0014144271570014145,1.0,0.3535,0.0005,0.3535,study,0.9835,0.986,0.0010000000000000009,,False,did nothing,does nothing
+si-agreement-seed4-authors,agreement,4,4,11,False,True,0.004405286343612335,1.0,0.3405,0.0015,0.3405,study,0.981,0.9864999999999999,0.0010000000000000009,,False,did nothing,does nothing
+si-agreement-seed4-authors,agreement,4,4,12,False,True,0.005738880918220947,1.0,0.3485,0.002,0.3485,study,0.978,0.9815,0.0010000000000000009,,False,did nothing,does nothing
+si-agreement-seed4-authors,agreement,4,4,13,False,True,0.008633093525179856,1.0,0.3475,0.003,0.3475,study5,0.9744999999999999,0.9784999999999999,0.0010000000000000009,,False,did nothing,does nothing
+si-agreement-seed4-authors,agreement,4,4,14,True,True,0.02074688796680498,1.0,0.241,0.005,0.241,study5,0.9510000000000001,0.9695,0.0010000000000000009,,False,did nothing,does nothing
+si-agreement-seed4-authors,agreement,4,4,15,True,True,1.0,1.0,0.172,0.172,0.172,study5,0.0,0.9764999999999999,0.0010000000000000009,0.9884999999999999,False,paid off,pays off
 si-nocarry-seed0-5cut,no_carry,0,3,8,False,True,0.003973509933774834,0.6940397350993377,0.335,0.0015,0.3775,study,0.991,0.991,0.00039999999999995595,,False,did nothing,does nothing
 si-nocarry-seed0-5cut,no_carry,0,3,9,False,True,0.005298013245033113,0.6543046357615894,0.35,0.002,0.3775,study,0.9884999999999999,0.9924999999999999,0.00039999999999995595,,False,did nothing,does nothing
 si-nocarry-seed0-5cut,no_carry,0,3,10,False,True,0.01125,0.705,0.367,0.0045,0.4,study,0.988,0.994,0.00039999999999995595,,False,did nothing,does nothing
@@ -79,14 +139,86 @@ si-nocarry-seed1-authors,no_carry,1,2,8,False,True,0.0,0.7,0.3355,0.0,0.37,study
 si-nocarry-seed1-authors,no_carry,1,2,9,False,True,0.006578947368421052,0.6618421052631579,0.3435,0.0025,0.38,study,0.9895,0.996,0.00019999999999997797,,False,did nothing,does nothing
 si-nocarry-seed1-authors,no_carry,1,2,10,True,True,1.0,0.7086720867208672,0.344,0.369,0.369,study,0.0,0.994,0.00019999999999997797,0.994,False,paid off,pays off
 si-nocarry-seed1-authors,no_carry,1,2,11,True,True,1.0,0.6484076433121019,0.36,0.3925,0.3925,study,0.0,0.9915,0.00019999999999997797,0.9915,False,paid off,pays off
+si-nocarry-seed2-authors,no_carry,2,1,8,True,True,0.9791666666666666,0.7044270833333334,0.3565,0.376,0.384,study,0.0245,0.9995,0.0,1.0,False,paid off,pays off
+si-nocarry-seed2-authors,no_carry,2,1,9,True,True,1.0,0.6658031088082902,0.3525,0.386,0.386,study,0.0,1.0,0.0,1.0,False,paid off,pays off
+si-nocarry-seed2-authors,no_carry,2,2,8,False,True,0.0,0.6950904392764858,0.3445,0.0,0.387,study,0.9995,0.9995,0.0,,False,did nothing,does nothing
+si-nocarry-seed2-authors,no_carry,2,2,9,False,True,0.0,0.6208651399491094,0.344,0.0,0.393,study,1.0,1.0,0.0,,False,did nothing,does nothing
+si-nocarry-seed2-authors,no_carry,2,2,10,True,True,0.022193211488250653,0.6984334203655352,0.3365,0.0085,0.383,study,0.9895,1.0,0.0,,False,did nothing,does nothing
+si-nocarry-seed2-authors,no_carry,2,2,11,True,True,0.9987179487179487,0.6461538461538462,0.3425,0.3895,0.39,study,0.0015,0.9995,0.0,0.9995,False,paid off,pays off
+si-nocarry-seed2-authors,no_carry,2,3,8,False,True,0.0,0.7003942181340341,0.341,0.0,0.3805,study,0.9995,1.0,0.0,,False,did nothing,does nothing
+si-nocarry-seed2-authors,no_carry,2,3,9,False,True,0.0,0.6365979381443299,0.3475,0.0,0.388,study,1.0,1.0,0.0,,False,did nothing,does nothing
+si-nocarry-seed2-authors,no_carry,2,3,10,False,True,0.0,0.712401055408971,0.343,0.0,0.379,study,1.0,1.0,0.0,,False,did nothing,does nothing
+si-nocarry-seed2-authors,no_carry,2,3,11,False,True,0.0,0.6552631578947369,0.347,0.0,0.38,study,0.9995,1.0,0.0,,False,did nothing,does nothing
+si-nocarry-seed2-authors,no_carry,2,3,12,True,True,0.30577427821522307,0.7165354330708661,0.358,0.1165,0.381,study,0.626,0.9995,0.0,,True,unclassified,does nothing
+si-nocarry-seed2-authors,no_carry,2,3,13,True,True,1.0,0.6321989528795812,0.3515,0.382,0.382,study5,0.0,0.9995,0.0,0.9995,False,paid off,pays off
+si-nocarry-seed2-authors,no_carry,2,4,8,False,True,0.0,0.7108433734939759,0.335,0.0,0.3735,study,1.0,1.0,0.0,,False,did nothing,does nothing
+si-nocarry-seed2-authors,no_carry,2,4,9,False,True,0.0,0.636734693877551,0.34,0.0,0.3675,study,1.0,1.0,0.0,,False,did nothing,does nothing
+si-nocarry-seed2-authors,no_carry,2,4,10,False,True,0.0,0.6804123711340206,0.333,0.0,0.388,study,1.0,1.0,0.0,,False,did nothing,does nothing
+si-nocarry-seed2-authors,no_carry,2,4,11,False,True,0.0,0.6475095785440613,0.3475,0.0,0.3915,study,1.0,1.0,0.0,,False,did nothing,does nothing
+si-nocarry-seed2-authors,no_carry,2,4,12,False,True,0.0,0.7258278145695364,0.3395,0.0,0.3775,study,0.9995,1.0,0.0,,False,did nothing,does nothing
+si-nocarry-seed2-authors,no_carry,2,4,13,False,True,0.0,0.6845466155810983,0.3775,0.0,0.3915,study5,0.9995,1.0,0.0,,False,did nothing,does nothing
+si-nocarry-seed2-authors,no_carry,2,4,14,True,True,0.06578947368421052,0.4776315789473684,0.232,0.025,0.38,study5,0.93,1.0,0.0,,False,unclassified,does nothing
+si-nocarry-seed2-authors,no_carry,2,4,15,True,True,0.9898648648648649,0.5304054054054054,0.172,0.1465,0.148,study5,0.0055,0.999,0.0,0.999,False,paid off,pays off
+si-nocarry-seed3-authors,no_carry,3,1,8,True,True,0.9230769230769231,0.6951048951048951,0.3185,0.33,0.3575,study,0.0865,0.9984999999999999,0.0,0.9984999999999999,False,paid off,pays off
+si-nocarry-seed3-authors,no_carry,3,1,9,True,True,1.0,0.6338582677165354,0.33,0.381,0.381,study,0.0,0.9995,0.0,0.9995,False,paid off,pays off
+si-nocarry-seed3-authors,no_carry,3,2,8,False,True,0.0,0.7253044654939107,0.347,0.0,0.3695,study,0.9984999999999999,1.0,0.0,,False,did nothing,does nothing
+si-nocarry-seed3-authors,no_carry,3,2,9,False,True,0.0,0.6306892067620286,0.339,0.0,0.3845,study,0.9995,0.999,0.0,,False,did nothing,does nothing
+si-nocarry-seed3-authors,no_carry,3,2,10,True,True,0.7960526315789473,0.6815789473684211,0.329,0.3025,0.38,study,0.213,0.9995,0.0,0.9995,True,paid off,pays off
+si-nocarry-seed3-authors,no_carry,3,2,11,True,True,1.0,0.6618421052631579,0.3465,0.38,0.38,study,0.0,0.9995,0.0,0.9995,False,paid off,pays off
+si-nocarry-seed3-authors,no_carry,3,3,8,False,True,0.0,0.6963350785340314,0.349,0.0,0.382,study,1.0,1.0,0.0,,False,did nothing,does nothing
+si-nocarry-seed3-authors,no_carry,3,3,9,False,True,0.0012787723785166241,0.6227621483375959,0.3365,0.0005,0.391,study,0.999,1.0,0.0,,False,did nothing,does nothing
+si-nocarry-seed3-authors,no_carry,3,3,10,False,True,0.0,0.7015706806282722,0.346,0.0,0.382,study,0.9995,0.9995,0.0,,False,did nothing,does nothing
+si-nocarry-seed3-authors,no_carry,3,3,11,False,True,0.0012853470437017994,0.6336760925449871,0.3525,0.0005,0.389,study,0.9995,0.999,0.0,,False,did nothing,does nothing
+si-nocarry-seed3-authors,no_carry,3,3,12,True,True,0.23609226594301222,0.6716417910447762,0.3295,0.087,0.3685,study,0.792,0.9995,0.0,,True,unclassified,does nothing
+si-nocarry-seed3-authors,no_carry,3,3,13,True,True,0.9858247422680413,0.6314432989690721,0.3465,0.3825,0.388,study5,0.0155,0.998,0.0,0.998,False,paid off,pays off
+si-nocarry-seed3-authors,no_carry,3,4,8,False,True,0.0,0.6888297872340425,0.3415,0.0,0.376,study,1.0,1.0,0.0,,False,did nothing,does nothing
+si-nocarry-seed3-authors,no_carry,3,4,9,False,True,0.0,0.6688396349413298,0.3565,0.0,0.3835,study,1.0,1.0,0.0,,False,did nothing,does nothing
+si-nocarry-seed3-authors,no_carry,3,4,10,False,True,0.0,0.7096354166666666,0.3485,0.0,0.384,study,0.9995,1.0,0.0,,False,did nothing,does nothing
+si-nocarry-seed3-authors,no_carry,3,4,11,False,True,0.0012755102040816326,0.6441326530612245,0.359,0.0005,0.392,study,0.999,1.0,0.0,,False,did nothing,does nothing
+si-nocarry-seed3-authors,no_carry,3,4,12,False,True,0.0,0.6441798941798942,0.3215,0.0,0.378,study,0.9995,1.0,0.0,,False,did nothing,does nothing
+si-nocarry-seed3-authors,no_carry,3,4,13,False,True,0.0,0.6683480453972257,0.3735,0.0,0.3965,study5,0.998,0.999,0.0,,False,did nothing,does nothing
+si-nocarry-seed3-authors,no_carry,3,4,14,True,True,0.09962168978562422,0.48045397225725095,0.256,0.0395,0.3965,study5,0.906,1.0,0.0,,False,unclassified,does nothing
+si-nocarry-seed3-authors,no_carry,3,4,15,True,True,0.9966442953020134,0.5302013422818792,0.1705,0.1485,0.149,study5,0.0045000000000000005,0.9995,0.0,0.9995,False,paid off,pays off
+si-nocarry-seed4-authors,no_carry,4,1,8,True,True,0.7087126137841352,0.7230169050715215,0.3495,0.2725,0.3845,study,0.2905,0.9924999999999999,0.0005999999999999339,0.9924999999999999,True,paid off,pays off
+si-nocarry-seed4-authors,no_carry,4,1,9,True,True,1.0,0.6094839609483961,0.32,0.3585,0.3585,study,0.0,0.983,0.0005999999999999339,0.983,False,paid off,pays off
+si-nocarry-seed4-authors,no_carry,4,2,8,False,True,0.006648936170212766,0.714095744680851,0.3305,0.0025,0.376,study,0.9924999999999999,0.995,-0.00019999999999997797,,False,did nothing,does nothing
+si-nocarry-seed4-authors,no_carry,4,2,9,False,True,0.0027624309392265192,0.6367403314917127,0.331,0.001,0.362,study,0.983,0.9915,-0.00019999999999997797,,False,did nothing,does nothing
+si-nocarry-seed4-authors,no_carry,4,2,10,True,True,0.4192256341789052,0.6862483311081442,0.331,0.157,0.3745,study,0.5834999999999999,0.9835,-0.00019999999999997797,,True,unclassified,does nothing
+si-nocarry-seed4-authors,no_carry,4,2,11,True,True,1.0,0.631935047361299,0.3345,0.3695,0.3695,study,0.0,0.9824999999999999,-0.00019999999999997797,0.9824999999999999,False,paid off,pays off
+si-nocarry-seed4-authors,no_carry,4,3,8,False,True,0.0,0.6626984126984127,0.33,0.0,0.378,study,0.995,0.993,0.0,,False,did nothing,does nothing
+si-nocarry-seed4-authors,no_carry,4,3,9,False,True,0.0013227513227513227,0.6071428571428571,0.3325,0.0005,0.378,study,0.9915,0.9964999999999999,0.0,,False,did nothing,does nothing
+si-nocarry-seed4-authors,no_carry,4,3,10,False,True,0.007614213197969543,0.6928934010152284,0.35,0.003,0.394,study,0.9835,0.991,0.0,,False,did nothing,does nothing
+si-nocarry-seed4-authors,no_carry,4,3,11,False,True,0.003875968992248062,0.6382428940568475,0.347,0.0015,0.387,study,0.9824999999999999,0.9924999999999999,0.0,,False,did nothing,does nothing
+si-nocarry-seed4-authors,no_carry,4,3,12,True,True,0.028205128205128206,0.6756410256410257,0.342,0.011,0.39,study,0.9744999999999999,0.99,0.0,,False,did nothing,does nothing
+si-nocarry-seed4-authors,no_carry,4,3,13,True,True,0.9987546699875467,0.6214196762141968,0.36,0.401,0.4015,study5,0.0045000000000000005,0.9824999999999999,0.0,0.9824999999999999,False,paid off,pays off
+si-nocarry-seed4-authors,no_carry,4,4,8,False,True,0.0025348542458808617,0.7034220532319392,0.3625,0.001,0.3945,study,0.993,0.997,-0.0005999999999999339,,False,did nothing,does nothing
+si-nocarry-seed4-authors,no_carry,4,4,9,False,True,0.0013175230566534915,0.613965744400527,0.326,0.0005,0.3795,study,0.9964999999999999,0.9944999999999999,-0.0005999999999999339,,False,did nothing,does nothing
+si-nocarry-seed4-authors,no_carry,4,4,10,False,True,0.001277139208173691,0.698595146871009,0.3555,0.0005,0.3915,study,0.991,0.994,-0.0005999999999999339,,False,did nothing,does nothing
+si-nocarry-seed4-authors,no_carry,4,4,11,False,True,0.010825439783491205,0.6278755074424899,0.3405,0.004,0.3695,study,0.9924999999999999,0.997,-0.0005999999999999339,,False,did nothing,does nothing
+si-nocarry-seed4-authors,no_carry,4,4,12,False,True,0.00620347394540943,0.6898263027295285,0.351,0.0025,0.403,study,0.99,0.9944999999999999,-0.0005999999999999339,,False,did nothing,does nothing
+si-nocarry-seed4-authors,no_carry,4,4,13,False,True,0.009271523178807948,0.6503311258278146,0.3495,0.0035,0.3775,study5,0.9824999999999999,0.988,-0.0005999999999999339,,False,did nothing,does nothing
+si-nocarry-seed4-authors,no_carry,4,4,14,True,True,0.06266318537859007,0.4804177545691906,0.2415,0.024,0.383,study5,0.935,0.9875,-0.0005999999999999339,,False,unclassified,does nothing
+si-nocarry-seed4-authors,no_carry,4,4,15,True,True,1.0,0.5066225165562914,0.1735,0.151,0.151,study5,0.0,0.9884999999999999,-0.0005999999999999339,0.9884999999999999,False,paid off,pays off
+si-nocarry-weak-s1425-seed2-r2,no_carry,2,1,8,True,False,1.0,0.5410691003911343,0.259,0.3835,0.3835,study,0.002,0.8554999999999999,0.03599999999999992,1.0,False,unclassified,does harm
+si-nocarry-weak-s1425-seed2-r2,no_carry,2,1,9,True,False,1.0,0.2438391699092088,0.188,0.3855,0.3855,study,0.0,0.39,0.03599999999999992,1.0,False,taught wrong answers,does harm
+si-nocarry-weak-s2200-seed2,no_carry,2,1,8,True,False,0.8515625,0.6901041666666666,0.3485,0.327,0.384,study,0.14850000000000002,0.983,0.01419999999999999,1.0,False,paid off,does harm
+si-nocarry-weak-s2200-seed2,no_carry,2,1,9,True,False,1.0,0.6308290155440415,0.339,0.386,0.386,study,0.0,0.962,0.01419999999999999,1.0,False,paid off,does harm
 si-nocarry-weak-s2250-seed1,no_carry,1,1,8,True,False,0.7375328083989501,0.699475065616798,0.335,0.281,0.381,study,0.2395,0.9410000000000001,0.015600000000000058,0.9935,True,paid off,does harm
 si-nocarry-weak-s2250-seed1,no_carry,1,1,9,True,False,1.0,0.6348773841961853,0.338,0.367,0.367,study,0.0,0.9159999999999999,0.015600000000000058,0.9895,False,paid off,does harm
+si-nocarry-weak-s2250-seed4,no_carry,4,1,8,True,False,0.7692307692307693,0.7040417209908736,0.3395,0.295,0.3835,study,0.2405,0.97,0.008199999999999985,0.9924999999999999,True,paid off,does harm
+si-nocarry-weak-s2250-seed4,no_carry,4,1,9,True,False,1.0,0.5902097902097903,0.3115,0.3575,0.3575,study,0.0,0.9275,0.008199999999999985,0.983,False,paid off,does harm
 si-nocarry-weak-s2500-seed1,no_carry,1,1,8,True,False,1.0,0.6631578947368421,0.2965,0.38,0.38,study,0.0,0.533,0.00539999999999996,0.9935,False,taught wrong answers,does harm
 si-nocarry-weak-s2500-seed1,no_carry,1,1,9,True,False,1.0,0.034106412005457026,0.157,0.3665,0.3665,study,0.0,0.0395,0.00539999999999996,0.9895,False,did nothing,does harm
+si-nocarry-weak-s3000-seed4,no_carry,4,1,8,True,False,0.9986979166666666,0.7161458333333334,0.346,0.3835,0.384,study,0.0025,0.784,0.0026000000000000467,0.9924999999999999,False,unclassified,does harm
+si-nocarry-weak-s3000-seed4,no_carry,4,1,9,True,False,1.0,0.04888268156424581,0.181,0.358,0.358,study,0.0,0.07400000000000001,0.0026000000000000467,0.983,False,did nothing,does harm
 si-nocarry-weak-s3400-seed1,no_carry,1,1,8,True,False,1.0,0.7197368421052631,0.3435,0.38,0.38,study,0.0015,0.711,0.0005999999999999339,0.9935,False,unclassified,does harm
 si-nocarry-weak-s3400-seed1,no_carry,1,1,9,True,False,1.0,0.061391541609822645,0.202,0.3665,0.3665,study,0.0,0.049,0.0005999999999999339,0.9895,False,did nothing,does harm
+si-nocarry-weak-s3450-seed3,no_carry,3,1,8,True,False,1.0,0.6866295264623955,0.317,0.359,0.359,study,0.0,0.98,0.0,0.9984999999999999,False,paid off,does harm
+si-nocarry-weak-s3450-seed3,no_carry,3,1,9,True,False,1.0,0.6207349081364829,0.326,0.381,0.381,study,0.0,0.9530000000000001,0.0,0.9995,False,paid off,does harm
 si-nocarry-weak-s3500-seed1,no_carry,1,1,8,True,False,1.0,0.7105263157894737,0.3395,0.38,0.38,study,0.0,0.9530000000000001,0.007800000000000029,0.9935,False,paid off,does harm
 si-nocarry-weak-s3500-seed1,no_carry,1,1,9,True,False,1.0,0.6485013623978202,0.3425,0.367,0.367,study,0.0,0.9115,0.007800000000000029,0.9895,False,paid off,does harm
+si-nocarry-weak-s3500-seed3,no_carry,3,1,8,True,False,1.0,0.6685314685314685,0.3,0.3575,0.3575,study,0.0,0.08499999999999999,0.0050000000000000044,0.9984999999999999,False,did nothing,does harm
+si-nocarry-weak-s3500-seed3,no_carry,3,1,9,True,False,1.0,0.04336399474375821,0.1665,0.3805,0.3805,study,0.0,0.006,0.0050000000000000044,0.9995,False,did nothing,does harm
 si-noselect-after-nocarry-seed0-authors,no_selection,0,3,8,False,True,0.624,0.262,0.335,0.624,1.0,study,0.991,0.4985,0.00039999999999995595,,False,did harm,does harm
 si-noselect-after-nocarry-seed0-authors,no_selection,0,3,9,False,True,0.6245,0.247,0.35,0.6245,1.0,study,0.9884999999999999,0.4955,0.00039999999999995595,,False,did harm,does harm
 si-noselect-after-nocarry-seed0-authors,no_selection,0,3,10,False,True,0.6045,0.282,0.367,0.6045,1.0,study,0.988,0.4965,0.00039999999999995595,,False,did harm,does harm
@@ -99,6 +231,24 @@ si-noselect-after-nocarry-seed1-authors,no_selection,1,3,10,False,True,0.5985,0.
 si-noselect-after-nocarry-seed1-authors,no_selection,1,3,11,False,True,0.5995,0.259,0.367,0.5995,1.0,study,0.9915,0.4915,-0.00039999999999995595,,False,did harm,does harm
 si-noselect-after-nocarry-seed1-authors,no_selection,1,3,12,True,True,1.0,0.2535,0.3335,1.0,1.0,study,0.0,0.497,-0.00039999999999995595,0.9944999999999999,False,taught wrong answers,does harm
 si-noselect-after-nocarry-seed1-authors,no_selection,1,3,13,True,True,1.0,0.2215,0.2625,1.0,1.0,study,0.0,0.4955,-0.00039999999999995595,0.988,False,taught wrong answers,does harm
+si-noselect-after-nocarry-seed2-authors,no_selection,2,3,8,False,True,0.6195,0.2665,0.341,0.6195,1.0,study,0.9995,0.5,0.0,,False,did harm,does harm
+si-noselect-after-nocarry-seed2-authors,no_selection,2,3,9,False,True,0.612,0.247,0.3475,0.612,1.0,study,1.0,0.5,0.0,,False,did harm,does harm
+si-noselect-after-nocarry-seed2-authors,no_selection,2,3,10,False,True,0.621,0.27,0.343,0.621,1.0,study,1.0,0.5,0.0,,False,did harm,does harm
+si-noselect-after-nocarry-seed2-authors,no_selection,2,3,11,False,True,0.62,0.249,0.347,0.62,1.0,study,0.9995,0.5,0.0,,False,did harm,does harm
+si-noselect-after-nocarry-seed2-authors,no_selection,2,3,12,True,True,0.7355,0.273,0.358,0.7355,1.0,study,0.626,0.5,0.0,,True,did harm,does harm
+si-noselect-after-nocarry-seed2-authors,no_selection,2,3,13,True,True,1.0,0.2415,0.3515,1.0,1.0,study5,0.0,0.5,0.0,0.9995,False,taught wrong answers,does harm
+si-noselect-after-nocarry-seed3-authors-r2,no_selection,3,3,8,False,True,0.618,0.266,0.349,0.618,1.0,study,1.0,0.5,0.0,,False,did harm,does harm
+si-noselect-after-nocarry-seed3-authors-r2,no_selection,3,3,9,False,True,0.6095,0.2435,0.3365,0.6095,1.0,study,0.999,0.5,0.0,,False,did harm,does harm
+si-noselect-after-nocarry-seed3-authors-r2,no_selection,3,3,10,False,True,0.618,0.268,0.346,0.618,1.0,study,0.9995,0.5,0.0,,False,did harm,does harm
+si-noselect-after-nocarry-seed3-authors-r2,no_selection,3,3,11,False,True,0.6115,0.2465,0.3525,0.6115,1.0,study,0.9995,0.5,0.0,,False,did harm,does harm
+si-noselect-after-nocarry-seed3-authors-r2,no_selection,3,3,12,True,True,0.7185,0.2475,0.3295,0.7185,1.0,study,0.792,0.5,0.0,,True,did harm,does harm
+si-noselect-after-nocarry-seed3-authors-r2,no_selection,3,3,13,True,True,0.9945,0.245,0.3465,0.9945,1.0,study5,0.0155,0.5,0.0,0.998,False,taught wrong answers,does harm
+si-noselect-after-nocarry-seed4-authors,no_selection,4,3,8,False,True,0.622,0.2505,0.33,0.622,1.0,study,0.995,0.5,-0.0008000000000000229,,False,did harm,does harm
+si-noselect-after-nocarry-seed4-authors,no_selection,4,3,9,False,True,0.6225,0.2295,0.3325,0.6225,1.0,study,0.9915,0.4985,-0.0008000000000000229,,False,did harm,does harm
+si-noselect-after-nocarry-seed4-authors,no_selection,4,3,10,False,True,0.609,0.273,0.35,0.609,1.0,study,0.9835,0.498,-0.0008000000000000229,,False,did harm,does harm
+si-noselect-after-nocarry-seed4-authors,no_selection,4,3,11,False,True,0.6145,0.247,0.347,0.6145,1.0,study,0.9824999999999999,0.4945,-0.0008000000000000229,,False,did harm,does harm
+si-noselect-after-nocarry-seed4-authors,no_selection,4,3,12,True,True,0.621,0.2635,0.342,0.621,1.0,study,0.9744999999999999,0.494,-0.0008000000000000229,,False,did harm,does harm
+si-noselect-after-nocarry-seed4-authors,no_selection,4,3,13,True,True,0.9995,0.2495,0.36,0.9995,1.0,study5,0.0045000000000000005,0.493,-0.0008000000000000229,0.9824999999999999,False,taught wrong answers,does harm
 si-noselect-seed0-5cut,no_selection,0,3,8,False,True,0.3725,0.262,0.335,0.3725,1.0,study,0.4985,0.499,-0.00019999999999997797,,False,did nothing,does nothing
 si-noselect-seed0-5cut,no_selection,0,3,9,False,True,0.376,0.248,0.3495,0.376,1.0,study,0.4965,0.4955,-0.00019999999999997797,,False,did nothing,does nothing
 si-noselect-seed0-5cut,no_selection,0,3,10,False,True,0.3965,0.2815,0.3665,0.3965,1.0,study,0.4835,0.482,-0.00019999999999997797,,False,did nothing,does nothing
@@ -139,6 +289,66 @@ si-noselect-seed1-authors,no_selection,1,2,8,False,True,0.3825,0.2595,0.3365,0.3
 si-noselect-seed1-authors,no_selection,1,2,9,False,True,0.386,0.2515,0.344,0.386,1.0,study,0.4935,0.497,0.0010000000000000009,,False,did nothing,does nothing
 si-noselect-seed1-authors,no_selection,1,2,10,True,True,1.0,0.2615,0.343,1.0,1.0,study,0.0,0.4975,0.0010000000000000009,0.994,False,taught wrong answers,does harm
 si-noselect-seed1-authors,no_selection,1,2,11,True,True,1.0,0.2535,0.3575,1.0,1.0,study,0.0,0.495,0.0010000000000000009,0.9915,False,taught wrong answers,does harm
+si-noselect-seed2-authors,no_selection,2,1,8,True,True,0.992,0.2705,0.3565,0.992,1.0,study,0.0245,0.4995,0.0,1.0,False,taught wrong answers,does harm
+si-noselect-seed2-authors,no_selection,2,1,9,True,True,1.0,0.257,0.3525,1.0,1.0,study,0.0,0.5,0.0,1.0,False,taught wrong answers,does harm
+si-noselect-seed2-authors,no_selection,2,2,8,False,True,0.367,0.269,0.3445,0.367,1.0,study,0.4995,0.5,0.0,,False,did nothing,does nothing
+si-noselect-seed2-authors,no_selection,2,2,9,False,True,0.3775,0.244,0.344,0.3775,1.0,study,0.5,0.5,0.0,,False,did nothing,does nothing
+si-noselect-seed2-authors,no_selection,2,2,10,True,True,0.9985,0.2675,0.3365,0.9985,1.0,study,0.0075,0.5,0.0,1.0,False,taught wrong answers,does harm
+si-noselect-seed2-authors,no_selection,2,2,11,True,True,1.0,0.252,0.3425,1.0,1.0,study,0.0,0.4995,0.0,0.9995,False,taught wrong answers,does harm
+si-noselect-seed2-authors,no_selection,2,3,8,False,True,0.381,0.2665,0.341,0.381,1.0,study,0.5,0.5,0.0,,False,did nothing,does nothing
+si-noselect-seed2-authors,no_selection,2,3,9,False,True,0.3705,0.247,0.3475,0.3705,1.0,study,0.5,0.5,0.0,,False,did nothing,does nothing
+si-noselect-seed2-authors,no_selection,2,3,10,False,True,0.379,0.27,0.343,0.379,1.0,study,0.5,0.5,0.0,,False,did nothing,does nothing
+si-noselect-seed2-authors,no_selection,2,3,11,False,True,0.3715,0.249,0.347,0.3715,1.0,study,0.4995,0.5,0.0,,False,did nothing,does nothing
+si-noselect-seed2-authors,no_selection,2,3,12,True,True,0.9385,0.273,0.358,0.9385,1.0,study,0.1205,0.5,0.0,1.0,False,taught wrong answers,does harm
+si-noselect-seed2-authors,no_selection,2,3,13,True,True,1.0,0.2415,0.3515,1.0,1.0,study5,0.0,0.5,0.0,0.9995,False,taught wrong answers,does harm
+si-noselect-seed2-authors,no_selection,2,4,8,False,True,0.384,0.2655,0.335,0.384,1.0,study,0.5,0.5,0.0,,False,did nothing,does nothing
+si-noselect-seed2-authors,no_selection,2,4,9,False,True,0.387,0.234,0.34,0.387,1.0,study,0.5,0.5,0.0,,False,did nothing,does nothing
+si-noselect-seed2-authors,no_selection,2,4,10,False,True,0.364,0.264,0.333,0.364,1.0,study,0.5,0.5,0.0,,False,did nothing,does nothing
+si-noselect-seed2-authors,no_selection,2,4,11,False,True,0.3655,0.2535,0.3475,0.3655,1.0,study,0.5,0.5,0.0,,False,did nothing,does nothing
+si-noselect-seed2-authors,no_selection,2,4,12,False,True,0.3765,0.274,0.3395,0.3765,1.0,study,0.5,0.5,0.0,,False,did nothing,does nothing
+si-noselect-seed2-authors,no_selection,2,4,13,False,True,0.362,0.268,0.3775,0.362,1.0,study5,0.5,0.5,0.0,,False,did nothing,does nothing
+si-noselect-seed2-authors,no_selection,2,4,14,True,True,0.8455,0.1815,0.232,0.8455,1.0,study5,0.34650000000000003,0.5,0.0,1.0,True,taught wrong answers,does harm
+si-noselect-seed2-authors,no_selection,2,4,15,True,True,0.9995,0.0785,0.172,0.9995,1.0,study5,0.0045000000000000005,0.4995,0.0,0.999,False,taught wrong answers,does harm
+si-noselect-seed3-authors,no_selection,3,1,8,True,True,0.9725,0.2485,0.3185,0.9725,1.0,study,0.0865,0.5,-0.00019999999999997797,0.9984999999999999,False,taught wrong answers,does harm
+si-noselect-seed3-authors,no_selection,3,1,9,True,True,1.0,0.2415,0.33,1.0,1.0,study,0.0,0.5,-0.00019999999999997797,0.9995,False,taught wrong answers,does harm
+si-noselect-seed3-authors,no_selection,3,2,8,False,True,0.385,0.268,0.347,0.385,1.0,study,0.5,0.5,0.00019999999999997797,,False,did nothing,does nothing
+si-noselect-seed3-authors,no_selection,3,2,9,False,True,0.367,0.2425,0.339,0.367,1.0,study,0.5,0.5,0.00019999999999997797,,False,did nothing,does nothing
+si-noselect-seed3-authors,no_selection,3,2,10,True,True,0.999,0.259,0.329,0.999,1.0,study,0.0015,0.4985,0.00019999999999997797,0.9995,False,taught wrong answers,does harm
+si-noselect-seed3-authors,no_selection,3,2,11,True,True,1.0,0.252,0.347,1.0,1.0,study,0.0,0.4995,0.00019999999999997797,0.9995,False,taught wrong answers,does harm
+si-noselect-seed3-authors,no_selection,3,3,8,False,True,0.3655,0.266,0.349,0.3655,1.0,study,0.5,0.5,0.0,,False,did nothing,does nothing
+si-noselect-seed3-authors,no_selection,3,3,9,False,True,0.359,0.2435,0.3365,0.359,1.0,study,0.5,0.5,0.0,,False,did nothing,does nothing
+si-noselect-seed3-authors,no_selection,3,3,10,False,True,0.3555,0.268,0.346,0.3555,1.0,study,0.4985,0.5,0.0,,False,did nothing,does nothing
+si-noselect-seed3-authors,no_selection,3,3,11,False,True,0.388,0.2465,0.3525,0.388,1.0,study,0.4995,0.5,0.0,,False,did nothing,does nothing
+si-noselect-seed3-authors,no_selection,3,3,12,True,True,0.999,0.2475,0.3295,0.999,1.0,study,0.002,0.5,0.0,0.9995,False,taught wrong answers,does harm
+si-noselect-seed3-authors,no_selection,3,3,13,True,True,1.0,0.245,0.3465,1.0,1.0,study5,0.0,0.499,0.0,0.998,False,taught wrong answers,does harm
+si-noselect-seed3-authors,no_selection,3,4,8,False,True,0.3915,0.259,0.3415,0.3915,1.0,study,0.5,0.5,0.0,,False,did nothing,does nothing
+si-noselect-seed3-authors,no_selection,3,4,9,False,True,0.376,0.2565,0.3565,0.376,1.0,study,0.5,0.5,0.0,,False,did nothing,does nothing
+si-noselect-seed3-authors,no_selection,3,4,10,False,True,0.381,0.2725,0.3485,0.381,1.0,study,0.5,0.5,0.0,,False,did nothing,does nothing
+si-noselect-seed3-authors,no_selection,3,4,11,False,True,0.3715,0.2525,0.359,0.3715,1.0,study,0.5,0.5,0.0,,False,did nothing,does nothing
+si-noselect-seed3-authors,no_selection,3,4,12,False,True,0.3715,0.2435,0.3215,0.3715,1.0,study,0.5,0.5,0.0,,False,did nothing,does nothing
+si-noselect-seed3-authors,no_selection,3,4,13,False,True,0.377,0.265,0.3735,0.377,1.0,study5,0.499,0.5,0.0,,False,did nothing,does nothing
+si-noselect-seed3-authors,no_selection,3,4,14,True,True,0.861,0.1905,0.256,0.861,1.0,study5,0.2995,0.4995,0.0,1.0,True,taught wrong answers,does harm
+si-noselect-seed3-authors,no_selection,3,4,15,True,True,0.9995,0.079,0.1705,0.9995,1.0,study5,0.0,0.5,0.0,0.9995,False,taught wrong answers,does harm
+si-noselect-seed4-authors,no_selection,4,1,8,True,True,0.888,0.278,0.3495,0.888,1.0,study,0.2905,0.499,-0.00040000000000006697,0.9924999999999999,True,taught wrong answers,does harm
+si-noselect-seed4-authors,no_selection,4,1,9,True,True,1.0,0.2185,0.32,1.0,1.0,study,0.0,0.495,-0.00040000000000006697,0.983,False,taught wrong answers,does harm
+si-noselect-seed4-authors,no_selection,4,2,8,False,True,0.3975,0.2685,0.3305,0.3975,1.0,study,0.499,0.499,0.0006000000000000449,,False,did nothing,does nothing
+si-noselect-seed4-authors,no_selection,4,2,9,False,True,0.3785,0.231,0.3315,0.3785,1.0,study,0.495,0.495,0.0006000000000000449,,False,did nothing,does nothing
+si-noselect-seed4-authors,no_selection,4,2,10,True,True,0.991,0.2575,0.3315,0.991,1.0,study,0.0375,0.496,0.0006000000000000449,0.985,False,taught wrong answers,does harm
+si-noselect-seed4-authors,no_selection,4,2,11,True,True,1.0,0.2325,0.3325,1.0,1.0,study,0.0,0.492,0.0006000000000000449,0.9824999999999999,False,taught wrong answers,does harm
+si-noselect-seed4-authors,no_selection,4,3,8,False,True,0.399,0.2505,0.3295,0.399,1.0,study,0.499,0.4995,-0.0018000000000000238,,False,did nothing,does nothing
+si-noselect-seed4-authors,no_selection,4,3,9,False,True,0.3805,0.229,0.3315,0.3805,1.0,study,0.495,0.4965,-0.0018000000000000238,,False,did nothing,does nothing
+si-noselect-seed4-authors,no_selection,4,3,10,False,True,0.3765,0.273,0.35,0.3765,1.0,study,0.496,0.4965,-0.0018000000000000238,,False,did nothing,does nothing
+si-noselect-seed4-authors,no_selection,4,3,11,False,True,0.402,0.247,0.3465,0.402,1.0,study,0.492,0.494,-0.0018000000000000238,,False,did nothing,does nothing
+si-noselect-seed4-authors,no_selection,4,3,12,True,True,0.963,0.264,0.3415,0.963,1.0,study,0.0985,0.491,-0.0018000000000000238,0.99,False,taught wrong answers,does harm
+si-noselect-seed4-authors,no_selection,4,3,13,True,True,1.0,0.25,0.3615,1.0,1.0,study5,0.0,0.4915,-0.0018000000000000238,0.9824999999999999,False,taught wrong answers,does harm
+si-noselect-seed4-authors,no_selection,4,4,8,False,True,0.365,0.2775,0.363,0.365,1.0,study,0.4995,0.4995,0.0006000000000000449,,False,did nothing,does nothing
+si-noselect-seed4-authors,no_selection,4,4,9,False,True,0.4005,0.233,0.326,0.4005,1.0,study,0.4965,0.4955,0.0006000000000000449,,False,did nothing,does nothing
+si-noselect-seed4-authors,no_selection,4,4,10,False,True,0.376,0.2735,0.3545,0.376,1.0,study,0.4965,0.4945,0.0006000000000000449,,False,did nothing,does nothing
+si-noselect-seed4-authors,no_selection,4,4,11,False,True,0.376,0.2295,0.338,0.376,1.0,study,0.494,0.4945,0.0006000000000000449,,False,did nothing,does nothing
+si-noselect-seed4-authors,no_selection,4,4,12,False,True,0.3745,0.2755,0.348,0.3745,1.0,study,0.491,0.491,0.0006000000000000449,,False,did nothing,does nothing
+si-noselect-seed4-authors,no_selection,4,4,13,False,True,0.387,0.244,0.348,0.387,1.0,study5,0.4915,0.491,0.0006000000000000449,,False,did nothing,does nothing
+si-noselect-seed4-authors,no_selection,4,4,14,True,True,0.8325,0.1835,0.241,0.8325,1.0,study5,0.36,0.488,0.0006000000000000449,0.9875,True,taught wrong answers,does harm
+si-noselect-seed4-authors,no_selection,4,4,15,True,True,0.9995,0.076,0.1725,0.9995,1.0,study5,0.006500000000000001,0.451,0.0006000000000000449,0.9884999999999999,False,taught wrong answers,does harm
 si-vote-seed0-5cut,sample_and_vote,0,3,8,False,True,0.03411405295315682,0.0,0.335,0.0335,0.982,study,0.0,0.0,-0.0008000000000000229,,False,did nothing,does nothing
 si-vote-seed0-5cut,sample_and_vote,0,3,9,False,True,0.06637884511602807,0.0,0.3495,0.0615,0.9265,study,0.0,0.0,-0.0008000000000000229,,False,did nothing,does nothing
 si-vote-seed0-5cut,sample_and_vote,0,3,10,False,True,0.10384615384615385,0.0,0.367,0.081,0.78,study,0.0,0.0,-0.0008000000000000229,,False,did nothing,does nothing
@@ -179,3 +389,63 @@ si-vote-seed1-authors,sample_and_vote,1,2,8,False,True,0.07729994556341861,0.0,0
 si-vote-seed1-authors,sample_and_vote,1,2,9,False,True,0.18926553672316385,0.0,0.3435,0.0335,0.177,study,0.0,0.0,-0.00019999999999997797,,False,did nothing,does nothing
 si-vote-seed1-authors,sample_and_vote,1,2,10,True,True,0.3076923076923077,0.0,0.345,0.004,0.013,study,0.0,0.0,-0.00019999999999997797,0.994,False,did nothing,does nothing
 si-vote-seed1-authors,sample_and_vote,1,2,11,True,True,,,0.359,0.0,0.0,study,0.0,0.0,-0.00019999999999997797,0.9915,False,did nothing,does nothing
+si-vote-seed2-authors,sample_and_vote,2,1,8,True,True,0.05915813424345848,0.01877133105802048,0.3565,0.052,0.879,study,0.0245,0.020999999999999998,0.0,1.0,False,did nothing,does nothing
+si-vote-seed2-authors,sample_and_vote,2,1,9,True,True,0.14470284237726097,0.0,0.3525,0.056,0.387,study,0.0,0.0,0.0,1.0,False,did nothing,does nothing
+si-vote-seed2-authors,sample_and_vote,2,2,8,False,True,0.09074074074074075,0.01728395061728395,0.3445,0.0735,0.81,study,0.020999999999999998,0.022,0.0,,False,did nothing,does nothing
+si-vote-seed2-authors,sample_and_vote,2,2,9,False,True,0.16817155756207675,0.0,0.344,0.0745,0.443,study,0.0,0.0,0.0,,False,did nothing,does nothing
+si-vote-seed2-authors,sample_and_vote,2,2,10,True,True,0.20408163265306123,0.0,0.3365,0.025,0.1225,study,0.0,0.0,0.0,1.0,False,did nothing,does nothing
+si-vote-seed2-authors,sample_and_vote,2,2,11,True,True,0.2376237623762376,0.0,0.3425,0.012,0.0505,study,0.0,0.0,0.0,0.9995,False,did nothing,does nothing
+si-vote-seed2-authors,sample_and_vote,2,3,8,False,True,0.060814383923849816,0.017451084082496033,0.341,0.0575,0.9455,study,0.022,0.02,0.0,,False,did nothing,does nothing
+si-vote-seed2-authors,sample_and_vote,2,3,9,False,True,0.11526479750778816,0.0,0.3475,0.0925,0.8025,study,0.0,0.0,0.0,,False,did nothing,does nothing
+si-vote-seed2-authors,sample_and_vote,2,3,10,False,True,0.16566626650660263,0.0,0.343,0.069,0.4165,study,0.0,0.0,0.0,,False,did nothing,does nothing
+si-vote-seed2-authors,sample_and_vote,2,3,11,False,True,0.181640625,0.0,0.347,0.0465,0.256,study,0.0,0.0,0.0,,False,did nothing,does nothing
+si-vote-seed2-authors,sample_and_vote,2,3,12,True,True,0.1950207468879668,0.0,0.358,0.0235,0.1205,study,0.0,0.0,0.0,1.0,False,did nothing,does nothing
+si-vote-seed2-authors,sample_and_vote,2,3,13,True,True,0.2727272727272727,0.0,0.3515,0.012,0.044,study5,0.0,0.0,0.0,0.9995,False,did nothing,does nothing
+si-vote-seed2-authors,sample_and_vote,2,4,8,False,True,0.05473145780051151,0.018925831202046037,0.335,0.0535,0.9775,study,0.02,0.0195,-0.00019999999999997797,,False,did nothing,does nothing
+si-vote-seed2-authors,sample_and_vote,2,4,9,False,True,0.09873138444567016,0.0,0.34,0.0895,0.9065,study,0.0,0.0,-0.00019999999999997797,,False,did nothing,does nothing
+si-vote-seed2-authors,sample_and_vote,2,4,10,False,True,0.1311861743912019,0.0,0.333,0.0835,0.6365,study,0.0,0.0,-0.00019999999999997797,,False,did nothing,does nothing
+si-vote-seed2-authors,sample_and_vote,2,4,11,False,True,0.1631762652705061,0.0,0.3475,0.0935,0.573,study,0.0,0.0,-0.00019999999999997797,,False,did nothing,does nothing
+si-vote-seed2-authors,sample_and_vote,2,4,12,False,True,0.16393442622950818,0.0,0.339,0.08,0.488,study,0.0,0.0,-0.00019999999999997797,,False,did nothing,does nothing
+si-vote-seed2-authors,sample_and_vote,2,4,13,False,True,0.16441717791411042,0.0,0.3775,0.067,0.4075,study5,0.0,0.0,-0.00019999999999997797,,False,did nothing,does nothing
+si-vote-seed2-authors,sample_and_vote,2,4,14,True,True,0.1685878962536023,0.0,0.232,0.0585,0.347,study5,0.0,0.0,-0.00019999999999997797,1.0,False,did nothing,does nothing
+si-vote-seed2-authors,sample_and_vote,2,4,15,True,True,0.16166666666666665,0.0,0.172,0.0485,0.3,study5,0.0,0.0,-0.00019999999999997797,0.999,False,did nothing,does nothing
+si-vote-seed3-authors,sample_and_vote,3,1,8,True,True,0.052749719416386086,0.05443322109988777,0.3185,0.047,0.891,study,0.0865,0.07,0.0,0.9984999999999999,False,did nothing,does nothing
+si-vote-seed3-authors,sample_and_vote,3,1,9,True,True,0.1893939393939394,0.0,0.33,0.025,0.132,study,0.0,0.0,0.0,0.9995,False,did nothing,does nothing
+si-vote-seed3-authors,sample_and_vote,3,2,8,False,True,0.058120586637696904,0.057577403585008145,0.347,0.0535,0.9205,study,0.07,0.0655,0.0,,False,did nothing,does nothing
+si-vote-seed3-authors,sample_and_vote,3,2,9,False,True,0.1657142857142857,0.0,0.339,0.029,0.175,study,0.0,0.0,0.0,,False,did nothing,does nothing
+si-vote-seed3-authors,sample_and_vote,3,2,10,True,True,0.23943661971830985,0.0,0.329,0.0085,0.0355,study,0.0,0.0,0.0,0.9995,False,did nothing,does nothing
+si-vote-seed3-authors,sample_and_vote,3,2,11,True,True,0.39215686274509803,0.0,0.3465,0.01,0.0255,study,0.0,0.0,0.0,0.9995,False,did nothing,does nothing
+si-vote-seed3-authors,sample_and_vote,3,3,8,False,True,0.03983656792645557,0.05209397344228805,0.349,0.039,0.979,study,0.0655,0.067,0.0,,False,did nothing,does nothing
+si-vote-seed3-authors,sample_and_vote,3,3,9,False,True,0.11929543634907927,0.0,0.3365,0.0745,0.6245,study,0.0,0.0,0.0,,False,did nothing,does nothing
+si-vote-seed3-authors,sample_and_vote,3,3,10,False,True,0.1518324607329843,0.0,0.346,0.029,0.191,study,0.0,0.0,0.0,,False,did nothing,does nothing
+si-vote-seed3-authors,sample_and_vote,3,3,11,False,True,0.22666666666666666,0.0,0.3525,0.017,0.075,study,0.0,0.0,0.0,,False,did nothing,does nothing
+si-vote-seed3-authors,sample_and_vote,3,3,12,True,True,0.21666666666666667,0.0,0.329,0.0065,0.03,study,0.0,0.0,0.0,0.9995,False,did nothing,does nothing
+si-vote-seed3-authors,sample_and_vote,3,3,13,True,True,0.3055555555555556,0.0,0.3465,0.0055,0.018,study5,0.0,0.0,0.0,0.998,False,did nothing,does nothing
+si-vote-seed3-authors,sample_and_vote,3,4,8,False,True,0.02221100454316002,0.04038364462392731,0.3415,0.022,0.9905,study,0.067,0.066,0.0,,False,did nothing,does nothing
+si-vote-seed3-authors,sample_and_vote,3,4,9,False,True,0.1133956386292835,0.0,0.3565,0.091,0.8025,study,0.0,0.0,0.0,,False,did nothing,does nothing
+si-vote-seed3-authors,sample_and_vote,3,4,10,False,True,0.1529888551165147,0.0,0.348,0.0755,0.4935,study,0.0,0.0,0.0,,False,did nothing,does nothing
+si-vote-seed3-authors,sample_and_vote,3,4,11,False,True,0.16534541336353342,0.0,0.359,0.073,0.4415,study,0.0,0.0,0.0,,False,did nothing,does nothing
+si-vote-seed3-authors,sample_and_vote,3,4,12,False,True,0.15040183696900114,0.0,0.3215,0.0655,0.4355,study,0.0,0.0,0.0,,False,did nothing,does nothing
+si-vote-seed3-authors,sample_and_vote,3,4,13,False,True,0.13853211009174313,0.0,0.3735,0.0755,0.545,study5,0.0,0.0,0.0,,False,did nothing,does nothing
+si-vote-seed3-authors,sample_and_vote,3,4,14,True,True,0.17703349282296652,0.0,0.256,0.0925,0.5225,study5,0.0,0.0,0.0,1.0,False,did nothing,does nothing
+si-vote-seed3-authors,sample_and_vote,3,4,15,True,True,0.18941798941798943,0.0,0.171,0.0895,0.4725,study5,0.0,0.0,0.0,0.9995,False,did nothing,does nothing
+si-vote-seed4-authors,sample_and_vote,4,1,8,True,True,0.0633693972179289,0.23132405976300877,0.3495,0.0615,0.9705,study,0.2905,0.3065,0.00039999999999995595,0.9924999999999999,True,did nothing,does nothing
+si-vote-seed4-authors,sample_and_vote,4,1,9,True,True,0.030980192991366177,0.0,0.32,0.0305,0.9845,study,0.0,0.0,0.00039999999999995595,0.983,False,did nothing,does nothing
+si-vote-seed4-authors,sample_and_vote,4,2,8,False,True,0.08406593406593407,0.23736263736263735,0.3305,0.0765,0.91,study,0.3065,0.299,-0.0005999999999999339,,False,did nothing,does nothing
+si-vote-seed4-authors,sample_and_vote,4,2,9,False,True,0.033264033264033266,0.0,0.3315,0.032,0.962,study,0.0,0.0,-0.0005999999999999339,,False,did nothing,does nothing
+si-vote-seed4-authors,sample_and_vote,4,2,10,True,True,0.08498253783469151,0.0,0.331,0.073,0.859,study,0.0,0.0,-0.0005999999999999339,0.985,False,did nothing,does nothing
+si-vote-seed4-authors,sample_and_vote,4,2,11,True,True,0.16580844490216273,0.0,0.334,0.0805,0.4855,study,0.0,0.0,-0.0005999999999999339,0.9824999999999999,False,did nothing,does nothing
+si-vote-seed4-authors,sample_and_vote,4,3,8,False,True,0.05364583333333333,0.21041666666666667,0.3305,0.0515,0.96,study,0.299,0.3095,-0.0008000000000000229,,False,did nothing,does nothing
+si-vote-seed4-authors,sample_and_vote,4,3,9,False,True,0.025265285497726123,0.0,0.332,0.025,0.9895,study,0.0,0.0,-0.0008000000000000229,,False,did nothing,does nothing
+si-vote-seed4-authors,sample_and_vote,4,3,10,False,True,0.0554675118858954,0.0,0.3495,0.0525,0.9465,study,0.0,0.0,-0.0008000000000000229,,False,did nothing,does nothing
+si-vote-seed4-authors,sample_and_vote,4,3,11,False,True,0.1631130063965885,0.0,0.347,0.0765,0.469,study,0.0,0.0,-0.0008000000000000229,,False,did nothing,does nothing
+si-vote-seed4-authors,sample_and_vote,4,3,12,True,True,0.20476190476190476,0.0,0.343,0.0215,0.105,study,0.0,0.0,-0.0008000000000000229,0.99,False,did nothing,does nothing
+si-vote-seed4-authors,sample_and_vote,4,3,13,True,True,0.45454545454545453,0.0,0.3605,0.0025,0.0055,study5,0.0,0.0,-0.0008000000000000229,0.9824999999999999,False,did nothing,does nothing
+si-vote-seed4-authors,sample_and_vote,4,4,8,False,True,0.043922369765066395,0.2379979570990807,0.363,0.043,0.979,study,0.3095,0.309,0.0,,False,did nothing,does nothing
+si-vote-seed4-authors,sample_and_vote,4,4,9,False,True,0.021287379624936646,0.0,0.3255,0.021,0.9865,study,0.0,0.0,0.0,,False,did nothing,does nothing
+si-vote-seed4-authors,sample_and_vote,4,4,10,False,True,0.049616368286445015,0.0,0.3545,0.0485,0.9775,study,0.0,0.0,0.0,,False,did nothing,does nothing
+si-vote-seed4-authors,sample_and_vote,4,4,11,False,True,0.10857538035961273,0.0,0.338,0.0785,0.723,study,0.0,0.0,0.0,,False,did nothing,does nothing
+si-vote-seed4-authors,sample_and_vote,4,4,12,False,True,0.16336633663366337,0.0,0.349,0.0825,0.505,study,0.0,0.0,0.0,,False,did nothing,does nothing
+si-vote-seed4-authors,sample_and_vote,4,4,13,False,True,0.18478260869565216,0.0,0.3455,0.0595,0.322,study5,0.0,0.0,0.0,,False,did nothing,does nothing
+si-vote-seed4-authors,sample_and_vote,4,4,14,True,True,0.2426470588235294,0.0,0.2415,0.0495,0.204,study5,0.0,0.0,0.0,0.9875,False,did nothing,does nothing
+si-vote-seed4-authors,sample_and_vote,4,4,15,True,True,0.19642857142857142,0.0,0.1725,0.033,0.168,study5,0.0,0.0,0.0,0.9884999999999999,False,did nothing,does nothing

@@ -1,0 +1,58 @@
+{
+  "rounds": {
+    "teacher": "join_at_the_cut",
+    "rounds": 1,
+    "seed": 4,
+    "kept_per_length": 2000,
+    "draw_cap_factor": 20,
+    "replay_questions": [
+      "runlen",
+      "leftrun",
+      "rightrun"
+    ],
+    "check_sample": 2000,
+    "check_2_rule": "join_at_the_cut",
+    "steps": 3000,
+    "decay_steps": 1000,
+    "batch_size": 256,
+    "eval_per_length": null,
+    "solver_batch_size": 4096,
+    "build_seconds_per_length": null,
+    "max_chunk": 20000,
+    "long_runs": true,
+    "withheld": true
+  },
+  "start_run": "runs-start-seed4-longruns",
+  "start_round": null,
+  "start_checkpoint": "runs-start-seed4-longruns/checkpoints/step_030000.pt",
+  "device": "NVIDIA A10",
+  "torch": "2.15.0+cu132",
+  "task": "longest_run/self-improvement",
+  "data": {
+    "test_study": {
+      "seed": 1101,
+      "rows": 10000,
+      "sha256": "31091c9a29e4fe0a80bb547b786132bf1f44fa8c51d8d596cbe3442063a2d415"
+    },
+    "test_easy": {
+      "seed": 1102,
+      "rows": 15000,
+      "sha256": "ad6b083844945031ee111e3a142efd5da52f73b669b55de997b6fb5615fe6769"
+    },
+    "train_start": {
+      "seed": 2101,
+      "rows": 750000,
+      "sha256": "26a7ece9ab919965763b1cb8d125c3441c41cc368b1b89ebcf236b79c12c6998",
+      "questions": [
+        "runlen",
+        "leftrun",
+        "rightrun"
+      ]
+    },
+    "train_start_longruns": {
+      "seed": 2102,
+      "rows": 60000,
+      "sha256": "09c484db274055ede151d876f41c8b00a54155e244bb6231fa5a568f485fd1e9"
+    }
+  }
+}

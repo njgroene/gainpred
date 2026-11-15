@@ -1,0 +1,13 @@
+{"event": "eval", "round": 0, "set": "easy", "accuracy": {"3": 0.999, "4": 0.994, "5": 0.934, "6": 0.064, "7": 0.003, "all": 0.5988}}
+{"event": "eval", "round": 0, "set": "study", "accuracy": {"8/no-carry": 0.0, "8/carry": 0.0, "9/no-carry": 0.0, "9/carry": 0.0, "10/no-carry": 0.0, "10/carry": 0.0, "11/no-carry": 0.0, "11/carry": 0.0, "12/no-carry": 0.0, "12/carry": 0.0, "13/no-carry": 0.0, "13/carry": 0.0, "14/no-carry": 0.0, "14/carry": 0.0, "15/no-carry": 0.0, "15/carry": 0.0, "all": 0.0}}
+{"event": "eval", "round": 0, "set": "study5", "accuracy": {"13/no-carry": 0.0, "13/carry": 0.0, "14/no-carry": 0.0, "14/carry": 0.0, "15/no-carry": 0.0, "15/carry": 0.0, "all": 0.0}}
+{"event": "build", "round": 1, "digits": 8, "drawn": 25477, "kept": 10000, "shortfall": 0, "kept_share": 0.39251089217725793, "kept_right": 0.9913, "stopped_by_time": false, "carries_by_place": [4457, 4917, 5465, 3, 5614, 5068, 5011, 6125], "seconds": 10.842830409000001, "generated_tokens": 294409}
+{"event": "build", "round": 1, "digits": 9, "drawn": 25557, "kept": 10000, "shortfall": 0, "kept_share": 0.3912822318738506, "kept_right": 0.073, "stopped_by_time": false, "carries_by_place": [4543, 4995, 4886, 6032, 5586, 0, 4374, 4936, 5997], "seconds": 13.527821889999998, "generated_tokens": 320020}
+{"event": "replay", "round": 1, "problems": 25000, "readable": 25000, "right": 0.60248}
+{"event": "checks", "round": 1, "digits": 8, "problems": 2000, "kept": 715, "check_1": 1.0, "teachable": 0.3575, "check_2_kept": 0.3, "check_2_set_aside": 0.7, "check_2b": 0.6685314685314685}
+{"event": "checks", "round": 1, "digits": 9, "problems": 2000, "kept": 761, "check_1": 1.0, "teachable": 0.3805, "check_2_kept": 0.1665, "check_2_set_aside": 0.8335, "check_2b": 0.04336399474375821}
+{"event": "eval", "round": 1, "set": "easy", "accuracy": {"3": 0.999, "4": 0.997, "5": 0.946, "6": 0.073, "7": 0.004, "all": 0.6038}}
+{"event": "eval", "round": 1, "set": "study", "accuracy": {"8/no-carry": 0.104, "8/carry": 0.066, "9/no-carry": 0.005, "9/carry": 0.007, "10/no-carry": 0.0, "10/carry": 0.0, "11/no-carry": 0.0, "11/carry": 0.0, "12/no-carry": 0.0, "12/carry": 0.0, "13/no-carry": 0.0, "13/carry": 0.0, "14/no-carry": 0.0, "14/carry": 0.0, "15/no-carry": 0.0, "15/carry": 0.0, "all": 0.011375}}
+{"event": "eval", "round": 1, "set": "study5", "accuracy": {"13/no-carry": 0.0, "13/carry": 0.0, "14/no-carry": 0.0, "14/carry": 0.0, "15/no-carry": 0.0, "15/carry": 0.0, "all": 0.0}}
+{"event": "round_done", "round": 1, "examples": 45000, "seconds": {"build": 31.329241797999998, "checks": 9.764399769}, "generated_tokens": 1007315}
+{"event": "done"}

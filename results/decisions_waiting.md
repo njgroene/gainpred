@@ -1,1 +1,1 @@
-- None. Stage 1 frozen at `stage1-freeze` (14 Nov 2026); confirming runs for seeds 2–4 launched by `scripts/confirm.py`. Next owner decision: decision point 2 (P9b scoring sign-off), after the confirming runs.
+- **Decision point 2 (P9b scoring sign-off):** confirming runs finished 15 Nov 2026; support test met (249/258 cells, 96.5%); page with recommendations being prepared.

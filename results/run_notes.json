@@ -86,5 +86,13 @@
   "si-nocarry-weak-s2500-seed1": {
     "state": "done",
     "note": "first 60% pick (57.7%); replaced by 3,400 steps (61.5%)"
+  },
+  "si-nocarry-weak-s1425-seed2": {
+    "state": "failed",
+    "note": "warm Modal container saw the volume before its starting model was written (FileNotFoundError); rerun as si-nocarry-weak-s1425-seed2-r2 after adding volume.reload()"
+  },
+  "si-noselect-after-nocarry-seed3-authors": {
+    "state": "failed",
+    "note": "warm Modal container saw the volume before si-nocarry-seed3-authors was written (FileNotFoundError); rerun as si-noselect-after-nocarry-seed3-authors-r2 after adding volume.reload()"
   }
 }
