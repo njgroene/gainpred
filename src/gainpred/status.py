@@ -27,7 +27,7 @@ from pathlib import Path
 from gainpred.report import RESULTS_DIR, RoundsRun, Run, load_all, load_rounds
 
 A10_DOLLARS_PER_HOUR = 1.10  # Modal's A10 list price, November 2026
-BUDGET, WARN_AT = 60.0, None  # runbook section 1 (raised 15 Nov 2026; no notice level)
+BUDGET, WARN_AT = 80.0, None  # runbook section 1 (raised to $80 on 15 Nov 2026; no notice level)
 START, END = "<!-- status:start -->", "<!-- status:end -->"
 
 
