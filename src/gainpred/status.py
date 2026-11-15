@@ -101,7 +101,13 @@ def tripwires(starts: list[Run], rounds: list[RoundsRun]) -> list[tuple[str, str
     return out
 
 
-def build(results_dir: Path = RESULTS_DIR) -> str:
+def collect(results_dir: Path = RESULTS_DIR):
+    """Every run's state, GPU seconds, hand-written note and launch record.
+
+    Shared by the status section and the write-up's complete run list
+    (``gainpred.writeup``), so both list exactly the same runs.
+    Returns ``(starts, rounds, states, seconds, notes, launches)``.
+    """
     starts, rounds = load_all(results_dir), load_rounds(results_dir)
     notes = json.loads((results_dir / "run_notes.json").read_text()) if (results_dir / "run_notes.json").exists() else {}
     launches: dict[str, dict] = {}
@@ -121,6 +127,11 @@ def build(results_dir: Path = RESULTS_DIR) -> str:
             states[name] = e.get("outcome", "?") if e.get("outcome") != "spawned" else states.get(name, "running")
     for name, n in notes.items():
         states[name] = n["state"]
+    return starts, rounds, states, seconds, notes, launches
+
+
+def build(results_dir: Path = RESULTS_DIR) -> str:
+    starts, rounds, states, seconds, notes, launches = collect(results_dir)
     spent = sum(seconds.values()) / 3600 * A10_DOLLARS_PER_HOUR
 
     lines = [START, "## Status", "",

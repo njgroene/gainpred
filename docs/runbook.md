@@ -23,7 +23,7 @@ Within these, work proceeds without asking.
 
 | Situation | Rule |
 | --- | --- |
-| Weak starting models (P9b) | Pick the step counts whose easy accuracy is closest to 60%, 87.5% and 97.5%; ties go to fewer steps. If no candidate is within 5 points of a target, train more step counts; never pick a distant one. Record the step counts in P9b |
+| Weak starting models (P9b) | Pick the step counts whose easy accuracy is closest to 60%, 87.5% and 97.5%; ties go to fewer steps. If no candidate is within 5 points of a target, train more step counts, at most two extra batches (decision point 2); after that the target stays open. Never pick a distant one. Record the step counts in P9b |
 | A run crashes or hits a Modal limit | Diagnose. A bug that does not change what is measured: fix, test, relaunch once under a new name. A second failure: park it, report it, continue with other work |
 | A result looks wrong | Investigate and write it up. Do not change the design. It goes to the next decision point |
 | The protocol is silent (any task) | Take the most literal reading, record it as a P10 assumption, and list it for the next decision point |

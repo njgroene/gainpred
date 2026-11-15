@@ -37,3 +37,20 @@ Kept as work proceeds (runbook section 5). Each entry: date, what, evidence.
 - **Check 0 for longest run includes a 7-problem group** (run length 5): one or two errors fail it. The per-run-length pass mark is mostly noise there.
 - **The agreement rule teaches carries less well than the no-carry rule**, with both near-100% right training answers: after round 4, carry groups 95–98% (agreement) against 99–100% (no-carry rule).
 - **The new setup closes the old 9-digit carry gap**: no-carry rule round 1, 9-digit carry 98–99% (old setup: 70%).
+
+## Decision point 2 (signed 15 November 2026)
+
+Signed on the page; protocol amendments 14-19; runbook cap on weak-grid batches.
+
+**Open item (R1 wording).** The owner's sentence for the write-up says the weak starting models near 60% did nothing and none did harm. The confirming cells say otherwise for three of the six 60%-model cells:
+
+| Run | Digits | Before | After | Best teacher | Outcome |
+| --- | --- | --- | --- | --- | --- |
+| si-nocarry-weak-s1425-seed2-r2 | 8 | 0.2% | 85.5% | 100% | unclassified (up 85, 14.5 below best) |
+| si-nocarry-weak-s1425-seed2-r2 | 9 | 0% | 39.0% | 100% | taught wrong answers (counted with did harm) |
+| si-nocarry-weak-s3000-seed4 | 8 | 0.3% | 78.4% | 99.2% | unclassified (up 78, 21 below best) |
+| si-nocarry-weak-s3000-seed4 | 9 | 0% | 7.4% | 98.3% | did nothing |
+| si-nocarry-weak-s3500-seed3 | 8 | 0% | 8.5% | 99.8% | did nothing |
+| si-nocarry-weak-s3500-seed3 | 9 | 0% | 0.6% | 100% | did nothing |
+
+The one matching weak cell (1 of 10) is the taught-wrong-answers cell. Models at 97-99% paid off in all six of their cells. The write-up sentence is left for the owner; the report states the cells as above.

@@ -1,1 +1,2 @@
-- **Decision point 2 (P9b scoring sign-off):** confirming runs finished 15 Nov 2026; support test met (249/258 cells, 96.5%). Page with recommendations R1–R4: https://claude.ai/artifact/UkkhhEXd7YH1bkB6vTPxHx
+- None. Decision point 2 signed 15 November 2026 (https://claude.ai/artifact/UkkhhEXd7YH1bkB6vTPxHx). Phase C (results material for the write-up) in progress.
+- **R1 wording, open item for the owner:** the signed sentence "models near 60% did nothing, none did harm" does not match the cells; see `results/dp1_log.md`, decision point 2.

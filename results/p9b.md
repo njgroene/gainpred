@@ -117,6 +117,136 @@ Per run and round (classified cells matching / classified cells):
 | si-vote-seed4-authors | 3 | 6/6 |
 | si-vote-seed4-authors | 4 | 8/8 |
 
+### Decision point 2 analyses (confirming runs, starting points 2-4)
+
+**Baselines beside the verdict rule** (same cells):
+
+| Rule | Cells matched | Share |
+| --- | --- | --- |
+| Verdict rule (frozen) | 249/258 | 96.5% |
+| Always "does nothing" | 178/258 | 69.0% |
+| Always "pays off" | 37/258 | 14.3% |
+| Always "does harm" | 43/258 | 16.7% |
+
+**Verdict agreement per outcome group:**
+
+| Outcome group | Cells | Verdict matches |
+| --- | --- | --- |
+| paid off | 37 | 31 (84%) |
+| did nothing | 178 | 175 (98%) |
+| did harm or taught wrong answers | 43 | 43 (100%) |
+
+**By case:**
+
+| Case | Cells | Verdict matches | Outcomes |
+| --- | --- | --- | --- |
+| Agreement rule, new lengths | 14 | 14 | paid off 14 |
+| No-carry rule, new lengths | 14 | 14 | paid off 14 |
+| No selection | 60 | 60 | did nothing 36, taught wrong answers 24 |
+| Sample and vote | 60 | 60 | did nothing 60 |
+| Lengths already learned | 79 | 79 | did nothing 79 |
+| Starting model stopped early (weak) | 10 | 1 | did nothing 3, paid off 6, taught wrong answers 1 |
+| New length started midway | 3 | 3 | paid off 3 |
+| No selection after the no-carry rule (run f) | 18 | 18 | did harm 15, taught wrong answers 3 |
+
+**Weak starting models, every cell** (accuracy at that length, %; best = best teacher in that starting point and round):
+
+| run | digits | before | after | best | outcome | verdict |
+| --- | --- | --- | --- | --- | --- | --- |
+| si-nocarry-weak-s1425-seed2-r2 | 8 | 0.2 | 85.5 | 100.0 | unclassified | does harm |
+| si-nocarry-weak-s1425-seed2-r2 | 9 | 0.0 | 39.0 | 100.0 | taught wrong answers | does harm |
+| si-nocarry-weak-s2200-seed2 | 8 | 14.9 | 98.3 | 100.0 | paid off | does harm |
+| si-nocarry-weak-s2200-seed2 | 9 | 0.0 | 96.2 | 100.0 | paid off | does harm |
+| si-nocarry-weak-s2250-seed4 | 8 | 24.1 | 97.0 | 99.2 | paid off | does harm |
+| si-nocarry-weak-s2250-seed4 | 9 | 0.0 | 92.8 | 98.3 | paid off | does harm |
+| si-nocarry-weak-s3000-seed4 | 8 | 0.2 | 78.4 | 99.2 | unclassified | does harm |
+| si-nocarry-weak-s3000-seed4 | 9 | 0.0 | 7.4 | 98.3 | did nothing | does harm |
+| si-nocarry-weak-s3450-seed3 | 8 | 0.0 | 98.0 | 99.8 | paid off | does harm |
+| si-nocarry-weak-s3450-seed3 | 9 | 0.0 | 95.3 | 100.0 | paid off | does harm |
+| si-nocarry-weak-s3500-seed3 | 8 | 0.0 | 8.5 | 99.8 | did nothing | does harm |
+| si-nocarry-weak-s3500-seed3 | 9 | 0.0 | 0.6 | 100.0 | did nothing | does harm |
+
+**Sensitivity, without check 0** (headline stays as frozen): of the 10 classified cells whose model fails check 0, 1 match with check 0 and 7 without it; overall 255/258 (98.8%) without check 0.
+
+**Unclassified cells (12), listed, not scored** (decision point 2):
+
+| run | round | digits | before | after | best | verdict |
+| --- | --- | --- | --- | --- | --- | --- |
+| si-agreement-seed2-authors | 2 | 10 | 78.6 | 99.8 | – | does nothing |
+| si-agreement-seed3-authors | 2 | 10 | 79.2 | 99.8 | – | does nothing |
+| si-agreement-seed3-authors | 3 | 12 | 96.2 | 100.0 | – | does nothing |
+| si-agreement-seed4-authors | 2 | 10 | 91.1 | 98.5 | – | does nothing |
+| si-nocarry-seed2-authors | 3 | 12 | 62.6 | 100.0 | – | does nothing |
+| si-nocarry-seed2-authors | 4 | 14 | 93.0 | 100.0 | – | does nothing |
+| si-nocarry-seed3-authors | 3 | 12 | 79.2 | 100.0 | – | does nothing |
+| si-nocarry-seed3-authors | 4 | 14 | 90.6 | 100.0 | – | does nothing |
+| si-nocarry-seed4-authors | 2 | 10 | 58.3 | 98.4 | – | does nothing |
+| si-nocarry-seed4-authors | 4 | 14 | 93.5 | 98.8 | – | does nothing |
+| si-nocarry-weak-s1425-seed2-r2 | 1 | 8 | 0.2 | 85.5 | 100.0 | does harm |
+| si-nocarry-weak-s3000-seed4 | 1 | 8 | 0.2 | 78.4 | 99.2 | does harm |
+
+**Round-level score (secondary analysis, defined after the confirming runs):** 52 of 57 rounds match. Round verdict = verdict at the round's newest length; round outcome = did harm if any length did harm or taught wrong answers, else paid off if any new length paid off, else did nothing.
+
+| run | round | round verdict | round outcome |
+| --- | --- | --- | --- |
+| si-agreement-seed2-authors | 1 | pays off | paid off |
+| si-agreement-seed2-authors | 2 | pays off | paid off |
+| si-agreement-seed2-authors | 3 | pays off | paid off |
+| si-agreement-seed2-authors | 4 | pays off | paid off |
+| si-agreement-seed3-authors | 1 | pays off | paid off |
+| si-agreement-seed3-authors | 2 | pays off | paid off |
+| si-agreement-seed3-authors | 3 | pays off | paid off |
+| si-agreement-seed3-authors | 4 | pays off | paid off |
+| si-agreement-seed4-authors | 1 | pays off | paid off |
+| si-agreement-seed4-authors | 2 | pays off | paid off |
+| si-agreement-seed4-authors | 3 | pays off | paid off |
+| si-agreement-seed4-authors | 4 | pays off | paid off |
+| si-nocarry-seed2-authors | 1 | pays off | paid off |
+| si-nocarry-seed2-authors | 2 | pays off | paid off |
+| si-nocarry-seed2-authors | 3 | pays off | paid off |
+| si-nocarry-seed2-authors | 4 | pays off | paid off |
+| si-nocarry-seed3-authors | 1 | pays off | paid off |
+| si-nocarry-seed3-authors | 2 | pays off | paid off |
+| si-nocarry-seed3-authors | 3 | pays off | paid off |
+| si-nocarry-seed3-authors | 4 | pays off | paid off |
+| si-nocarry-seed4-authors | 1 | pays off | paid off |
+| si-nocarry-seed4-authors | 2 | pays off | paid off |
+| si-nocarry-seed4-authors | 3 | pays off | paid off |
+| si-nocarry-seed4-authors | 4 | pays off | paid off |
+| si-nocarry-weak-s1425-seed2-r2 | 1 | does harm | did harm |
+| si-nocarry-weak-s2200-seed2 | 1 | does harm | paid off |
+| si-nocarry-weak-s2250-seed4 | 1 | does harm | paid off |
+| si-nocarry-weak-s3000-seed4 | 1 | does harm | did nothing |
+| si-nocarry-weak-s3450-seed3 | 1 | does harm | paid off |
+| si-nocarry-weak-s3500-seed3 | 1 | does harm | did nothing |
+| si-noselect-after-nocarry-seed2-authors | 3 | does harm | did harm |
+| si-noselect-after-nocarry-seed3-authors-r2 | 3 | does harm | did harm |
+| si-noselect-after-nocarry-seed4-authors | 3 | does harm | did harm |
+| si-noselect-seed2-authors | 1 | does harm | did harm |
+| si-noselect-seed2-authors | 2 | does harm | did harm |
+| si-noselect-seed2-authors | 3 | does harm | did harm |
+| si-noselect-seed2-authors | 4 | does harm | did harm |
+| si-noselect-seed3-authors | 1 | does harm | did harm |
+| si-noselect-seed3-authors | 2 | does harm | did harm |
+| si-noselect-seed3-authors | 3 | does harm | did harm |
+| si-noselect-seed3-authors | 4 | does harm | did harm |
+| si-noselect-seed4-authors | 1 | does harm | did harm |
+| si-noselect-seed4-authors | 2 | does harm | did harm |
+| si-noselect-seed4-authors | 3 | does harm | did harm |
+| si-noselect-seed4-authors | 4 | does harm | did harm |
+| si-vote-seed2-authors | 1 | does nothing | did nothing |
+| si-vote-seed2-authors | 2 | does nothing | did nothing |
+| si-vote-seed2-authors | 3 | does nothing | did nothing |
+| si-vote-seed2-authors | 4 | does nothing | did nothing |
+| si-vote-seed3-authors | 1 | does nothing | did nothing |
+| si-vote-seed3-authors | 2 | does nothing | did nothing |
+| si-vote-seed3-authors | 3 | does nothing | did nothing |
+| si-vote-seed3-authors | 4 | does nothing | did nothing |
+| si-vote-seed4-authors | 1 | does nothing | did nothing |
+| si-vote-seed4-authors | 2 | does nothing | did nothing |
+| si-vote-seed4-authors | 3 | does nothing | did nothing |
+| si-vote-seed4-authors | 4 | does nothing | did nothing |
+
 Outcomes: did harm 23, did nothing 289, paid off 73, taught wrong answers 49, unclassified 16
 
 | run | round | digits | new | test set | check 0 | kept | check 1 | 2b | check 2 | teachable | before | after | best | outcome | verdict |

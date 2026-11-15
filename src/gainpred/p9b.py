@@ -177,17 +177,20 @@ def score_outcomes(cells: list[Cell]) -> None:
             c.outcome = "unclassified"
 
 
+def verdict_of(c: Cell, level_2b: float, level_1: float = LEVEL_1, use_check_0: bool = True) -> str:
+    """The frozen verdict rule (P9b). ``use_check_0=False`` only for the sensitivity line (decision point 2)."""
+    if use_check_0 and c.check_0 is False:
+        return "does harm"
+    if (c.kept_share is not None and c.kept_share < MIN_KEPT_SHARE) or c.check_1 is None or c.check_1 < level_1:
+        return "does nothing"
+    if c.check_2b is not None and c.check_2b < level_2b:
+        return "does harm"
+    return "pays off"
+
+
 def give_verdicts(cells: list[Cell], level_2b: float, level_1: float = LEVEL_1) -> None:
     for c in cells:
-        if c.check_0 is False:
-            c.verdict = "does harm"
-        elif (c.kept_share is not None and c.kept_share < MIN_KEPT_SHARE) or c.check_1 is None \
-                or c.check_1 < level_1:
-            c.verdict = "does nothing"
-        elif c.check_2b is not None and c.check_2b < level_2b:
-            c.verdict = "does harm"
-        else:
-            c.verdict = "pays off"
+        c.verdict = verdict_of(c, level_2b, level_1)
 
 
 MATCH = {"does harm": {"did harm", "taught wrong answers"}, "does nothing": {"did nothing"}, "pays off": {"paid off"}}
@@ -238,6 +241,122 @@ def support_lines(scored: list[Cell]) -> list[str]:
     return lines + [""]
 
 
+CASES = ("Agreement rule, new lengths", "No-carry rule, new lengths", "No selection", "Sample and vote",
+         "Lengths already learned", "Starting model stopped early (weak)", "New length started midway",
+         "No selection after the no-carry rule (run f)")
+
+
+def case_of(c: Cell) -> str:
+    """Which P9b case a cell belongs to; each cell is given exactly one.
+
+    Order of precedence: the run's own design first (weak starting model, run f,
+    no selection, sample and vote), then the length's state (already learned,
+    which includes new lengths starting above 50% as P9b scores them; started
+    midway), then the teacher at a new length.
+    """
+    if "-weak-" in c.run:
+        return CASES[5]
+    if "noselect-after-nocarry" in c.run:
+        return CASES[7]
+    if c.teacher == "no_selection":
+        return CASES[2]
+    if c.teacher == "sample_and_vote":
+        return CASES[3]
+    if c.mid_start:
+        return CASES[6]
+    if not c.new_length or (c.before is not None and c.before > 0.50):
+        return CASES[4]
+    return CASES[0] if c.teacher == "agreement" else CASES[1]
+
+
+def round_rows(scored: list[Cell]) -> list[tuple[str, int, str, str]]:
+    """Round-level score (decision point 2; defined after the confirming runs).
+
+    Round verdict = the verdict at the round's newest length (the longest new
+    length; the longest length if the round has none). Round outcome = did harm
+    if any classified length did harm or taught wrong answers; else paid off if any
+    new length paid off; else did nothing.
+    """
+    by: dict[tuple[str, int], list[Cell]] = {}
+    for c in scored:
+        by.setdefault((c.run, c.round), []).append(c)
+    out = []
+    for (run, rnd), cs in sorted(by.items()):
+        new = [c for c in cs if c.new_length]
+        newest = max(new or cs, key=lambda c: c.digits)
+        if any(c.outcome in ("did harm", "taught wrong answers") for c in cs):
+            outcome = "did harm"
+        elif any(c.new_length and c.outcome == "paid off" for c in cs):
+            outcome = "paid off"
+        else:
+            outcome = "did nothing"
+        out.append((run, rnd, newest.verdict, outcome))
+    return out
+
+
+def decision_point_2_lines(cells: list[Cell], level_2b: float, level_1: float) -> list[str]:
+    """The analyses the owner asked for at decision point 2 (15 November 2026), confirming runs only.
+
+    Baselines: a rule that always gives one verdict, scored on the same cells, so
+    the 96.5% can be read against what saying the same thing every time gets.
+    Per case: matches in each P9b case. Sensitivity: check-0-failing cells scored
+    without check 0 (the headline stays as frozen). Unclassified cells listed.
+    Round-level score: secondary, defined after the confirming runs.
+    """
+    conf_all = [c for c in cells if c.seed in CONFIRMING_SEEDS]
+    conf = [c for c in conf_all if c.outcome not in ("unclassified", "missing")]
+    n = max(len(conf), 1)
+    lines = ["### Decision point 2 analyses (confirming runs, starting points 2-4)", "",
+             "**Baselines beside the verdict rule** (same cells):", "",
+             "| Rule | Cells matched | Share |", "| --- | --- | --- |"]
+    hits = sum(c.outcome in MATCH[c.verdict] for c in conf)
+    lines.append(f"| Verdict rule (frozen) | {hits}/{len(conf)} | {100 * hits / n:.1f}% |")
+    for v in ("does nothing", "pays off", "does harm"):
+        m = sum(c.outcome in MATCH[v] for c in conf)
+        lines.append(f"| Always \"{v}\" | {m}/{len(conf)} | {100 * m / n:.1f}% |")
+    lines += ["", "**Verdict agreement per outcome group:**", "", "| Outcome group | Cells | Verdict matches |",
+              "| --- | --- | --- |"]
+    for name, members in (("paid off", {"paid off"}), ("did nothing", {"did nothing"}),
+                          ("did harm or taught wrong answers", {"did harm", "taught wrong answers"})):
+        g = [c for c in conf if c.outcome in members]
+        m = sum(c.outcome in MATCH[c.verdict] for c in g)
+        lines.append(f"| {name} | {len(g)} | {m} ({100 * m / max(len(g), 1):.0f}%) |")
+    lines += ["", "**By case:**", "", "| Case | Cells | Verdict matches | Outcomes |", "| --- | --- | --- | --- |"]
+    for case in CASES:
+        g = [c for c in conf if case_of(c) == case]
+        if not g:
+            continue
+        m = sum(c.outcome in MATCH[c.verdict] for c in g)
+        counts: dict[str, int] = {}
+        for c in g:
+            counts[c.outcome] = counts.get(c.outcome, 0) + 1
+        lines.append(f"| {case} | {len(g)} | {m} | " + ", ".join(f"{k} {v}" for k, v in sorted(counts.items())) + " |")
+    weak = [c for c in conf_all if case_of(c) == CASES[5]]
+    lines += ["", "**Weak starting models, every cell** (accuracy at that length, %; best = best teacher in that starting point and round):", "",
+              "| run | digits | before | after | best | outcome | verdict |", "| --- | --- | --- | --- | --- | --- | --- |"]
+    for c in sorted(weak, key=lambda c: (c.run, c.digits)):
+        lines.append(f"| {c.run} | {c.digits} | {pct(c.before)} | {pct(c.after)} | {pct(c.best_after)} | {c.outcome} | {c.verdict} |")
+    failing = [c for c in conf if c.check_0 is False]
+    with0 = sum(c.outcome in MATCH[c.verdict] for c in failing)
+    without = sum(c.outcome in MATCH[verdict_of(c, level_2b, level_1, use_check_0=False)] for c in failing)
+    lines += ["", f"**Sensitivity, without check 0** (headline stays as frozen): of the {len(failing)} classified "
+              f"cells whose model fails check 0, {with0} match with check 0 and {without} without it; overall "
+              f"{hits - with0 + without}/{len(conf)} ({100 * (hits - with0 + without) / n:.1f}%) without check 0.", ""]
+    unc = [c for c in conf_all if c.outcome == "unclassified"]
+    lines += [f"**Unclassified cells ({len(unc)}), listed, not scored** (decision point 2):", "",
+              "| run | round | digits | before | after | best | verdict |", "| --- | --- | --- | --- | --- | --- | --- |"]
+    for c in unc:
+        lines.append(f"| {c.run} | {c.round} | {c.digits} | {pct(c.before)} | {pct(c.after)} | {pct(c.best_after)} | {c.verdict} |")
+    rr = round_rows([c for c in conf])
+    m = sum(o in MATCH[v] for _, _, v, o in rr)
+    lines += ["", "**Round-level score (secondary analysis, defined after the confirming runs):** "
+              f"{m} of {len(rr)} rounds match. Round verdict = verdict at the round's newest length; round outcome = "
+              "did harm if any length did harm or taught wrong answers, else paid off if any new length paid off, "
+              "else did nothing.", "", "| run | round | round verdict | round outcome |", "| --- | --- | --- | --- |"]
+    lines += [f"| {r} | {k} | {v} | {o} |" for r, k, v, o in rr]
+    return lines + [""]
+
+
 def to_markdown(cells: list[Cell], levels: tuple[float, float] | None) -> str:
     lines = ["# Experiment 3 (P9b): checks before training against outcomes", "",
              "Generated by `uv run python -m gainpred.p9b`; do not edit by hand. Accuracy = mean of the two carry",
@@ -258,6 +377,7 @@ def to_markdown(cells: list[Cell], levels: tuple[float, float] | None) -> str:
         lines += ["", f"Case 'new length started midway' (20-80% before): {len(mid)} cells, "
                   f"{sum(c.outcome in MATCH[c.verdict] for c in mid)} matched.", ""]
         lines += support_lines(scored)
+        lines += decision_point_2_lines(cells, *levels)
     counts: dict[str, int] = {}
     for c in cells:
         counts[c.outcome] = counts.get(c.outcome, 0) + 1
