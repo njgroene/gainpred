@@ -48,6 +48,20 @@ def gpu_seconds_rounds(run: RoundsRun, results_dir: Path) -> float:
     return total + 60 * (len(run.of("eval")) // 2)  # evaluations are not timed; ~1 minute each
 
 
+def gpu_seconds_probe(path: Path) -> float:
+    """A "train briefly and look" probe: finished rounds' timed parts, plus the builds of a round
+    that was cut off (a stopped container); its start-up and untimed tail are not counted."""
+    total, done_rounds, partial = 0.0, set(), {}
+    for line in path.read_text().splitlines():
+        e = json.loads(line)
+        if e["event"] == "probe_done":
+            total += sum(e["seconds"].values())
+            done_rounds.add(e["round"])
+        elif e["event"] == "probe_build":
+            partial[e["round"]] = partial.get(e["round"], 0.0) + e["seconds"]
+    return total + sum(v for k, v in partial.items() if k not in done_rounds)
+
+
 def tripwires(starts: list[Run], rounds: list[RoundsRun]) -> list[tuple[str, str]]:
     out = []
     # 1. The no-carry rule below 90% at any length in a finished four-round run.
@@ -117,6 +131,7 @@ def collect(results_dir: Path = RESULTS_DIR):
             launches.setdefault(e["run"], {}).update(e)
     seconds = {r.name: gpu_seconds_start(r) for r in starts}
     seconds |= {r.name: gpu_seconds_rounds(r, results_dir) for r in rounds}
+    seconds |= {p.stem: gpu_seconds_probe(p) for p in sorted((results_dir / "probes").glob("*.jsonl"))}
     states = {}
     for r in starts:
         states[r.name] = "done" if r.done else "incomplete"
