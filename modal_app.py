@@ -147,6 +147,9 @@ def main(
 @app.function(image=image, gpu=GPU, volumes={str(VOLUME_PATH): volume}, timeout=12 * 60 * 60)
 def self_improve(run: str, start: str, teacher: str, rounds: int, start_round: int, build_seconds: float) -> None:
     """P3 self-improvement rounds on one GPU. Output goes to /vol/runs/<run>/."""
+    # A warm (reused) container keeps the volume as it was when the container started;
+    # reload so runs that finished since then (our starting point) are visible.
+    volume.reload()
     import torch
 
     from gainpred.rounds import RoundConfig, self_improve, start_seed
@@ -228,6 +231,9 @@ def train_start_runs(run: str, seed: int, steps: int = 15_000, eval_every: int =
 def self_improve_runs(run: str, start: str, teacher: str, build_seconds: float = 0.0, withheld: bool = False,
                       long_runs: bool = False) -> None:
     """One longest-run round (P3) on one GPU, from a starting run on the volume."""
+    # A warm (reused) container keeps the volume as it was when the container started;
+    # reload so runs that finished since then (our starting point) are visible.
+    volume.reload()
     import torch
 
     from gainpred.rounds import start_seed
