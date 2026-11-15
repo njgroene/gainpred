@@ -1,1 +1,1 @@
-- **Decision point 2 (P9b scoring sign-off):** confirming runs finished 15 Nov 2026; support test met (249/258 cells, 96.5%); page with recommendations being prepared.
+- **Decision point 2 (P9b scoring sign-off):** confirming runs finished 15 Nov 2026; support test met (249/258 cells, 96.5%). Page with recommendations R1–R4: https://claude.ai/artifact/UkkhhEXd7YH1bkB6vTPxHx
