@@ -1,0 +1,27 @@
+# Build the paper on every push that touches it, with both engines the Makefile offers.
+# The tables and figures in paper/generated/ are committed (made by gainpred.writeup from results/).
+name: paper
+on:
+  push:
+    paths: ["paper/**", ".github/workflows/paper.yml"]
+  pull_request:
+    paths: ["paper/**", ".github/workflows/paper.yml"]
+jobs:
+  tectonic:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: wtfjoke/setup-tectonic@v3
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+      - run: tectonic -X compile main.tex
+        working-directory: paper
+  latexmk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: xu-cheng/latex-action@v3
+        with:
+          working_directory: paper
+          root_file: main.tex
+          latexmk_use_lualatex: false

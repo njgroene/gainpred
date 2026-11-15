@@ -1,0 +1,47 @@
+% Paper: compositional self-improvement, checks before training.
+% Build: make (tectonic) or make latexmk. Numbers, tables and figures in generated/ come from
+% `uv run python -m gainpred.writeup` and are never edited by hand.
+\documentclass{article}
+
+% NeurIPS style in preprint mode. The 2026 style file was not yet published at
+% media.neurips.cc (15 Nov 2026), so the 2025 one is used; swap the file and this line.
+\usepackage[preprint]{neurips_2025}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{hyperref}
+\usepackage{url}
+\usepackage{booktabs}
+\usepackage{amsfonts}
+\usepackage{nicefrac}
+\usepackage{microtype}
+\usepackage{xcolor}
+\usepackage{graphicx}
+
+\title{Checking a Teacher Before Training: Compositional Self-Improvement}
+
+\author{%
+  Author names withheld \\
+}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+\end{abstract}
+
+\input{sections/1-introduction}
+\input{sections/2-teacher-and-student}
+\input{sections/3-setup}
+\input{sections/4-do-the-checks-predict}
+\input{sections/5-three-further-findings}
+\input{sections/6-beyond-synthetic-tasks}
+\input{sections/7-discussion-and-limits}
+
+% No text cites anything yet; keep every entry so the bibliography builds.
+\nocite{*}
+\bibliographystyle{plainnat}
+\bibliography{refs}
+
+\end{document}
