@@ -250,3 +250,24 @@ def self_improve_runs(run: str, start: str, teacher: str, build_seconds: float =
                    runs_dir=runs_dir)
     finally:
         volume.commit()
+
+
+@app.function(image=image, gpu=GPU, volumes={str(VOLUME_PATH): volume}, timeout=12 * 60 * 60)
+def probe(run: str, of: str, only_rounds: list[int] | None = None) -> None:
+    """"Train briefly and look" baseline: rebuild each round of run ``of``, train 200 updates, evaluate."""
+    volume.reload()  # see self_improve
+    import torch
+
+    from gainpred.probe import probe_addition, probe_runs
+
+    print(f"GPU: {torch.cuda.get_device_name()}  torch {torch.__version__}")
+    runs_dir = VOLUME_PATH / "runs"
+    try:
+        if of.startswith("runs-"):
+            make_run_data.local()
+            probe_runs(of, run, runs_dir, VOLUME_PATH / "data" / "longest_run", torch.device("cuda"))
+        else:
+            probe_addition(of, run, runs_dir, VOLUME_PATH / "data" / "addition", torch.device("cuda"), only_rounds)
+    finally:
+        volume.commit()
+

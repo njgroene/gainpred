@@ -6,6 +6,7 @@ Usage::
     uv run python -m gainpred.launch rounds si-agreement-seed1 --start start-seed1-authors --teacher agreement
     uv run python -m gainpred.launch runs-main runs-start-seed0 --seed 0            # longest run: starting training
     uv run python -m gainpred.launch runs-rounds runs-join-seed0 --start runs-start-seed0 --teacher join_at_the_cut
+    uv run python -m gainpred.launch probe probe-si-nocarry-seed2-authors --of si-nocarry-seed2-authors
     uv run python -m gainpred.launch status            # every spawned run: running, done or failed
 
 Why this exists
@@ -161,6 +162,10 @@ def main() -> None:
     rr.add_argument("--build-seconds", type=float, default=0.0)
     rr.add_argument("--withheld", action="store_true", help="P6 withheld version (no a = 3-4 run-across problems)")
     rr.add_argument("--long-runs", action="store_true", help="control arm: replay includes the long-run strings")
+    pr = sub.add_parser("probe", help='"train briefly and look" baseline for every round of a finished run')
+    pr.add_argument("run")
+    pr.add_argument("--of", required=True, help="the original run whose rounds are probed")
+    pr.add_argument("--rounds", default="", help="only these rounds, comma-separated (default: all)")
     sub.add_parser("status", help="state of every spawned run")
     args = parser.parse_args()
 
@@ -177,6 +182,10 @@ def main() -> None:
             "seed": args.seed, "steps": args.steps, "eval_every": args.eval_every,
             "checkpoint_every": args.checkpoint_every, "norm_eps": args.norm_eps,
             "decay_fraction": args.decay_fraction, "long_runs": args.long_runs}, task="longest_run")
+    elif args.command == "probe":
+        only = [int(x) for x in args.rounds.split(",") if x] or None
+        spawn("probe", args.run, {"of": args.of, "only_rounds": only},
+              task="longest_run" if args.of.startswith("runs-") else "addition")
     elif args.command == "runs-rounds":
         spawn("self_improve_runs", args.run, {
             "start": args.start, "teacher": args.teacher, "build_seconds": args.build_seconds,

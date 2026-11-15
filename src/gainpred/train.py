@@ -139,6 +139,15 @@ class TrainConfig:
     """P10 (Hugging Face Trainer default, used by Lee et al.). Maximum gradient
     norm; larger gradients are scaled down to this length."""
 
+    stop_after: int | None = None
+    """Stop after this many updates while keeping the schedule of ``steps``
+    (the learning rate at each step is what the full run would use). Only the
+    "train briefly and look" probes set it (decision point 2 follow-up,
+    ``gainpred.probe``); None = train all ``steps``."""
+
+    save_checkpoints: bool = True
+    """False only for probes, whose weights are not needed afterwards."""
+
     def __post_init__(self) -> None:
         if self.warmup_fraction + self.decay_fraction > 1:
             raise ValueError("warm-up and decay together cannot exceed the whole run")
@@ -441,7 +450,8 @@ def train(
     # avoids forcing the CPU to wait for the GPU after every step.
     window = {name: torch.zeros((), device=device) for name in ("loss_sum", "loss_max", "norm_sum", "norm_max")}
     answer_tokens = 0
-    for step in range(1, cfg.steps + 1):
+    last = cfg.stop_after or cfg.steps  # a probe stops early on the full run's schedule
+    for step in range(1, last + 1):
         batch_tokens, batch_mask = next(stream)
         with watch.time("train"):
             with autocast(device):
@@ -459,7 +469,7 @@ def train(
         window["norm_max"] = torch.maximum(window["norm_max"], grad_norm)
         answer_tokens += int(batch_mask.sum())
 
-        if step % cfg.log_every == 0 or step == cfg.steps:
+        if step % cfg.log_every == 0 or step == last:
             steps_since = (step - 1) % cfg.log_every + 1
             stats = {name: value.item() for name, value in window.items()}
             for value in window.values():
@@ -483,12 +493,12 @@ def train(
                 f"lr {entry['lr']:.1e}  {rate:.1f} steps/s"
             )
 
-        if step % cfg.eval_every == 0 or step == cfg.steps:
+        if step % cfg.eval_every == 0 or step == last:
             run_evals(step)
-        if step % cfg.checkpoint_every == 0 or step == cfg.steps:
+        if cfg.save_checkpoints and (step % cfg.checkpoint_every == 0 or step == last):
             save_checkpoint(run_dir / "checkpoints" / f"step_{step:06d}.pt", model, optimizer, step, cfg)
 
-    log({"event": "done", "step": cfg.steps, "seconds": dict(watch.totals)})
+    log({"event": "done", "step": last, "seconds": dict(watch.totals)})
     log_file.close()
     return model
 

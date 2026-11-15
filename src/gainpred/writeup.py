@@ -570,7 +570,7 @@ def figures() -> list[str]:
     series1 = [(lambda s: addition_run("nocarry", s, 4), 4, "mean", COLOURS[0], "-", "No-carry rule"),
                (lambda s: addition_run("agreement", s, 4), 4, "mean", COLOURS[1], "-", "Agreement rule"),
                (lambda s: addition_run("noselect", s, 4), 4, "no-carry", COLOURS[2], "-", "No selection, no-carry group"),
-               (lambda s: addition_run("noselect", s, 4), 4, "carry", COLOURS[2], "--", "No selection, carry group"),
+               (lambda s: addition_run("noselect", s, 4), 4, "carry", COLOURS[2], "--", "No selection, carry group (drawn 2 points up)"),
                (lambda s: addition_run("vote", s, 4), 4, "mean", COLOURS[3], "-", "Sample and vote"),
                (runf_run, 3, "no-carry", "#6250d6", "-", "Run f, no-carry group"),
                (runf_run, 3, "carry", "#6250d6", "--", "Run f, carry group")]
@@ -580,8 +580,13 @@ def figures() -> list[str]:
             v = [addition_accuracy(run_of(s), rnd, d, group) for s in CONFIRMING]
             v = [x for x in v if x is not None]
             ys.append(sum(v) / len(v)); lo.append(min(v)); hi.append(max(v))
-        ax.errorbar(LENGTHS, ys, yerr=[[y - l for y, l in zip(ys, lo)], [h - y for y, h in zip(ys, hi)]],
-                    color=colour, lw=2, ls=ls, marker="o", ms=4, capsize=2, label=label)
+        # The no-selection carry line sits at 0%, under run f's carry line and sample and vote:
+        # draw it 2 points up with square markers (said in its label) so it stays visible.
+        lift, marker = (2.0, "s") if "drawn 2 points up" in label else (0.0, "o")
+        ax.errorbar(LENGTHS, [y + lift for y in ys],
+                    yerr=[[y - l for y, l in zip(ys, lo)], [h - y for y, h in zip(ys, hi)]],
+                    color=colour, lw=2, ls=ls, marker=marker, ms=5 if lift else 4, capsize=2, label=label,
+                    zorder=3 if lift else 2)
     ax.set_xlabel("Digits"); ax.set_ylabel("Accuracy (%)"); ax.set_ylim(-3, 103)
     ax.set_title("Experiment 1: confirming runs after round 4 (run f: round 3); mean of seeds 2-4, range as bars",
                  loc="left", fontsize=9)
