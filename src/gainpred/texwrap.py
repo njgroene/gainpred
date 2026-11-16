@@ -53,7 +53,8 @@ def wrap_line(line: str, width: int = WIDTH) -> list[str]:
         first = indent
         # BibTeX field (``key = {...``): continue under the opening brace's content.
         m = re.match(r"\w+\s*=\s*[{\"]", body)
-        cont = indent + (" " * m.end() if m else "  ")
+        # Prose continues at the line's own indent (two spaces if it has none).
+        cont = indent + " " * m.end() if m else (indent or "  ")
     if " & " in body:
         # A table row: break between cells (before the ``&``), and inside a
         # cell only when the cell alone is too long.
@@ -75,11 +76,45 @@ def wrap_line(line: str, width: int = WIDTH) -> list[str]:
     return out
 
 
+_BLOCK = re.compile(r"\\(begin|end|input|include|label|item|caption|centering|small|"
+                    r"(sub)*section|paragraph|maketitle|bibliography|nocite|toprule|"
+                    r"midrule|bottomrule|usepackage|documentclass|title|author)\b")
+_LIST = re.compile(r"(\d+[/.)]|[-*])\s")
+
+
+def _joins_prose(line: str) -> bool:
+    """May overflow from the line above be carried onto the start of this line?
+
+    Only for a plain line of prose in the same paragraph: not blank (a paragraph
+    break), not a comment, table row, BibTeX field, list marker (``1/``) or a
+    block-level command such as ``\\begin`` or ``\\label``."""
+    body = line.strip()
+    return bool(body) and not (body.startswith(("%", "&", "}", "@")) or " & " in body
+                               or _BLOCK.match(body) or _LIST.match(body)
+                               or re.match(r"\w+\s*=\s*[{\"]", body))
+
+
 def wrap_text(text: str, width: int = WIDTH) -> str:
-    lines = []
+    """Wrap every line; the overflow of a wrapped prose line is carried onto the
+    next prose line of the same paragraph (like an editor's fill), so no short
+    stubs are left behind. Trailing spaces are dropped (TeX ignores them)."""
+    out: list[str] = []
+    carry = ""
     for line in text.split("\n"):
-        lines.extend(wrap_line(line, width))
-    return "\n".join(lines)
+        line = line.rstrip()
+        if carry and _joins_prose(line) and not _MID_COMMENT.search(carry):
+            line = carry + " " + line.strip()
+        elif carry:
+            out.append(carry)
+        carry = ""
+        wrapped = wrap_line(line, width)
+        if len(wrapped) > 1 and not wrapped[0].lstrip().startswith("%") and _joins_prose(wrapped[-1]) \
+                and not _BLOCK.match(line.strip()):
+            carry = wrapped.pop()
+        out.extend(wrapped)
+    if carry:
+        out.append(carry)
+    return "\n".join(out)
 
 
 def main() -> None:

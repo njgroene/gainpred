@@ -46,3 +46,14 @@ def test_generated_files_are_wrapped():
     for f in sorted((PAPER / "generated").glob("*.tex")):
         long = [n for n, line in enumerate(f.read_text().splitlines(), 1) if len(line) > 80]
         assert not long, f"{f.name}: lines {long} over 80 characters (run gainpred.writeup)"
+
+
+def test_fill_carries_overflow_without_crossing_paragraphs_or_lists():
+    from gainpred.texwrap import wrap_text
+
+    text = "  " + "alpha " * 15 + "\n  beta gamma\n  1/ first item\n\n  next paragraph"
+    out = wrap_text(text)
+    assert all(len(line) <= 80 for line in out.splitlines())
+    assert out.split() == text.split()  # same words, same order
+    assert "\n  1/ first item\n\n  next paragraph" in out  # list line and paragraph break kept
+    assert all(line.startswith("  ") for line in out.splitlines() if line)  # indent kept, not grown
