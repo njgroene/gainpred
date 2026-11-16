@@ -969,8 +969,10 @@ def main() -> None:
         print(f"results/writeup/{name}")
     for f in figures():
         print(f"results/writeup/figures/{f}")
+    from gainpred.texwrap import wrap_text  # short lines for the editor; the PDF is unchanged
+
     for name, text in paper_files().items():
-        (PAPER / name).write_text(text)
+        (PAPER / name).write_text(wrap_text(text))
         print(f"paper/generated/{name}")
 
 

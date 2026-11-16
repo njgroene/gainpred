@@ -26,3 +26,23 @@ def test_sections_only_input_generated_files_that_exist():
             if line.startswith("\\input{generated/"):
                 name = line[len("\\input{"):-1]
                 assert (PAPER / f"{name}.tex").exists(), f"{section.name}: {name}.tex missing (run gainpred.writeup)"
+
+
+def test_wrapping_never_changes_what_tex_reads():
+    """Wrapping only turns single spaces into line breaks plus indentation: same words, no blank lines."""
+    from gainpred.texwrap import wrap_line
+
+    line = r"Shin et al.\ rely on rules; " + "word " * 40 + r"96.5\% of cases \\"
+    out = wrap_line(line)
+    assert all(len(o) <= 80 for o in out) and all(o.strip() for o in out)
+    assert " ".join(o.strip() for o in out) == line.strip()
+    assert not any(o.endswith("\\") and not o.endswith("\\\\") for o in out)  # control space kept whole
+    row = " & ".join(["12.3 $\\rightarrow$ 45.6"] * 8) + r" \\"
+    assert all(o.lstrip().startswith("&") for o in wrap_line(row)[1:])  # table rows break between cells
+    assert wrap_line("x " * 50 + "% comment") == ["x " * 50 + "% comment"]  # mid-line comment: untouched
+
+
+def test_generated_files_are_wrapped():
+    for f in sorted((PAPER / "generated").glob("*.tex")):
+        long = [n for n, line in enumerate(f.read_text().splitlines(), 1) if len(line) > 80]
+        assert not long, f"{f.name}: lines {long} over 80 characters (run gainpred.writeup)"
