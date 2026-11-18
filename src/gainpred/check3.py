@@ -17,7 +17,7 @@ Which answers count as "piece answers" on addition:
 
 * the no-carry rule, the agreement rule, no selection -- the model's answers
   to the piece sums, for *every* cut the teacher built (not only the cut it
-  kept): cut 1 for the no-carry rule and no selection, all three cuts for the
+  kept): cut 1 for the no-carry rule and no selection, all its cuts for the
   agreement rule;
 * sample and vote -- its five sampled direct answers.
 

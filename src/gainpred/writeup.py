@@ -49,6 +49,7 @@ from __future__ import annotations
 
 import csv
 import json
+import statistics
 import subprocess
 from pathlib import Path
 
@@ -164,32 +165,39 @@ def new_round(digits: int) -> int:
     return (digits - 8) // 2 + 1
 
 
-def carries_per_place(arm: str, seeds: tuple[int, ...]):
-    """Share of kept training answers carrying out of each kind of place, in the round the length is new.
+def carry_shares(arm: str, seed: int, d: int) -> dict[str, float] | None:
+    """One seed's share (%) of kept training answers carrying out of each kind of place, in the
+    round length ``d`` is first trained on; None if that build has no carry count (see below).
 
     Places are counted from the units (0). A cut boundary at ``p`` digits from the
     left of an n-digit number is crossed by a carry out of place ``n - 1 - p``.
     Kinds: the cut-1 boundary; the boundaries of the other cuts in use; every
     other place below the top digit (the top place's carry only lengthens the
-    answer and is left out). Returns {digits: {kind: [share per seed]}}.
+    answer and is left out).
     """
+    cuts = ADDITION_CUTS[d]
+    cut1 = {d - 1 - p for p in cut_positions(cuts[0])}
+    others = {d - 1 - p for c in cuts[1:] for p in cut_positions(c)} - cut1
+    rest = set(range(d - 1)) - cut1 - others
+    rnd = new_round(d)
+    build = next((e for e in events(addition_run(arm, seed, rnd))
+                  if e["event"] == "build" and e["round"] == rnd and e["digits"] == d), None)
+    if not build or "carries_by_place" not in build or not build["kept"]:
+        return None
+    counts, kept = build["carries_by_place"], build["kept"]
+    return {kind: 100 * sum(counts[i] for i in places) / len(places) / kept
+            for kind, places in (("cut 1", cut1), ("other cuts", others), ("no cut", rest)) if places}
+
+
+def carries_per_place(arm: str, seeds: tuple[int, ...]):
+    """``carry_shares`` over seeds: {digits: {kind: [share per seed that has one]}}."""
     out = {}
     for d in LENGTHS:
-        cuts = ADDITION_CUTS[d]
-        cut1 = {d - 1 - p for p in cut_positions(cuts[0])}
-        others = {d - 1 - p for c in cuts[1:] for p in cut_positions(c)} - cut1
-        rest = set(range(d - 1)) - cut1 - others
         shares = {"cut 1": [], "other cuts": [], "no cut": []}
         for s in seeds:
-            rnd = new_round(d)
-            build = next((e for e in events(addition_run(arm, s, rnd))
-                          if e["event"] == "build" and e["round"] == rnd and e["digits"] == d), None)
-            if not build or "carries_by_place" not in build or not build["kept"]:
-                continue
-            counts, kept = build["carries_by_place"], build["kept"]
-            for kind, places in (("cut 1", cut1), ("other cuts", others), ("no cut", rest)):
-                if places:
-                    shares[kind].append(100 * sum(counts[i] for i in places) / len(places) / kept)
+            one = carry_shares(arm, s, d)
+            for kind, v in (one or {}).items():
+                shares[kind].append(v)
         out[d] = shares
     return out
 
@@ -253,6 +261,200 @@ def exp1() -> str:
             ["Digits", "No-carry: cut 1", "No-carry: other cuts", "No-carry: no cut",
              "Agreement: cut 1", "Agreement: other cuts", "Agreement: no cut"], rows) + [""]
     return "\n".join(lines)
+
+
+# ---------------------------------------------------------------- check 3 on addition
+
+TEACHER_ROWS = (("no_carry", "No-carry rule"), ("agreement", "Agreement rule"), ("no_selection", "No selection"),
+                ("sample_and_vote", "Sample and vote"))
+CHECK3_CSV = RESULTS_DIR / "check3_addition.csv"
+
+
+def check3_cells() -> list[dict]:
+    if not CHECK3_CSV.exists():
+        return []
+    with CHECK3_CSV.open() as f:
+        return [r for r in csv.DictReader(f) if r["check_3"] != ""]
+
+
+def check3_range(cells: list[dict], teacher: str, d: int, seeds: tuple[int, ...]) -> str:
+    """Check 3 (%) over seeds and rounds at one length: one value, or lowest-highest."""
+    xs = [100 * float(c["check_3"]) for c in cells
+          if c["teacher"] == teacher and int(c["digits"]) == d and int(c["seed"]) in seeds]
+    if not xs:
+        return "–"
+    return f"{min(xs):.1f}" if min(xs) == max(xs) else f"{min(xs):.1f}–{max(xs):.1f}"
+
+
+def check3_addition_rows() -> list[tuple[str, list[list[str]]]]:
+    """(block title, rows of teacher x length) for the paper test, confirming and learning runs."""
+    blocks = []
+    pt = json.loads((RESULTS_DIR / "paper_test.json").read_text()) if (RESULTS_DIR / "paper_test.json").exists() else None
+    if pt:
+        rows = []
+        for t, label in TEACHER_ROWS:
+            vals = pt["table"][t]
+            rows.append([label] + [fmt(None if vals[str(d)].get("check_3") is None else 100 * vals[str(d)]["check_3"])
+                                   for d in LENGTHS])
+        blocks.append((f"Paper test (perfect calculator, {pt['problems_per_length']:,} problems per length)", rows))
+    cells = check3_cells()
+    for seeds, title in ((CONFIRMING, "Real models, confirming runs (starting points 2-4)"),
+                         (LEARNING, "Real models, learning runs (starting points 0-1)")):
+        if cells:
+            blocks.append((title, [[label] + [check3_range(cells, t, d, seeds) for d in LENGTHS]
+                                   for t, label in TEACHER_ROWS]))
+    return blocks
+
+
+def pct_or(x: str) -> str:
+    return "–" if x in ("", "None") else f"{100 * float(x):.1f}"
+
+
+def check3_md() -> str:
+    lines = ["# Check 3 on addition", "",
+             "Generated by `uv run python -m gainpred.writeup`; do not edit by hand. Analysis defined after the "
+             "confirming runs (amendment 22); it does not enter the verdict.", "",
+             "Share (%) of a teacher's kept answers identical to one of the piece answers it asked the model for: "
+             "the piece sums of every cut it built (no-carry rule and no selection: cut 1; agreement rule: all its "
+             "cuts, three at 8-12 digits and five at 13-15), or the five sampled direct answers (sample and vote). Problems set aside are skipped; "
+             "an unreadable piece answer never matches. Real models: each round's check sample redrawn (2,000 "
+             "problems per length) with the model before the round; range over starting points and rounds. "
+             "No-carry rows include the weak starting models; no-selection rows include run f.", ""]
+    for title, rows in check3_addition_rows():
+        lines += [f"## {title}", ""] + table(["Teacher"] + [str(d) for d in LENGTHS], rows) + [""]
+    cells = check3_cells()
+    if cells:
+        greedy = [c for c in cells if c["teacher"] != "sample_and_vote"]
+        same = sum(c["reproduced"] == "True" for c in greedy)
+        lines += ["## Reproducing the logged checks", "",
+                  f"Greedy teachers: the redrawn sample gives exactly the logged kept count, check 1 and check 2b in "
+                  f"{same} of {len(greedy)} cells.", ""]
+        bad = [c for c in greedy if c["reproduced"] != "True"]
+        if bad:
+            lines += ["Cells that do not reproduce. Every one is at 13-15 digits in a run made before the five-cut "
+                      "change (decision point 1, commit e440447): those runs drew their samples under the three-cut "
+                      "rule that no piece of any cut starts with 0, and built the agreement rule and check 2b from "
+                      "three cuts. The redraw uses the five cuts now in use, so at these lengths it draws a "
+                      "different sample (cut 1 is unchanged, hence the close but unequal kept counts of the "
+                      "no-carry rule). P9b scores only the two run-f cells marked yes.", ""]
+            lines += table(["Run", "Round", "Digits", "In P9b", "Kept (logged / redrawn)", "Check 1 (logged / redrawn)",
+                            "Check 2b (logged / redrawn)"],
+                           [[c["run"], c["round"], c["digits"], "yes" if c["in_p9b"] == "True" else "no",
+                             f"{c['logged_kept']} / {c['kept']}",
+                             f"{pct_or(c['logged_check_1'])} / {pct_or(c['redrawn_check_1'])}",
+                             f"{pct_or(c['logged_check_2b'])} / {pct_or(c['redrawn_check_2b'])}"] for c in bad]) + [""]
+        vote = [c for c in cells if c["teacher"] == "sample_and_vote"]
+        empty = [r for r in csv.DictReader(CHECK3_CSV.open()) if r["check_3"] == ""]
+        if empty:
+            lines += [f"Cells where the teacher kept nothing (check 3 not defined): {len(empty)}, all sample and "
+                      "vote: " + ", ".join(f"{r['run']} round {r['round']} {r['digits']} digits" for r in empty)
+                      + ".", ""]
+        if vote:
+            d1 = [abs(float(c["redrawn_check_1"]) - float(c["logged_check_1"])) for c in vote
+                  if c["redrawn_check_1"] and c["logged_check_1"]]
+            lines += [f"Sample and vote ({len(vote)} cells) samples its answers, and its sampling stream had been "
+                      "advanced by the round's build before the original checks, so its redrawn checks are close, "
+                      "not equal: largest difference in check 1 "
+                      f"{100 * max(d1):.1f} points (median {100 * statistics.median(d1):.1f})." if d1 else "", ""]
+        every = list(csv.DictReader(CHECK3_CSV.open()))
+        unread = sum(int(c["unreadable_pieces"]) for c in every)
+        total = sum(int(c["pieces"]) for c in every)
+        lines += [f"Unreadable piece answers: {unread:,} of {total:,} ({100 * unread / total:.3f}%).", ""]
+    return "\n".join(lines)
+
+
+def check3_tex() -> str:
+    rows = []
+    for title, block in check3_addition_rows():
+        short = title.split(" (")[0].replace("Real models, ", "")
+        rows += [[short if i == 0 else "", *r] for i, r in enumerate(block)]
+    return tex_table(
+        "check3_addition", "Check 3 on addition: share (%) of a teacher's kept answers identical to one of the "
+        "piece answers it asked for (piece sums of every cut it built; for sample and vote, its five samples). "
+        "Real models: each round's check sample redrawn with the model before the round; range over starting "
+        "points and rounds. Defined after the confirming runs.",
+        ["", "Teacher"] + [str(d) for d in LENGTHS], rows, spec="ll" + "r" * len(LENGTHS), fit=True)
+
+
+# ---------------------------------------------------------------- what the filter removes
+
+FILTER_ARMS = (("nocarry", "No-carry rule"), ("agreement", "Agreement rule"))
+
+
+def filter_gap_rows(arm: str, seeds: tuple[int, ...]) -> list[dict]:
+    """Per seed and length, in the round that first trains the length: the share of kept training
+    answers with a carry out of the cut-1 place, and the student's accuracy on the study group
+    "carry at cut 1" before and after that round (plus the no-carry group after, to compare).
+
+    Final-recipe runs only (``addition_run``: ``-authors``, and ``-5cut`` for seeds 0-1 rounds
+    3-4); si-their-seed1-r1 and the first si-nocarry-seed1 are never read. Analysis defined
+    after the confirming runs (amendment 22)."""
+    rows = []
+    for s in seeds:
+        for d in LENGTHS:
+            rnd = new_round(d)
+            run = addition_run(arm, s, rnd)
+            shares = carry_shares(arm, s, d)
+            rows.append({"seed": s, "digits": d, "round": rnd, "run": run,
+                         "kept_carry": None if shares is None else shares["cut 1"],
+                         "before": addition_accuracy(run, rnd - 1, d, "carry"),
+                         "after": addition_accuracy(run, rnd, d, "carry"),
+                         "after_plain": addition_accuracy(run, rnd, d, "no-carry")})
+    return rows
+
+
+def filter_gap_md() -> str:
+    lines = ["# What the filter removes, and whether the student learns it anyway", "",
+             "Generated by `uv run python -m gainpred.writeup`; do not edit by hand. Analysis defined after the "
+             "confirming runs (amendment 22).", "",
+             "For each length, the round that first trains it (8-9: round 1, 10-11: round 2, 12-13: round 3, "
+             "14-15: round 4). **Kept, carry at cut 1**: share (%) of kept training answers with a carry out of "
+             "the cut-1 place (as in the carries table; for 15 digits, cut 1 has two boundaries and the share is "
+             "their mean). **Carry group**: the student's accuracy (%) on the study-set group with a carry across "
+             "cut 1, before and after the round; **no-carry group after**: the other group, for comparison; "
+             "**lag**: carry group minus no-carry group after the round, in points. 13-15 digits: the five-cut "
+             "study set. Final-recipe runs only (`-authors`; `-5cut` for seeds 0-1, rounds 3-4).", ""]
+    for seeds, title in ((CONFIRMING, "Confirming runs (starting points 2-4)"),
+                         (LEARNING, "Learning runs (starting points 0-1), shown separately")):
+        lines += [f"## {title}", ""]
+        for arm, label in FILTER_ARMS:
+            rows = []
+            for r in filter_gap_rows(arm, seeds):
+                lag = None if r["after"] is None or r["after_plain"] is None else r["after"] - r["after_plain"]
+                kc = "not counted (built before the carry audit, 14 Nov)" if r["kept_carry"] is None \
+                    else fmt(r["kept_carry"])
+                rows.append([str(r["digits"]), str(r["seed"]), str(r["round"]), kc, fmt(r["before"]),
+                             fmt(r["after"]), fmt(r["after_plain"]), fmt(lag, True)])
+            lines += [f"**{label}**", ""] + table(
+                ["Digits", "Seed", "Round", "Kept, carry at cut 1", "Carry group before", "Carry group after",
+                 "No-carry group after", "Lag"], rows) + [""]
+    return "\n".join(lines)
+
+
+def filter_gap_tex() -> str:
+    """Confirming runs: per length, each rule's kept carry share (mean) and the carry group before and
+    after (mean, with the lowest seed after), next to the no-carry group after (mean)."""
+    def m(xs):
+        xs = [x for x in xs if x is not None]
+        return f"{sum(xs) / len(xs):.1f}" if xs else "--"
+    by = {arm: filter_gap_rows(arm, CONFIRMING) for arm, _ in FILTER_ARMS}
+    rows = []
+    for d in LENGTHS:
+        row = [str(d)]
+        for arm, _ in FILTER_ARMS:
+            rs = [r for r in by[arm] if r["digits"] == d]
+            after = [r["after"] for r in rs if r["after"] is not None]
+            row += [m([r["kept_carry"] for r in rs]), m([r["before"] for r in rs]),
+                    f"{m(after)} ({min(after):.1f})" if after else "--", m([r["after_plain"] for r in rs])]
+        rows.append(row)
+    return tex_table(
+        "filter_gap", "What the filter removes and whether the student learns it anyway, confirming runs, in "
+        "the round that first trains each length. Kept: share (%) of kept training answers with a carry out of "
+        "the cut-1 place. Carry: accuracy (%) on the study group with a carry across cut 1, before and after "
+        "the round (mean over starting points 2-4; lowest in brackets). No-carry: the other group after. "
+        "NC: no-carry rule; AG: agreement rule. Defined after the confirming runs.",
+        ["Digits", "NC kept", "NC carry before", "NC carry after", "NC no-carry after",
+         "AG kept", "AG carry before", "AG carry after", "AG no-carry after"], rows, fit=True)
 
 
 # ---------------------------------------------------------------- experiment 2
@@ -888,6 +1090,8 @@ def paper_files() -> dict[str, str]:
         return f"{sum(xs) / len(xs):.1f}" if xs else "--"
     rows = [[str(d), m(nc[d]["cut 1"]), m(nc[d]["other cuts"]), m(nc[d]["no cut"]), m(ag[d]["cut 1"]),
              m(ag[d]["other cuts"]), m(ag[d]["no cut"])] for d in LENGTHS]
+    out["table_filter_gap.tex"] = filter_gap_tex()
+    out["table_check3_addition.tex"] = check3_tex()
     out["table_carries.tex"] = tex_table(
         "carries", "Share (%) of kept training answers that carry out of a place, by kind of place, in the round "
         "the length is first trained on; mean over starting points 2-4. NC: no-carry rule; AG: agreement rule.",
@@ -964,7 +1168,8 @@ def paper_files() -> dict[str, str]:
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
     for name, build in (("exp1.md", exp1), ("exp2.md", exp2), ("exp3.md", exp3), ("cost.md", cost_md),
-                        ("baseline.md", baseline_md), ("runs.md", runs_md)):
+                        ("baseline.md", baseline_md), ("filter_gap.md", filter_gap_md),
+                        ("check3_addition.md", check3_md), ("runs.md", runs_md)):
         (OUT / name).write_text(build())
         print(f"results/writeup/{name}")
     for f in figures():

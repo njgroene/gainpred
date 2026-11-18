@@ -1,0 +1,206 @@
+{
+ "problems_per_length": 20000,
+ "seed": 3001,
+ "table": {
+  "no_carry": {
+   "8": {
+    "kept": 0.37995,
+    "right": 1.0,
+    "confirmed": 0.6944334780892223,
+    "check_3": 0.0
+   },
+   "9": {
+    "kept": 0.3863,
+    "right": 1.0,
+    "confirmed": 0.6396582966606265,
+    "check_3": 0.0
+   },
+   "10": {
+    "kept": 0.3854,
+    "right": 1.0,
+    "confirmed": 0.6947327451997924,
+    "check_3": 0.0
+   },
+   "11": {
+    "kept": 0.3858,
+    "right": 1.0,
+    "confirmed": 0.6439865215137377,
+    "check_3": 0.0
+   },
+   "12": {
+    "kept": 0.3878,
+    "right": 1.0,
+    "confirmed": 0.6981691593604951,
+    "check_3": 0.0
+   },
+   "13": {
+    "kept": 0.3863,
+    "right": 1.0,
+    "confirmed": 0.6650271809474502,
+    "check_3": 0.0
+   },
+   "14": {
+    "kept": 0.38665,
+    "right": 1.0,
+    "confirmed": 0.4925643346695978,
+    "check_3": 0.0
+   },
+   "15": {
+    "kept": 0.14515,
+    "right": 1.0,
+    "confirmed": 0.518429211160868,
+    "check_3": 0.0
+   }
+  },
+  "agreement": {
+   "8": {
+    "kept": 0.3439,
+    "right": 1.0,
+    "confirmed": 1.0,
+    "check_3": 0.0
+   },
+   "9": {
+    "kept": 0.3457,
+    "right": 1.0,
+    "confirmed": 1.0,
+    "check_3": 0.0
+   },
+   "10": {
+    "kept": 0.33995,
+    "right": 1.0,
+    "confirmed": 1.0,
+    "check_3": 0.0
+   },
+   "11": {
+    "kept": 0.34285,
+    "right": 1.0,
+    "confirmed": 1.0,
+    "check_3": 0.0
+   },
+   "12": {
+    "kept": 0.34445,
+    "right": 1.0,
+    "confirmed": 1.0,
+    "check_3": 0.0
+   },
+   "13": {
+    "kept": 0.36205,
+    "right": 1.0,
+    "confirmed": 1.0,
+    "check_3": 0.0
+   },
+   "14": {
+    "kept": 0.2562,
+    "right": 1.0,
+    "confirmed": 1.0,
+    "check_3": 0.0
+   },
+   "15": {
+    "kept": 0.16685,
+    "right": 1.0,
+    "confirmed": 1.0,
+    "check_3": 0.0
+   }
+  },
+  "no_selection": {
+   "8": {
+    "kept": 1.0,
+    "right": 0.37995,
+    "confirmed": 0.26385,
+    "check_3": 0.0
+   },
+   "9": {
+    "kept": 1.0,
+    "right": 0.3863,
+    "confirmed": 0.2471,
+    "check_3": 0.0
+   },
+   "10": {
+    "kept": 1.0,
+    "right": 0.3854,
+    "confirmed": 0.26775,
+    "check_3": 0.0
+   },
+   "11": {
+    "kept": 1.0,
+    "right": 0.3858,
+    "confirmed": 0.24845,
+    "check_3": 0.0
+   },
+   "12": {
+    "kept": 1.0,
+    "right": 0.3878,
+    "confirmed": 0.27075,
+    "check_3": 0.0
+   },
+   "13": {
+    "kept": 1.0,
+    "right": 0.3863,
+    "confirmed": 0.2569,
+    "check_3": 0.0
+   },
+   "14": {
+    "kept": 1.0,
+    "right": 0.38665,
+    "confirmed": 0.19045,
+    "check_3": 0.0
+   },
+   "15": {
+    "kept": 1.0,
+    "right": 0.14515,
+    "confirmed": 0.07525,
+    "check_3": 0.0
+   }
+  },
+  "sample_and_vote": {
+   "8": {
+    "kept": 1.0,
+    "right": 1.0,
+    "confirmed": 0.74155,
+    "check_3": 1.0
+   },
+   "9": {
+    "kept": 1.0,
+    "right": 1.0,
+    "confirmed": 0.74255,
+    "check_3": 1.0
+   },
+   "10": {
+    "kept": 1.0,
+    "right": 1.0,
+    "confirmed": 0.7353,
+    "check_3": 1.0
+   },
+   "11": {
+    "kept": 1.0,
+    "right": 1.0,
+    "confirmed": 0.73995,
+    "check_3": 1.0
+   },
+   "12": {
+    "kept": 1.0,
+    "right": 1.0,
+    "confirmed": 0.7409,
+    "check_3": 1.0
+   },
+   "13": {
+    "kept": 1.0,
+    "right": 1.0,
+    "confirmed": 0.7385,
+    "check_3": 1.0
+   },
+   "14": {
+    "kept": 1.0,
+    "right": 1.0,
+    "confirmed": 0.6551,
+    "check_3": 1.0
+   },
+   "15": {
+    "kept": 1.0,
+    "right": 1.0,
+    "confirmed": 0.52525,
+    "check_3": 1.0
+   }
+  }
+ }
+}

@@ -36,6 +36,7 @@ compares the rule errors with Table 7 of Shin et al. (unfiltered labels up to
 from __future__ import annotations
 
 import argparse
+import json
 import random
 from pathlib import Path
 
@@ -48,6 +49,7 @@ from gainpred.teachers import TEACHER_NAMES, TEACHERS, PerfectCalculator, build_
 
 SEED = 3001  # its own seed: these problems are never trained or tested on
 OUT = Path("results/paper_test.md")
+OUT_JSON = Path("results/paper_test.json")  # the same numbers, for gainpred.writeup
 
 
 def draw(digits: int, n: int, seed: int = SEED) -> list[Addition]:
@@ -120,9 +122,11 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("-n", type=int, default=10_000, help="problems per size")
     args = parser.parse_args()
-    markdown = to_markdown(paper_test(args.n), args.n)
+    table = paper_test(args.n)
+    markdown = to_markdown(table, args.n)
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(markdown)
+    OUT_JSON.write_text(json.dumps({"problems_per_length": args.n, "seed": SEED, "table": table}, indent=1) + "\n")
     print(markdown)
     print(f"wrote {OUT}")
 

@@ -62,6 +62,13 @@ def gpu_seconds_probe(path: Path) -> float:
     return total + sum(v for k, v in partial.items() if k not in done_rounds)
 
 
+def gpu_seconds_check3(path: Path) -> float:
+    """Check 3 on addition (amendment 22, inference only): the timed cells; loading checkpoints and
+    the container's start-up are not timed, as for probes."""
+    return sum(json.loads(line).get("seconds", 0.0) for line in path.read_text().splitlines()
+               if '"event": "cell"' in line)
+
+
 def tripwires(starts: list[Run], rounds: list[RoundsRun]) -> list[tuple[str, str]]:
     out = []
     # 1. The no-carry rule below 90% at any length in a finished four-round run.
@@ -132,11 +139,18 @@ def collect(results_dir: Path = RESULTS_DIR):
     seconds = {r.name: gpu_seconds_start(r) for r in starts}
     seconds |= {r.name: gpu_seconds_rounds(r, results_dir) for r in rounds}
     seconds |= {p.stem: gpu_seconds_probe(p) for p in sorted((results_dir / "probes").glob("*.jsonl"))}
+    seconds |= {p.stem: gpu_seconds_check3(p) for p in sorted((results_dir / "check3").glob("*.jsonl"))}
     states = {}
     for r in starts:
         states[r.name] = "done" if r.done else "incomplete"
     for r in rounds:
         states[r.name] = "done" if r.of("done") else f"incomplete ({len(r.of('round_done'))} rounds)"
+    # Probes and check-3 calls log to results/probes and results/check3; a fetched log with a
+    # "done" event is a finished call (before this, finished ones were listed as running).
+    for folder in ("probes", "check3"):
+        for p in sorted((results_dir / folder).glob("*.jsonl")):
+            if '"event": "done"' in p.read_text():
+                states[p.stem] = "done"
     for name, e in launches.items():
         if name not in states or states[name] != "done":
             states[name] = e.get("outcome", "?") if e.get("outcome") != "spawned" else states.get(name, "running")
