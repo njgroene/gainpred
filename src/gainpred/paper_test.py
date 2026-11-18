@@ -14,6 +14,10 @@ what each teacher does to the problems, independent of any model:
 * **right** -- share of kept answers that are actually right.
 * **draws per kept** -- 1 / kept: how many candidates must be drawn per kept
   answer (P3 caps this at 20).
+* **check 3** -- share of kept answers identical to one of the piece answers
+  the teacher asked for (P8; added after the confirming runs, amendment 22).
+  Expected 0% for the three split-and-combine teachers and 100% for sample and
+  vote (``gainpred.check3``).
 
 Expected, if the code matches the protocol:
 
@@ -38,6 +42,7 @@ from pathlib import Path
 from gainpred.cuts import ADDITION_CUTS, HARD_DIGITS
 from gainpred.data import draw_hard
 from gainpred.formats import Addition, solve
+from gainpred.check3 import check_3_addition, teacher_with_pieces
 from gainpred.checks import confirmed_share
 from gainpred.teachers import TEACHER_NAMES, TEACHERS, PerfectCalculator, build_all, cuts_of
 
@@ -51,7 +56,7 @@ def draw(digits: int, n: int, seed: int = SEED) -> list[Addition]:
 
 
 def paper_test(n: int = 10_000, seed: int = SEED) -> dict[str, dict[int, dict[str, float]]]:
-    """{teacher: {digits: {"kept": share, "right": share of kept, "confirmed": check 2b}}}"""
+    """{teacher: {digits: {"kept": share, "right": share of kept, "confirmed": check 2b, "check_3": check 3}}}"""
     calculator = PerfectCalculator()
     table: dict[str, dict[int, dict[str, float]]] = {name: {} for name in TEACHERS}
     for digits in HARD_DIGITS:
@@ -62,7 +67,8 @@ def paper_test(n: int = 10_000, seed: int = SEED) -> dict[str, dict[int, dict[st
             kept = [d for d in decisions if d.kept is not None]
             right = sum(d.kept == solve(d.problem) for d in kept)
             table[name][digits] = {"kept": len(kept) / n, "right": right / len(kept) if kept else 0.0,
-                                   "confirmed": confirmed_share(decisions, built) or 0.0}
+                                   "confirmed": confirmed_share(decisions, built) or 0.0,
+                                   "check_3": check_3_addition(teacher_with_pieces(name, problems, calculator))}
     return table
 
 
@@ -75,7 +81,8 @@ def to_markdown(table: dict[str, dict[int, dict[str, float]]], n: int) -> str:
         "Every piece is added correctly, so wrong built answers come only from carries crossing a cut.",
         "Percentages: **kept** = share of problems with a kept answer; **right** = share of kept answers that are right;",
         "**2b** = check 2b, share of kept answers confirmed by another cut (P8); **draws** = problems drawn per kept",
-        "answer (P3 caps this at 20).",
+        "answer (P3 caps this at 20); **check 3** = share of kept answers identical to a piece answer the teacher",
+        "asked for (P8; added after the confirming runs, amendment 22).",
         "",
         "| Teacher | | " + " | ".join(f"{d} ({'∣'.join(map(str, ADDITION_CUTS[d][0]))})" for d in sizes) + " |",
         "| --- | --- | " + " | ".join("---" for _ in sizes) + " |",
@@ -86,6 +93,8 @@ def to_markdown(table: dict[str, dict[int, dict[str, float]]], n: int) -> str:
         lines.append("| | 2b | " + " | ".join(f"{100 * by_size[d]['confirmed']:.1f}" for d in sizes) + " |")
         lines.append("| | draws | " + " | ".join(
             f"{1 / by_size[d]['kept']:.1f}" if by_size[d]["kept"] else "–" for d in sizes) + " |")
+        lines.append("| | check 3 | " + " | ".join(
+            "–" if by_size[d].get("check_3") is None else f"{100 * by_size[d]['check_3']:.1f}" for d in sizes) + " |")
     lines += ["", "Column headings give the size and its cut 1 (P4).", ""]
     if 8 in table["no_selection"] and 9 in table["no_selection"]:
         ours = 100 * (1 - (table["no_selection"][8]["right"] + table["no_selection"][9]["right"]) / 2)

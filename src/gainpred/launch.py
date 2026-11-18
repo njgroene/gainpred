@@ -166,6 +166,9 @@ def main() -> None:
     pr.add_argument("run")
     pr.add_argument("--of", required=True, help="the original run whose rounds are probed")
     pr.add_argument("--rounds", default="", help="only these rounds, comma-separated (default: all)")
+    c3 = sub.add_parser("check3", help="check 3 on addition (amendment 22): inference on a finished run's checkpoints")
+    c3.add_argument("run")
+    c3.add_argument("--of", required=True, help="the original run whose check samples are redrawn")
     sub.add_parser("status", help="state of every spawned run")
     args = parser.parse_args()
 
@@ -186,6 +189,8 @@ def main() -> None:
         only = [int(x) for x in args.rounds.split(",") if x] or None
         spawn("probe", args.run, {"of": args.of, "only_rounds": only},
               task="longest_run" if args.of.startswith("runs-") else "addition")
+    elif args.command == "check3":
+        spawn("check3", args.run, {"of": args.of})
     elif args.command == "runs-rounds":
         spawn("self_improve_runs", args.run, {
             "start": args.start, "teacher": args.teacher, "build_seconds": args.build_seconds,
