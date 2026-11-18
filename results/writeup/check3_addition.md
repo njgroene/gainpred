@@ -66,8 +66,17 @@ Cells that do not reproduce. Every one is at 13-15 digits in a run made before t
 | si-noselect-seed1-authors | 4 | 14 | no | 2000 / 2000 | 100.0 / 100.0 | 11.2 / 17.4 |
 | si-noselect-seed1-authors | 4 | 15 | no | 2000 / 2000 | 100.0 / 100.0 | 4.8 / 7.3 |
 
+**Redrawn under the three-cut rule they ran under** (owner, 18 November 2026; `results/check3_addition_3cut.csv`): 26 of 26 cells now reproduce the logged kept count, check 1 and check 2b exactly. Check 3 in these cells: 0.0%.
+
 Cells where the teacher kept nothing (check 3 not defined): 5, all sample and vote: si-vote-seed1-5cut round 3 12 digits, si-vote-seed1-5cut round 3 13 digits, si-vote-seed1-authors round 2 11 digits, si-vote-seed1-authors round 3 12 digits, si-vote-seed1-authors round 3 13 digits.
 
 Sample and vote (123 cells) samples its answers, and its sampling stream had been advanced by the round's build before the original checks, so its redrawn checks are close, not equal: largest difference in check 1 16.8 points (median 1.0).
+
+Cells where logged and redrawn check 1 fall on opposite sides of the 0.50 level: 2 of 128.
+
+| Run | Round | Digits | In P9b | Kept (logged / redrawn) | Check 1 logged | Check 1 redrawn |
+| --- | --- | --- | --- | --- | --- | --- |
+| si-vote-seed1-5cut | 4 | 14 | yes | 69 / 80 | 59.4 | 47.5 |
+| si-vote-seed1-authors | 4 | 14 | no | 73 / 70 | 50.7 | 48.6 |
 
 Unreadable piece answers: 11,945 of 4,502,000 (0.265%).

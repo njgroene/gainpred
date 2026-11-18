@@ -139,7 +139,8 @@ def collect(results_dir: Path = RESULTS_DIR):
     seconds = {r.name: gpu_seconds_start(r) for r in starts}
     seconds |= {r.name: gpu_seconds_rounds(r, results_dir) for r in rounds}
     seconds |= {p.stem: gpu_seconds_probe(p) for p in sorted((results_dir / "probes").glob("*.jsonl"))}
-    seconds |= {p.stem: gpu_seconds_check3(p) for p in sorted((results_dir / "check3").glob("*.jsonl"))}
+    seconds |= {p.stem: gpu_seconds_check3(p) for folder in ("check3", "check3_3cut")
+                for p in sorted((results_dir / folder).glob("*.jsonl"))}
     states = {}
     for r in starts:
         states[r.name] = "done" if r.done else "incomplete"
@@ -147,7 +148,7 @@ def collect(results_dir: Path = RESULTS_DIR):
         states[r.name] = "done" if r.of("done") else f"incomplete ({len(r.of('round_done'))} rounds)"
     # Probes and check-3 calls log to results/probes and results/check3; a fetched log with a
     # "done" event is a finished call (before this, finished ones were listed as running).
-    for folder in ("probes", "check3"):
+    for folder in ("probes", "check3", "check3_3cut"):
         for p in sorted((results_dir / folder).glob("*.jsonl")):
             if '"event": "done"' in p.read_text():
                 states[p.stem] = "done"

@@ -247,6 +247,8 @@ Per run and round (classified cells matching / classified cells):
 | si-vote-seed4-authors | 3 | does nothing | did nothing |
 | si-vote-seed4-authors | 4 | does nothing | did nothing |
 
+**Note on two run-f cells (learning runs; added 18 November 2026, nothing rescored).** Run f of starting points 0 and 1 ran before the five-cut change, so at 13 digits its check 2b was built from three cuts. Redrawn under the five cuts now in use (amendment 22), the verdict is the same, with 2b below the level of 38%: si-noselect-after-nocarry-seed0-authors round 3, 13 digits: 2b 20.6 from three cuts, 25.6 from five; verdict does harm both ways; si-noselect-after-nocarry-seed1-authors round 3, 13 digits: 2b 22.1 from three cuts, 25.6 from five; verdict does harm both ways.
+
 Outcomes: did harm 23, did nothing 289, paid off 73, taught wrong answers 49, unclassified 16
 
 | run | round | digits | new | test set | check 0 | kept | check 1 | 2b | check 2 | teachable | before | after | best | outcome | verdict |

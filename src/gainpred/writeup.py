@@ -343,6 +343,21 @@ def check3_md() -> str:
                              f"{c['logged_kept']} / {c['kept']}",
                              f"{pct_or(c['logged_check_1'])} / {pct_or(c['redrawn_check_1'])}",
                              f"{pct_or(c['logged_check_2b'])} / {pct_or(c['redrawn_check_2b'])}"] for c in bad]) + [""]
+        three = RESULTS_DIR / "check3_addition_3cut.csv"
+        if bad and three.exists():
+            t = list(csv.DictReader(three.open()))
+            ok = sum(r["reproduced"] == "True" for r in t)
+            lines += [f"**Redrawn under the three-cut rule they ran under** (owner, 18 November 2026; "
+                      f"`results/check3_addition_3cut.csv`): {ok} of {len(t)} cells now reproduce the logged kept "
+                      f"count, check 1 and check 2b exactly. Check 3 in these cells: "
+                      + ", ".join(sorted({pct_or(r['check_3']) for r in t})) + "%.", ""]
+            miss = [r for r in t if r["reproduced"] != "True"]
+            if miss:
+                lines += table(["Run", "Round", "Digits", "Kept (logged / redrawn)", "Check 1 (logged / redrawn)",
+                                "Check 2b (logged / redrawn)"],
+                               [[r["run"], r["round"], r["digits"], f"{r['logged_kept']} / {r['kept']}",
+                                 f"{pct_or(r['logged_check_1'])} / {pct_or(r['redrawn_check_1'])}",
+                                 f"{pct_or(r['logged_check_2b'])} / {pct_or(r['redrawn_check_2b'])}"] for r in miss]) + [""]
         vote = [c for c in cells if c["teacher"] == "sample_and_vote"]
         empty = [r for r in csv.DictReader(CHECK3_CSV.open()) if r["check_3"] == ""]
         if empty:
@@ -356,6 +371,19 @@ def check3_md() -> str:
                       "advanced by the round's build before the original checks, so its redrawn checks are close, "
                       "not equal: largest difference in check 1 "
                       f"{100 * max(d1):.1f} points (median {100 * statistics.median(d1):.1f})." if d1 else "", ""]
+            def v(x):
+                return None if x in ("", "None") else float(x)
+            every_vote = [r for r in csv.DictReader(CHECK3_CSV.open()) if r["teacher"] == "sample_and_vote"]
+            cross = [r for r in every_vote if v(r["logged_check_1"]) is not None and v(r["redrawn_check_1"]) is not None
+                     and (v(r["logged_check_1"]) < 0.5) != (v(r["redrawn_check_1"]) < 0.5)]
+            lines += [f"Cells where logged and redrawn check 1 fall on opposite sides of the 0.50 level: {len(cross)} "
+                      f"of {len(every_vote)}.", ""]
+            if cross:
+                lines += table(["Run", "Round", "Digits", "In P9b", "Kept (logged / redrawn)", "Check 1 logged",
+                                "Check 1 redrawn"],
+                               [[r["run"], r["round"], r["digits"], "yes" if r["in_p9b"] == "True" else "no",
+                                 f"{r['logged_kept']} / {r['kept']}", pct_or(r["logged_check_1"]),
+                                 pct_or(r["redrawn_check_1"])] for r in cross]) + [""]
         every = list(csv.DictReader(CHECK3_CSV.open()))
         unread = sum(int(c["unreadable_pieces"]) for c in every)
         total = sum(int(c["pieces"]) for c in every)
@@ -403,6 +431,36 @@ def filter_gap_rows(arm: str, seeds: tuple[int, ...]) -> list[dict]:
     return rows
 
 
+def filter_gap_summary() -> list[str]:
+    """The summary paragraph, computed from the same rows as the tables."""
+    def lag(r):
+        return None if r["after"] is None or r["after_plain"] is None else r["after"] - r["after_plain"]
+
+    def worst(rows):
+        r = min((r for r in rows if lag(r) is not None), key=lag)
+        return f"{-lag(r):.1f} points (seed {r['seed']}, {r['digits']} digits)"
+
+    def span(xs):
+        lo, hi = f"{min(xs):.1f}", f"{max(xs):.1f}"
+        return lo if lo == hi else f"{lo}-{hi}"
+
+    nc_c, ag_c = filter_gap_rows("nocarry", CONFIRMING), filter_gap_rows("agreement", CONFIRMING)
+    nc_l, ag_l = filter_gap_rows("nocarry", LEARNING), filter_gap_rows("agreement", LEARNING)
+    kept_nc = [r["kept_carry"] for r in nc_c if r["kept_carry"] is not None]
+    kept_ag = [r["kept_carry"] for r in ag_c if r["kept_carry"] is not None]
+    after_nc = [r["after"] for r in nc_c if r["after"] is not None]
+    mid = [-lag(r) for r in ag_l if r["digits"] in (10, 11) and lag(r) is not None]
+    big = min((r for r in ag_l if lag(r) is not None), key=lag)
+    return ["**Summary.** Confirming runs: the no-carry rule keeps "
+            f"{span(kept_nc)}% of training answers with a carry at cut 1, yet in the same round "
+            f"the student reaches {span(after_nc)}% on the carry-at-cut-1 group; its "
+            f"largest lag behind the no-carry group is {worst(nc_c)}. The agreement rule keeps "
+            f"{span(kept_ag)}% such answers and lags slightly more, at most {worst(ag_c)}. "
+            f"Learning runs lag more: the no-carry rule at most {worst(nc_l)}; the agreement rule "
+            f"{span(mid)} points at 10-11 digits, and seed {big['seed']} at {big['digits']} digits "
+            f"reaches {big['after']:.1f}% on the carry group against {big['after_plain']:.1f}% on the no-carry group."]
+
+
 def filter_gap_md() -> str:
     lines = ["# What the filter removes, and whether the student learns it anyway", "",
              "Generated by `uv run python -m gainpred.writeup`; do not edit by hand. Analysis defined after the "
@@ -414,6 +472,7 @@ def filter_gap_md() -> str:
              "cut 1, before and after the round; **no-carry group after**: the other group, for comparison; "
              "**lag**: carry group minus no-carry group after the round, in points. 13-15 digits: the five-cut "
              "study set. Final-recipe runs only (`-authors`; `-5cut` for seeds 0-1, rounds 3-4).", ""]
+    lines += filter_gap_summary() + [""]
     for seeds, title in ((CONFIRMING, "Confirming runs (starting points 2-4)"),
                          (LEARNING, "Learning runs (starting points 0-1), shown separately")):
         lines += [f"## {title}", ""]
