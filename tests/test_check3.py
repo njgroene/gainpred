@@ -76,3 +76,22 @@ def test_agreement_records_every_cut_it_built():
     for d, pieces in teacher_with_pieces("no_carry", ps, PerfectCalculator()):
         from gainpred.teachers import cuts_of
         assert len(pieces) == len(cuts_of(d.problem)[0])
+
+
+def test_three_cut_rule_draws_and_cuts_as_before_the_five_cut_change():
+    from gainpred import rounds
+    from gainpred.check3 import three_cut_rule
+    from gainpred.cuts import ADDITION_CUTS, THREE_CUTS
+    from gainpred.teachers import cuts_of
+
+    def sample(d):
+        return rounds.draw_fresh(random.Random(5), d, 200, set())
+
+    now13, now12 = sample(13), sample(12)
+    with three_cut_rule():
+        old13, old12 = sample(13), sample(12)
+        assert cuts_of(old13[0]) == THREE_CUTS[13]
+        assert old13 == [draw_hard(r, 13, THREE_CUTS) for r in [random.Random(5)] for _ in range(200)]
+    assert old12 == now12  # 8-12 digits: the same either way
+    assert old13 != now13  # 13-15: more nonzero starting digits under five cuts
+    assert cuts_of(now13[0]) == ADDITION_CUTS[13]  # restored afterwards

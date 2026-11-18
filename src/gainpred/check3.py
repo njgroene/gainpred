@@ -53,7 +53,9 @@ from __future__ import annotations
 
 import json
 import time
+from contextlib import contextmanager
 from dataclasses import asdict, fields
+from functools import partial
 from pathlib import Path
 
 import torch
@@ -100,18 +102,42 @@ def unreadable_pieces(pairs: list[tuple[Decision, tuple[Answer, ...]]]) -> tuple
     return sum(isinstance(a, Unreadable) for a in allp), len(allp)
 
 
-def redraw(original: str, out_run: str, runs_dir: Path, data_dir: Path, device: torch.device) -> None:
+@contextmanager
+def three_cut_rule():
+    """Draw and cut as runs made before the five-cut change did (P4 as frozen, 12 November 2026).
+
+    Those runs (seeds 0-1, rounds 3-4 of ``-authors``, and run f of seeds 0-1) drew hard
+    problems so that no piece of any of *three* cuts starts with 0, and built the agreement
+    rule and checks 2 and 2b from three cuts. The five cuts now in use add starting-digit
+    constraints at 13-15 digits, so the same seeded stream draws a different sample there.
+    Inside this block, ``rounds.draw_hard`` and ``teachers.cuts_of`` use ``THREE_CUTS``
+    again (8-12 digits are unchanged either way). Owner's approval, 18 November 2026.
+    """
+    from gainpred import data, rounds, teachers
+    from gainpred.cuts import THREE_CUTS
+
+    saved = rounds.draw_hard, teachers.ADDITION_CUTS
+    rounds.draw_hard, teachers.ADDITION_CUTS = partial(data.draw_hard, cuts=THREE_CUTS), THREE_CUTS
+    try:
+        yield
+    finally:
+        rounds.draw_hard, teachers.ADDITION_CUTS = saved
+
+
+def redraw(original: str, out_run: str, runs_dir: Path, data_dir: Path, device: torch.device,
+           three_cuts: bool = False, only: list[tuple[int, int]] | None = None) -> None:
     """Every logged check cell of ``original``: redraw, run the teacher, compute check 3.
+
+    ``three_cuts``: draw and cut under the three-cut rule (``three_cut_rule``). ``only``:
+    compute only these (round, digits) cells; every sample is still drawn in order, so the
+    stream and the excluded problems are the same as in the full redraw.
 
     Writes ``runs/<out_run>/attempt_<n>/check3.jsonl`` (one ``cell`` event per round and
     length, then ``done``). A retried call starts a new attempt folder and skips rounds an
     earlier attempt finished.
     """
     from gainpred.probe import attempt_dir, events
-    from gainpred.rounds import (MAX_DIGITS_BY_ROUND, ModelSolver, RoundConfig, draw_fresh, known_problems,
-                                 rng_for, start_checkpoint_of)
-    from gainpred.cuts import HARD_DIGITS
-    from gainpred.train import load_model
+    from gainpred.rounds import RoundConfig
 
     src = runs_dir / original
     config = json.loads((src / "config.json").read_text())
@@ -127,14 +153,35 @@ def redraw(original: str, out_run: str, runs_dir: Path, data_dir: Path, device: 
         log_file.write(json.dumps(e) + "\n")
         log_file.flush()
 
-    log({"event": "config", "of": original, "teacher": teacher, "seed": cfg.seed, "first_round": first_round})
+    log({"event": "config", "of": original, "teacher": teacher, "seed": cfg.seed, "first_round": first_round,
+         "three_cuts": three_cuts, "only": only})
+    with (three_cut_rule() if three_cuts else _nothing()):
+        _redraw_rounds(cfg, config, src, runs_dir, data_dir, device, teacher, first_round, logged, finished,
+                       {tuple(c) for c in only} if only else None, log)
+    log({"event": "done"})
+    log_file.close()
+
+
+@contextmanager
+def _nothing():
+    yield
+
+
+def _redraw_rounds(cfg, config, src, runs_dir, data_dir, device, teacher, first_round, logged, finished, only, log):
+    from gainpred.cuts import HARD_DIGITS
+    from gainpred.rounds import MAX_DIGITS_BY_ROUND, ModelSolver, draw_fresh, known_problems, rng_for, \
+        start_checkpoint_of
+    from gainpred.train import load_model
+
     exclude = known_problems(data_dir)
     for k in range(first_round, first_round + cfg.rounds):
         lengths = [d for d in range(min(HARD_DIGITS), MAX_DIGITS_BY_ROUND[k - 1] + 1) if (k, d) in logged]
         if not lengths:
             continue
         samples = {d: draw_fresh(rng_for(cfg.seed, k, d, "checks"), d, cfg.check_sample, exclude) for d in lengths}
-        if k in finished:
+        if only is not None:
+            lengths = [d for d in lengths if (k, d) in only]
+        if k in finished or not lengths:
             continue
         start = (start_checkpoint_of(runs_dir, config["start_run"], config.get("start_round")) if k == first_round
                  else sorted((src / f"round_{k - 1}" / "checkpoints").glob("step_*.pt"))[-1])
@@ -157,5 +204,3 @@ def redraw(original: str, out_run: str, runs_dir: Path, data_dir: Path, device: 
                  "seconds": time.monotonic() - t0, "start_checkpoint": str(start.relative_to(runs_dir))})
         log({"event": "round_done", "round": k})
         del model
-    log({"event": "done"})
-    log_file.close()

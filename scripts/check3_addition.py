@@ -3,6 +3,13 @@
     uv run python scripts/check3_addition.py              # list the runs
     uv run python scripts/check3_addition.py --launch     # spawn one Modal call per run not yet launched
     uv run python scripts/check3_addition.py --fetch      # download, merge -> results/check3_addition.csv
+    uv run python scripts/check3_addition.py --three-cuts --launch   # the 26 cells under the three-cut rule
+    uv run python scripts/check3_addition.py --three-cuts --fetch    # -> results/check3_addition_3cut.csv
+
+The 26 three-cut cells (owner, 18 November 2026): the cells at 13-15 digits of seed 0-1 runs made
+before the five-cut change, which the first redraw (under five cuts) could not reproduce. They are
+redrawn under the three-cut rule those runs ran under, into new folders ``runs/check3-<run>-3cut/``
+and new files; the first redraw's files are kept as they are.
 
 The runs are every addition run P9b scores (results/p9b_cells.csv): learning seeds 0-1 and
 confirming seeds 2-4, all arms, run f and the weak starting models. Every logged check cell of
@@ -19,6 +26,19 @@ from pathlib import Path
 CELLS = Path("results/p9b_cells.csv")
 OUT_DIR = Path("results/check3")
 CSV = Path("results/check3_addition.csv")
+THREE_CUT_DIR = Path("results/check3_3cut")
+THREE_CUT_CSV = Path("results/check3_addition_3cut.csv")
+
+
+def three_cut_plan() -> list[tuple[str, str, int, str, list[tuple[int, int]]]]:
+    """(name, original run, seed, teacher, cells) for the cells the five-cut redraw did not reproduce."""
+    rows = [r for r in csv.DictReader(CSV.open()) if r["teacher"] != "sample_and_vote" and r["reproduced"] != "True"]
+    out: dict[str, tuple] = {}
+    for r in rows:
+        name = f"check3-{r['run']}-3cut"
+        out.setdefault(name, (name, r["run"], int(r["seed"]), r["teacher"], []))[4].append(
+            (int(r["round"]), int(r["digits"])))
+    return list(out.values())
 
 
 def plan() -> list[tuple[str, str, int, str]]:
@@ -33,19 +53,26 @@ def p9b_cells() -> set[tuple[str, int, int]]:
     return {(r["run"], int(r["round"]), int(r["digits"])) for r in csv.DictReader(CELLS.open())}
 
 
-def launch() -> None:
+def launch(three_cuts: bool = False) -> None:
+    if three_cuts:
+        for name, run, _, _, cells in three_cut_plan():
+            subprocess.run(["uv", "run", "python", "-m", "gainpred.launch", "check3", name, "--of", run,
+                            "--three-cuts", "--only", ",".join(f"{k}:{d}" for k, d in cells)])
+        return
     for name, run, _, _ in plan():
         subprocess.run(["uv", "run", "python", "-m", "gainpred.launch", "check3", name, "--of", run])
 
 
-def fetch() -> None:
+def fetch(three_cuts: bool = False) -> None:
     out = subprocess.run(["uv", "run", "python", "-m", "gainpred.launch", "status"], capture_output=True,
                          text=True).stdout
     states = {line.split()[0]: line.split(None, 1)[1].strip() for line in out.splitlines() if line.strip()}
-    OUT_DIR.mkdir(exist_ok=True)
+    out_dir, out_csv = (THREE_CUT_DIR, THREE_CUT_CSV) if three_cuts else (OUT_DIR, CSV)
+    out_dir.mkdir(exist_ok=True)
     in_p9b = p9b_cells()
     rows, waiting = [], []
-    for name, run, seed, teacher in plan():
+    todo = [p[:4] for p in three_cut_plan()] if three_cuts else plan()
+    for name, run, seed, teacher in todo:
         state = states.get(name, "not launched")
         if state != "done":
             waiting.append(f"{name}: {state[:80]}")
@@ -55,7 +82,7 @@ def fetch() -> None:
         subprocess.run(["uv", "run", "modal", "volume", "get", "--force", "gainpred", f"runs/{name}", "runs/"],
                        capture_output=True)
         merged = "".join(p.read_text() for p in sorted(dest.glob("attempt_*/check3.jsonl")))
-        (OUT_DIR / f"{name}.jsonl").write_text(merged)
+        (out_dir / f"{name}.jsonl").write_text(merged)
         if state != "done":
             continue  # a failed call's partial output is kept, not used
         for line in merged.splitlines():
@@ -74,11 +101,11 @@ def fetch() -> None:
                          == (log["kept"], log["check_1"], log["check_2b"]),
                          "seconds": round(e["seconds"], 2)})
     rows.sort(key=lambda r: (r["seed"], r["run"], r["round"], r["digits"]))
-    with CSV.open("w", newline="") as f:
+    with out_csv.open("w", newline="") as f:
         w = csv.DictWriter(f, fieldnames=list(rows[0]))
         w.writeheader()
         w.writerows(rows)
-    print(f"{CSV}: {len(rows)} cells from {len({r['run'] for r in rows})} runs")
+    print(f"{out_csv}: {len(rows)} cells from {len({r['run'] for r in rows})} runs")
     for w_ in waiting:
         print("  waiting/failed:", w_)
 
@@ -87,11 +114,15 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--launch", action="store_true")
     ap.add_argument("--fetch", action="store_true")
+    ap.add_argument("--three-cuts", action="store_true")
     a = ap.parse_args()
     if a.launch:
-        launch()
+        launch(a.three_cuts)
     elif a.fetch:
-        fetch()
+        fetch(a.three_cuts)
+    elif a.three_cuts:
+        for p in three_cut_plan():
+            print(*p)
     else:
         for name, run, seed, teacher in plan():
             print(name, run, seed, teacher)

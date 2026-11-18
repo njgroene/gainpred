@@ -273,7 +273,7 @@ def probe(run: str, of: str, only_rounds: list[int] | None = None) -> None:
 
 
 @app.function(image=image, gpu=GPU, volumes={str(VOLUME_PATH): volume}, timeout=2 * 60 * 60)
-def check3(run: str, of: str) -> None:
+def check3(run: str, of: str, three_cuts: bool = False, only: list[list[int]] | None = None) -> None:
     """Check 3 on addition (amendment 22): redraw each round's check sample of run ``of`` with the
     model before that round, record the teacher's piece answers, compute check 3. Inference only."""
     volume.reload()  # see self_improve
@@ -283,6 +283,7 @@ def check3(run: str, of: str) -> None:
 
     print(f"GPU: {torch.cuda.get_device_name()}  torch {torch.__version__}")
     try:
-        redraw(of, run, VOLUME_PATH / "runs", VOLUME_PATH / "data" / "addition", torch.device("cuda"))
+        redraw(of, run, VOLUME_PATH / "runs", VOLUME_PATH / "data" / "addition", torch.device("cuda"),
+               three_cuts=three_cuts, only=[tuple(c) for c in only] if only else None)
     finally:
         volume.commit()

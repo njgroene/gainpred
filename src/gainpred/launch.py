@@ -169,6 +169,8 @@ def main() -> None:
     c3 = sub.add_parser("check3", help="check 3 on addition (amendment 22): inference on a finished run's checkpoints")
     c3.add_argument("run")
     c3.add_argument("--of", required=True, help="the original run whose check samples are redrawn")
+    c3.add_argument("--three-cuts", action="store_true", help="draw and cut as before the five-cut change")
+    c3.add_argument("--only", default="", help="only these cells, round:digits comma-separated (e.g. 3:13,4:14)")
     sub.add_parser("status", help="state of every spawned run")
     args = parser.parse_args()
 
@@ -190,7 +192,8 @@ def main() -> None:
         spawn("probe", args.run, {"of": args.of, "only_rounds": only},
               task="longest_run" if args.of.startswith("runs-") else "addition")
     elif args.command == "check3":
-        spawn("check3", args.run, {"of": args.of})
+        only = [[int(x) for x in c.split(":")] for c in args.only.split(",") if c] or None
+        spawn("check3", args.run, {"of": args.of, "three_cuts": args.three_cuts, "only": only})
     elif args.command == "runs-rounds":
         spawn("self_improve_runs", args.run, {
             "start": args.start, "teacher": args.teacher, "build_seconds": args.build_seconds,
