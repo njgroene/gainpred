@@ -49,6 +49,7 @@ from __future__ import annotations
 
 import csv
 import json
+import re
 import statistics
 import subprocess
 from pathlib import Path
@@ -402,7 +403,7 @@ CHECK3_CAPTION = (
     "correctly, before any training. Trained models: each round's check sample, answered by the model before "
     "that round. Addition values are the same at every length from 8 to 15 digits, in every round and from "
     "every starting model. Longest-run values are the lowest and highest over lengths 12 to 20 (trained "
-    "models: starting points 2-4). The addition rows were added after all experiments were complete, so they "
+    "models: evaluation runs). The addition rows were added after all experiments were complete, so they "
     "did not influence the predictions.")
 
 
@@ -563,11 +564,11 @@ def filter_gap_tex() -> str:
                     f"{m(after)} ({min(after):.1f})" if after else "--", m([r["after_plain"] for r in rs])]
         rows.append(row)
     return tex_table(
-        "filter_gap", "What the filter removes and whether the student learns it anyway, confirming runs, in "
+        "filter_gap", "What the filter removes and whether the student learns it anyway, evaluation runs, in "
         "the round that first trains each length. Kept: share (%) of kept training answers with a carry out of "
-        "the cut-1 place. Carry: accuracy (%) on the study group with a carry across cut 1, before and after "
-        "the round (mean over starting points 2-4; lowest in brackets). No-carry: the other group after. "
-        "NC: no-carry rule; AG: agreement rule. Defined after the confirming runs.",
+        "the split-1 place. Carry: accuracy (%) on the study group with a carry across split 1, before and after "
+        "the round (mean over the evaluation runs; lowest in brackets). No-carry: the other group after. "
+        "NC: no-carry rule; AG: agreement rule. Defined after the evaluation runs.",
         ["Digits", "NC kept", "NC carry before", "NC carry after", "NC no-carry after",
          "AG kept", "AG carry before", "AG carry after", "AG no-carry after"], rows, fit=True)
 
@@ -734,6 +735,13 @@ def exp3() -> str:
     scored = [c for c in cells if c.outcome not in ("unclassified", "missing")]
     lines += p9b.support_lines(scored)[:4]
     lines += p9b.decision_point_2_lines(cells, *levels)
+    mg = margins(evaluation_cases())
+    lines += [f"**Margins (computed after the evaluation runs):** among cases that pass check 0 and keep at least 5%, "
+              f"check 1 is at most {100 * mg['novelty_hi']:.1f}% where the verdict is does nothing and at least "
+              f"{100 * mg['novelty_lo']:.1f}% elsewhere; check 2b is at most {100 * mg['confirmed_hi']:.1f}% where it "
+              f"is does harm ({mg['n_harm']} cells) and at least {100 * mg['confirmed_lo']:.1f}% where it is pays off "
+              f"({mg['n_pays']} cells). Any check-1 level in between, and any 2b level in between, gives the same "
+              "verdicts (checked).", ""]
     learn = [c for c in scored if c.seed in LEARNING]
     hits = sum(c.outcome in p9b.MATCH[c.verdict] for c in learn)
     lines += ["## Learning runs (starting points 0-1), shown separately", "",
@@ -915,7 +923,7 @@ def figures() -> list[str]:
                     color=colour, lw=2, ls=ls, marker=marker, ms=5 if lift else 4, capsize=2, label=label,
                     zorder=3 if lift else 2)
     ax.set_xlabel("Digits"); ax.set_ylabel("Accuracy (%)"); ax.set_ylim(-3, 103)
-    ax.set_title("Experiment 1: confirming runs after round 4 (run f: round 3); mean of seeds 2-4, range as bars",
+    ax.set_title("Experiment 1: evaluation runs after round 4 (run f: round 3); mean of three starting models, range as bars",
                  loc="left", fontsize=9)
     ax.legend(frameon=False, ncol=2, fontsize=7, loc="center left", bbox_to_anchor=(0.02, 0.62))
     fig.tight_layout(); fig.savefig(OUT / "figures" / "exp1_accuracy.png", dpi=200); fig.savefig(PAPER / "figure_exp1.pdf"); plt.close(fig)
@@ -936,7 +944,7 @@ def figures() -> list[str]:
                     color=colour, lw=2, ls=ls, marker="o", ms=4, capsize=2, label=label)
     draw(axes[0], series("runs-join_at_the_cut-seed{s}-u30000", 0), NEUTRAL, "Before")
     for (t, label), colour in zip(RUN_TEACHERS, COLOURS):
-        draw(axes[0], series(f"runs-{t}-seed{{s}}-u30000", 1), colour, label)
+        draw(axes[0], series(f"runs-{t}-seed{{s}}-u30000", 1), colour, paper_words(label))
     axes[0].set_title("Three teachers, full pool", loc="left", fontsize=9)
     draw(axes[1], series("runs-join_at_the_cut-withheld-seed{s}-u30000", 0), NEUTRAL, "Before")
     draw(axes[1], series("runs-join_at_the_cut-withheld-seed{s}-u30000", 1), COLOURS[0], "Withheld, after")
@@ -946,41 +954,43 @@ def figures() -> list[str]:
     axes[1].set_title("Withheld round (joined runs 7-8 never taught)", loc="left", fontsize=9)
     for ax in axes:
         ax.set_xlabel("Joined run length"); ax.set_xticks(xs); ax.legend(frameon=False, fontsize=7)
-    axes[0].set_ylabel("Accuracy (%), seeds 2-4")
+    axes[0].set_ylabel("Accuracy (%), evaluation runs")
     fig.tight_layout(); fig.savefig(OUT / "figures" / "exp2_joined.png", dpi=200); fig.savefig(PAPER / "figure_exp2.pdf"); plt.close(fig)
     made.append("exp2_joined.png")
 
-    # Figure 3: experiment 3, check 1 (all classified cells) and check 2b (cells that reach it) by outcome group.
+    # Figure 3: experiment 3, novelty (all cases with an outcome) and confirmed share (cases that
+    # reach the agreement check) by outcome. Dashed: the frozen levels. Shaded: the margins, the
+    # range of levels that give the same predictions on the evaluation runs (computed after them).
     rows = list(csv.DictReader((RESULTS_DIR / "p9b_cells.csv").open()))
+    mg = margins(evaluation_cases())
     groups = (("paid off", ("paid off",)), ("did nothing", ("did nothing",)),
-              ("did harm or\ntaught wrong", ("did harm", "taught wrong answers")))
+              ("did harm or taught\nwrong answers", HARM))
+    runs_label = {CONFIRMING: "Evaluation runs", LEARNING: "Calibration runs"}
     fig, (ax1, ax) = plt.subplots(1, 2, figsize=(9.0, 3.4), sharey=True)
-    for i, (label, members) in enumerate(groups):
-        for seeds, colour, dx in ((CONFIRMING, COLOURS[0], 0.12), (LEARNING, NEUTRAL, -0.12)):
-            v = [100 * float(r["check_1"]) for r in rows
-                 if int(r["seed"]) in seeds and r["outcome"] in members and r["check_1"] not in ("", "None")]
-            jitter = [((k * 37) % 21 - 10) / 120 for k in range(len(v))]
-            ax1.scatter([i + dx + j for j in jitter], v, s=10, color=colour, alpha=0.6,
-                        label=("Confirming (2-4)" if seeds == CONFIRMING else "Learning (0-1)") if i == 0 else None)
-    ax1.axhline(100 * p9b.LEVEL_1, color="#0b0b0b", lw=1, ls="--")
-    ax1.text(-0.45, 100 * p9b.LEVEL_1 + 2, f"check 1 level {p9b.LEVEL_1:.2f}", fontsize=7, ha="left")
-    ax1.set_xticks(range(3)); ax1.set_xticklabels([g[0] for g in groups])
-    ax1.set_ylabel("Share (%)"); ax1.set_ylim(-3, 103)
-    ax1.set_title("Check 1, all classified cells", loc="left", fontsize=9)
-    for i, (label, members) in enumerate(groups):
-        for seeds, colour, dx in ((CONFIRMING, COLOURS[0], 0.12), (LEARNING, NEUTRAL, -0.12)):
-            v = [100 * float(r["check_2b"]) for r in rows
-                 if int(r["seed"]) in seeds and r["outcome"] in members and r["check_0"] == "True"
-                 and r["check_2b"] not in ("", "None") and float(r["check_1"]) >= p9b.LEVEL_1
-                 and float(r["kept_share"]) >= p9b.MIN_KEPT_SHARE]
-            jitter = [((k * 37) % 21 - 10) / 120 for k in range(len(v))]
-            ax.scatter([i + dx + j for j in jitter], v, s=10, color=colour, alpha=0.7,
-                       label=("Confirming (2-4)" if seeds == CONFIRMING else "Learning (0-1)") if i == 0 else None)
-    ax.axhline(38, color="#0b0b0b", lw=1, ls="--")
-    ax.text(-0.45, 40, "2b level 0.38", fontsize=7, ha="left")
-    ax.set_xticks(range(3)); ax.set_xticklabels([g[0] for g in groups])
-    ax.set_ylim(-3, 103)
-    ax.set_title("Check 2b, cells that reach it", loc="left", fontsize=9)
+
+    def panel(axis, key, keep, level, lo, hi, title, level_label):
+        for i, (_, members) in enumerate(groups):
+            for seeds, colour, dx in ((CONFIRMING, COLOURS[0], 0.12), (LEARNING, NEUTRAL, -0.12)):
+                v = [100 * float(r[key]) for r in rows if int(r["seed"]) in seeds and r["outcome"] in members
+                     and r[key] not in ("", "None") and keep(r)]
+                jitter = [((k * 37) % 21 - 10) / 120 for k in range(len(v))]
+                axis.scatter([i + dx + j for j in jitter], v, s=10, color=colour, alpha=0.65,
+                             label=runs_label[seeds] if i == 0 else None, zorder=3)
+        axis.axhspan(100 * lo, 100 * hi, color="#f1f0ec", zorder=0)
+        axis.axhline(100 * level, color="#0b0b0b", lw=1, ls="--", zorder=2)
+        axis.text(2.45, 100 * level + 2, level_label, fontsize=7, ha="right")
+        axis.text(2.45, 100 * lo + 1, f"same predictions {100 * lo:.1f}-{100 * hi:.1f}", fontsize=6.5, ha="right",
+                  color="#52514e")
+        axis.set_xticks(range(3)); axis.set_xticklabels([g[0] for g in groups])
+        axis.set_ylim(-3, 103)
+        axis.set_title(title, loc="left", fontsize=9)
+
+    panel(ax1, "check_1", lambda r: True, p9b.LEVEL_1, mg["novelty_hi"], mg["novelty_lo"], "Novelty",
+          f"level {100 * p9b.LEVEL_1:.0f}%")
+    ax1.set_ylabel("Share (%)")
+    panel(ax, "check_2b", lambda r: (r["check_0"] == "True" and float(r["check_1"]) >= p9b.LEVEL_1
+                                     and float(r["kept_share"]) >= p9b.MIN_KEPT_SHARE),
+          0.38, mg["confirmed_hi"], mg["confirmed_lo"], "Confirmed share", "level 38%")
     fig.legend(*ax1.get_legend_handles_labels(), frameon=False, fontsize=7, ncol=2, loc="lower center")
     fig.tight_layout(rect=(0, 0.07, 1, 1)); fig.savefig(OUT / "figures" / "exp3_checks.png", dpi=200); fig.savefig(PAPER / "figure_checks.pdf"); plt.close(fig)
     made.append("exp3_checks.png")
@@ -1125,24 +1135,288 @@ def tex_escape(text: str) -> str:
     return text
 
 
+def paper_words(text: str) -> str:
+    """The paper's name for a procedure whose code name uses the old word "cut"."""
+    return text.replace("Join at the cut", "Join at the split").replace("join at the cut", "join at the split")
+
+
 def tex_table(label: str, caption: str, header: list[str], rows: list[list[str]], spec: str | None = None,
-              small: bool = True, fit: bool = False) -> str:
+              small: bool = True, fit: bool = False, rule_before: set[int] = frozenset()) -> str:
     """A booktabs table; every cell is escaped. Captions say what is shown, not what it means.
     ``fit`` scales a wide table down to the text width."""
     spec = spec or "l" + "r" * (len(header) - 1)
-    lines = [GENERATED_NOTE.rstrip(), r"\begin{table}[t]", r"\centering", rf"\caption{{{tex_escape(caption)}}}",
+    lines = [GENERATED_NOTE.rstrip(), r"\begin{table}[H]", r"\centering", rf"\caption{{{tex_escape(caption)}}}",
              rf"\label{{tab:{label}}}"] + ([r"\small"] if small else []) + ([r"\resizebox{\linewidth}{!}{%"] if fit else []) + [
              rf"\begin{{tabular}}{{{spec}}}", r"\toprule", " & ".join(tex_escape(h) for h in header) + r" \\",
              r"\midrule"]
-    lines += [" & ".join(tex_escape(c) for c in r) + r" \\" for r in rows]
+    for i, r in enumerate(rows):
+        lines += ([r"\midrule"] if i in rule_before else []) + [" & ".join(tex_escape(paper_words(c)) for c in r) + r" \\"]
     lines += [r"\bottomrule", r"\end{tabular}"] + (["}"] if fit else []) + [r"\end{table}"]
     return "\n".join(lines) + "\n"
 
 
 def tex_figure(label: str, pdf: str, caption: str, width: str = r"\linewidth") -> str:
-    return "\n".join([GENERATED_NOTE.rstrip(), r"\begin{figure}[t]", r"\centering",
+    return "\n".join([GENERATED_NOTE.rstrip(), r"\begin{figure}[H]", r"\centering",
                       rf"\includegraphics[width={width}]{{generated/{pdf}}}", rf"\caption{{{tex_escape(caption)}}}",
                       rf"\label{{fig:{label}}}", r"\end{figure}"]) + "\n"
+
+
+# ---------------------------------------------------------------- section 4: numbers and tables
+#
+# Everything here reads results/p9b_cells.csv (through load_cells) and the logs; nothing is
+# rescored. "Evaluation cases" are the cells of starting models 2-4 (the confirming runs);
+# "with an outcome" leaves out the unclassified ones. The paper's words: prediction (verdict),
+# case (cell), basics / novelty / agreement check (checks 0 / 1 / 2b), confirmed share (2b).
+
+HARM = ("did harm", "taught wrong answers")
+OUTCOME_ORDER = ("paid off", "did nothing", "did harm", "taught wrong answers")
+TEACHER_LABEL = dict(TEACHER_ROWS)
+
+
+def evaluation_cases(with_outcome: bool = True) -> list:
+    """Cases of the evaluation runs (starting models 2-4); by default only those with an outcome."""
+    cells = [c for c in load_cells() if c.seed in CONFIRMING]
+    return [c for c in cells if c.outcome not in ("unclassified", "missing")] if with_outcome else cells
+
+
+def correct(c) -> bool:
+    from gainpred import p9b
+    return c.outcome in p9b.MATCH[c.verdict]
+
+
+def decided_by(c) -> str:
+    """Which check of the frozen rule settles the prediction: basics, novelty (which includes the
+    5% minimum kept share) or agreement. Mirrors ``p9b.verdict_of`` step by step."""
+    from gainpred import p9b
+    if c.check_0 is False:
+        return "basics"
+    if (c.kept_share is not None and c.kept_share < p9b.MIN_KEPT_SHARE) or c.check_1 is None or c.check_1 < p9b.LEVEL_1:
+        return "novelty"
+    return "agreement"
+
+
+def by_min_kept(c) -> bool:
+    """Decided by the 5% minimum: the teacher kept under 5% of the check sample."""
+    from gainpred import p9b
+    return decided_by(c) == "novelty" and c.kept_share is not None and c.kept_share < p9b.MIN_KEPT_SHARE
+
+
+def margins(conf: list) -> dict[str, float | int]:
+    """How far the two levels could move without changing any prediction (computed after the
+    evaluation runs). Among cases that pass the basics check and keep at least 5%:
+
+    * novelty: the highest value predicted "does nothing" and the lowest value predicted
+      anything else -- any novelty level above the first and up to the second gives the
+      same predictions;
+    * confirmed share, among cases that reach the agreement check: the highest value
+      predicted "does harm" and the lowest predicted "pays off".
+
+    Raises if a level inside either interval changes a prediction.
+    """
+    from gainpred import p9b
+
+    el = [c for c in conf if c.check_0 is not False and c.kept_share is not None and c.kept_share >= p9b.MIN_KEPT_SHARE]
+    nothing = [c.check_1 for c in el if c.verdict == "does nothing" and c.check_1 is not None]
+    rest = [c.check_1 for c in el if c.verdict != "does nothing"]
+    harm = [c.check_2b for c in el if c.verdict == "does harm" and decided_by(c) == "agreement"]
+    pays = [c.check_2b for c in el if c.verdict == "pays off"]
+    m = {"novelty_hi": max(nothing), "novelty_lo": min(rest), "confirmed_hi": max(harm), "n_harm": len(harm),
+         "confirmed_lo": min(pays), "n_pays": len(pays)}
+    frozen = [c.verdict for c in conf]
+
+    def levels(lo, hi, k=40):
+        return [lo + (hi - lo) * (i + 1) / k for i in range(k)]  # (lo, hi], both ends of the open side tested
+    for x in levels(m["novelty_hi"], m["novelty_lo"]):
+        if [p9b.verdict_of(c, 0.38, x) for c in conf] != frozen:
+            raise ValueError(f"novelty level {x} changes a prediction")
+    for x in levels(m["confirmed_hi"], m["confirmed_lo"]):
+        if [p9b.verdict_of(c, x, p9b.LEVEL_1) for c in conf] != frozen:
+            raise ValueError(f"confirmed-share level {x} changes a prediction")
+    return m
+
+
+def section4_numbers() -> dict[str, str]:
+    """Every number section 4's text cites, as LaTeX macro name -> value (``generated/numbers.tex``)."""
+    from gainpred import p9b
+
+    allc, conf = evaluation_cases(False), evaluation_cases()
+    n, hits = len(conf), sum(map(correct, conf))
+    nums = {"gpCases": n, "gpCorrect": hits, "gpCorrectPct": f"{100 * hits / n:.1f}",
+            "gpCasesAll": len(allc), "gpNoOutcome": len(allc) - n, "gpCorrectAllPct": f"{100 * hits / len(allc):.1f}"}
+    for s, word in zip(CONFIRMING, ("Two", "Three", "Four")):
+        g = [c for c in conf if c.seed == s]
+        nums[f"gpCorrectModel{word}"], nums[f"gpCasesModel{word}"] = sum(map(correct, g)), len(g)
+    nums |= {"gpHarmful": sum(c.outcome in HARM for c in conf),
+             "gpDidHarm": sum(c.outcome == "did harm" for c in conf),
+             "gpTaughtWrong": sum(c.outcome == "taught wrong answers" for c in conf)}
+    for k, word in (("basics", "Basics"), ("novelty", "Novelty"), ("agreement", "Agreement")):
+        g = [c for c in conf if decided_by(c) == k]
+        nums[f"gpBy{word}"], nums[f"gpBy{word}Correct"] = len(g), sum(map(correct, g))
+    nums["gpByMinKept"] = sum(map(by_min_kept, conf))
+    nob = sum(c.outcome in p9b.MATCH[p9b.verdict_of(c, 0.38, p9b.LEVEL_1, use_check_0=False)] for c in conf)
+    nums |= {"gpCorrectNoBasics": nob, "gpCorrectNoBasicsPct": f"{100 * nob / n:.1f}"}
+
+    comp, _ = baseline_comparison()
+    rows = comp["confirming"]
+    for key, word in (("ours", "Ours"), ("baseline", "Baseline"), ("favour", "Variant")):
+        ok = sum(r["outcome"] in p9b.MATCH[r[key]] for r in rows)
+        nums[f"gp{word}Correct"], nums[f"gp{word}CorrectPct"] = ok, f"{100 * ok / len(rows):.1f}"
+        nums[f"gp{word}HarmFlagged"] = sum(r[key] == "does harm" for r in rows if r["outcome"] in HARM)
+        weak = [r for r in rows if r["case"] == p9b.CASES[5]]
+        nums[f"gp{word}WeakCorrect"] = sum(r["outcome"] in p9b.MATCH[r[key]] for r in weak)
+    nums["gpWeakCases"] = len([r for r in rows if r["case"] == p9b.CASES[5]])
+    cost = baseline_cost(CONFIRMING)
+    tf = sum(k * f for _, k, _, f, _ in cost)
+    nums["gpBaselineCostPct"] = f"{100 * sum(k * p for _, k, p, _, _ in cost) / tf:.0f}"
+    nums["gpChecksCostPct"] = f"{100 * sum(k * c for _, k, _, _, c in cost) / tf:.0f}"
+
+    m = margins(conf)
+    nums |= {"gpNoveltyLevel": f"{100 * p9b.LEVEL_1:.0f}", "gpConfirmedLevel": "38",
+             "gpNoveltyMarginLow": f"{100 * m['novelty_hi']:.1f}", "gpNoveltyMarginHigh": f"{100 * m['novelty_lo']:.1f}",
+             "gpConfirmedMarginLow": f"{100 * m['confirmed_hi']:.1f}", "gpConfirmedHarmCases": m["n_harm"],
+             "gpConfirmedMarginHigh": f"{100 * m['confirmed_lo']:.1f}", "gpConfirmedPaysCases": m["n_pays"]}
+
+    rise = rise_groups(conf)
+    nums["gpRiseNothingUnderTwo"] = sum(x < 2 for x in rise["Did little or nothing"])
+    rr = p9b.round_rows(conf)
+    nums |= {"gpRoundsCorrect": sum(o in p9b.MATCH[v] for _, _, v, o in rr), "gpRounds": len(rr)}
+    # Internal consistency: the parts add up.
+    assert nums["gpCorrect"] == nums["gpOursCorrect"] == sum(nums[f"gpCorrectModel{w}"] for w in ("Two", "Three", "Four"))
+    assert nums["gpHarmful"] == nums["gpDidHarm"] + nums["gpTaughtWrong"]
+    assert n == nums["gpByBasics"] + nums["gpByNovelty"] + nums["gpByAgreement"]
+    return {k: str(v) for k, v in nums.items()}
+
+
+# Which numbers were computed after the evaluation runs (said in numbers.tex, and in the text).
+AFTER_EVALUATION = ("gpCorrectNoBasics", "gpVariant", "gpNoveltyMargin", "gpConfirmedMargin", "gpConfirmedHarmCases",
+                    "gpConfirmedPaysCases", "gpRounds")
+
+
+def numbers_tex(nums: dict[str, str]) -> str:
+    lines = [GENERATED_NOTE.rstrip(), "% Numbers cited in the text of section 4, so the prose cannot drift from the data.",
+             "% Marked 'after': computed after the evaluation runs (not part of the frozen analysis)."]
+    for k, v in nums.items():
+        note = "  % after" if k.startswith(AFTER_EVALUATION) else ""
+        lines.append(rf"\newcommand{{\{k}}}{{{v}}}{note}")
+    return "\n".join(lines) + "\n"
+
+
+RISE_ROWS = (("Did little or nothing", {"did nothing"}), ("Taught wrong answers", {"taught wrong answers"}),
+             ("Paid off", {"paid off"}))
+
+
+def rise_groups(conf: list) -> dict[str, list[float]]:
+    """New lengths (score before at most 50%): the rise over the round, in points, by outcome."""
+    new = [c for c in conf if c.new_length and c.before <= 0.50]
+    out = {label: [100 * (c.after - c.before) for c in new if c.outcome in members] for label, members in RISE_ROWS}
+    if sum(map(len, out.values())) != len(new):
+        raise ValueError("a new length has an outcome outside the rise table's rows")
+    return out
+
+
+def rise_tex(conf: list) -> str:
+    def signed(x):
+        return f"{x:.1f}".replace("-", "−")  # a typeset minus
+    rows = [[label, str(len(v)), signed(min(v)), signed(statistics.median(v)), signed(max(v))]
+            for label, v in rise_groups(conf).items()]
+    return tex_table("rise", "Rise in accuracy over the round at new lengths (score before at most 50%), "
+                     "evaluation runs, by outcome; points. Taught wrong answers is counted as harm.",
+                     ["Outcome", "Cases", "Smallest rise", "Median", "Largest rise"], rows)
+
+
+def outcome_counts(g: list) -> str:
+    counts = {o: sum(c.outcome == o for c in g) for o in OUTCOME_ORDER}
+    return ", ".join(f"{o} {k}" for o, k in counts.items() if k)
+
+
+def cases_tex(conf: list) -> str:
+    from gainpred import p9b
+
+    rows = []
+    for case in p9b.CASES:
+        g = [c for c in conf if p9b.case_of(c) == case]
+        if g:
+            by = [k for k in ("basics", "novelty", "agreement") if any(decided_by(c) == k for c in g)]
+            rows.append([case, str(len(g)), str(sum(map(correct, g))), outcome_counts(g), " / ".join(by)])
+    return tex_table("p9b-cases", "Cases correctly predicted, by kind of case, in the evaluation runs. Decided "
+                     "by: the check that settles the prediction (novelty includes the 5% minimum kept share). "
+                     "Taught wrong answers is counted as harm.",
+                     ["Kind of case", "Cases", "Correctly predicted", "Outcomes", "Decided by"], rows,
+                     spec="lrrll", fit=True)
+
+
+def weak_steps(run: str) -> str:
+    m = re.search(r"-s(\d+)-", run)
+    return f"{int(m.group(1)):,} updates" if m else ""
+
+
+def easy_lowest(c) -> float:
+    """Lowest easy-problem accuracy over sizes 3-7 of the model before the round (the basics
+    check needs 98% at every size)."""
+    acc = evals(c.run, "easy")[c.round - 1]
+    return 100 * min(v for k, v in acc.items() if k != "all")
+
+
+def weak_tex() -> str:
+    from gainpred import p9b
+
+    weak = sorted((c for c in evaluation_cases(False) if p9b.case_of(c) == p9b.CASES[5]),
+                  key=lambda c: (c.seed, int(re.search(r"-s(\d+)-", c.run).group(1)), c.digits))
+    rows = [[f"{c.seed} ({weak_steps(c.run)})", f"{easy_lowest(c):.1f}", str(c.digits), pct(c.before), pct(c.after),
+             pct(c.best_after), "without an outcome" if c.outcome == "unclassified" else c.outcome, c.verdict,
+             p9b.verdict_of(c, 0.38, p9b.LEVEL_1, use_check_0=False)] for c in weak]
+    return tex_table("weak", f"The {len(rows)} cases from weak starting models (stopped early), evaluation runs, "
+                     "including those without an outcome. Easy: lowest accuracy (%) over easy sizes 3-7 before the "
+                     "round (the basics check needs 98% at every size). Before, after: accuracy (%) at that length; "
+                     "best: the best teacher's after, same starting model and round.",
+                     ["Starting model", "Easy", "Length", "Before", "After", "Best", "Outcome", "Prediction",
+                      "Without basics"], rows, spec="lrrrrrlll", fit=True)
+
+
+def pct(x: float | None) -> str:
+    return "–" if x is None else f"{100 * x:.1f}"
+
+
+def outcome_gap(c) -> str:
+    """Which gap in the outcome rule (P9b) leaves a case without an outcome.
+
+    Learned lengths, and new ones starting above 50%, have outcomes only for a change of
+    at most 3 points either way or a fall of more than 3: a rise of more than 3 has none.
+    New lengths starting at or below 50% have none for a rise of 10-20 points that is not
+    30 points below the best teacher, or a rise of 20 or more that is 10-30 points below it.
+    """
+    if not c.new_length or c.before > 0.50:
+        return "started above 50%, rose more than 3 points" if c.new_length else \
+            "learned length, rose more than 3 points"
+    if c.after - c.before < 0.20:
+        return "rose 10-20 points, under 30 below the best"
+    return "rose 20 points or more, 10-30 below the best"
+
+
+def no_outcome_tex() -> str:
+    cs = [c for c in evaluation_cases(False) if c.outcome == "unclassified"]
+    rows = [[TEACHER_LABEL.get(c.teacher, c.teacher), f"{c.seed}" + (" (weak)" if "-weak-" in c.run else ""),
+             str(c.round), str(c.digits), pct(c.before), pct(c.after), pct(c.check_1), c.verdict, outcome_gap(c)]
+            for c in sorted(cs, key=lambda c: (c.teacher, c.seed, c.round, c.digits))]
+    return tex_table("no-outcome", f"The {len(rows)} evaluation cases without an outcome, and the gap in the "
+                     "outcome rule each falls in. Before, after: accuracy (%) at that length; novelty in %.",
+                     ["Teacher", "Starting model", "Round", "Length", "Before", "After", "Novelty", "Prediction",
+                      "Gap in the outcome rule"], rows, spec="llrrrrrll", fit=True)
+
+
+def round_level_tex(conf: list) -> str:
+    from gainpred import p9b
+
+    rr = p9b.round_rows(conf)
+    ok = sum(o in p9b.MATCH[v] for _, _, v, o in rr)
+    pooled = {"paid off": "Paid off", "did nothing": "Did nothing", "did harm": "Did harm"}
+    rows = [[label, *(str(sum(o == out and v == p for _, _, v, o in rr)) for p in PREDICTIONS)]
+            for out, label in pooled.items()]
+    return tex_table("round-level", f"Round-level score, defined after the evaluation runs: {ok} of {len(rr)} "
+                     "rounds correctly predicted. A round's prediction is the prediction at its newest length; its "
+                     "outcome is did harm if any length did harm or taught wrong answers, else paid off if any new "
+                     "length paid off, else did nothing. Rows: outcome; columns: prediction.",
+                     ["Outcome", "Pays off", "Does nothing", "Does harm"], rows)
 
 
 PREDICTIONS = ("pays off", "does nothing", "does harm")
@@ -1185,7 +1459,7 @@ def p9b_tables(conf: list) -> tuple[str, str]:
     caption = f"Predictions before training against outcomes after training, for the {n} evaluation cases."
     if all(j == PREDICTIONS.index("does harm") for _, j in errors):
         caption += " Every error is a prediction of harm that did not occur."
-    lines = [GENERATED_NOTE.rstrip(), r"\begin{table}[t]", r"\centering", rf"\caption{{{tex_escape(caption)}}}",
+    lines = [GENERATED_NOTE.rstrip(), r"\begin{table}[H]", r"\centering", rf"\caption{{{tex_escape(caption)}}}",
              r"\label{tab:p9b-confusion}", r"\small", r"\begin{tabular}{lrrr}", r"\toprule",
              r" & \multicolumn{3}{c}{" + tex_escape("Prediction") + r"} \\", r"\cmidrule(l){2-4}",
              " & ".join(tex_escape(h) for h in ("Outcome", "Pays off", "Does nothing", "Does harm")) + r" \\",
@@ -1208,13 +1482,12 @@ def paper_files() -> dict[str, str]:
     # Section 4: the prediction rule against always giving one prediction, and the confusion grid.
     out["table_p9b_summary.tex"], out["table_p9b_confusion.tex"] = p9b_tables(conf)
 
-    rows = []
-    for case in p9b.CASES:
-        g = [c for c in conf if p9b.case_of(c) == case]
-        if g:
-            rows.append([case, str(len(g)), str(sum(c.outcome in p9b.MATCH[c.verdict] for c in g))])
-    out["table_p9b_cases.tex"] = tex_table("p9b-cases", "Cases correctly predicted, by kind of case, in the "
-                                           "evaluation runs.", ["Kind of case", "Cases", "Correctly predicted"], rows)
+    out["table_p9b_cases.tex"] = cases_tex(conf)
+    out["numbers.tex"] = numbers_tex(section4_numbers())
+    out["table_rise.tex"] = rise_tex(conf)
+    out["table_weak.tex"] = weak_tex()
+    out["table_no_outcome.tex"] = no_outcome_tex()
+    out["table_round_level.tex"] = round_level_tex(conf)
 
     # Section 4: cost of the checks, per teacher, confirming runs (all rounds pooled per teacher).
     est, rows = replay_tokens_estimate(), []
@@ -1227,7 +1500,7 @@ def paper_files() -> dict[str, str]:
         checks = sum(c["checks_s"] for c in cs)
         rows.append([label, str(len(cs)), f"{whole / len(cs):.0f}", f"{checks / len(cs):.0f}", f"{100 * checks / whole:.0f}"])
     out["table_cost.tex"] = tex_table(
-        "cost", "Seconds per round on one A10 GPU, confirming runs: whole round (build, replay, checks, 3,000 updates; "
+        "cost", "Seconds per round on one A10 GPU, evaluation runs: whole round (build, replay, checks, 3,000 updates; "
         "evaluation not timed) and the checks alone.", ["Teacher", "Rounds", "Round s", "Checks s", "Checks %"], rows)
 
     # Section 5: agreement rule against the no-carry rule.
@@ -1235,8 +1508,8 @@ def paper_files() -> dict[str, str]:
     rows = [[str(d), fmt(pm[d][0], True), f"{fmt(pm[d][1], True)} ({pm[d][2]})", fmt(pc[d][0], True),
              f"{fmt(pc[d][1], True)} ({pc[d][2]})"] for d in LENGTHS]
     out["table_passmark.tex"] = tex_table(
-        "passmark", "Agreement rule minus no-carry rule after round 4, points, confirming runs: mean over three "
-        "starting points and worst single run (its starting point).",
+        "passmark", "Agreement rule minus no-carry rule after round 4, points, evaluation runs: mean over three "
+        "starting models and worst single run (its starting model).",
         ["Digits", "Mean gap", "Worst run", "Mean gap, carry", "Worst run, carry"], rows)
 
     nc, ag = carries_per_place("nocarry", CONFIRMING), carries_per_place("agreement", CONFIRMING)
@@ -1247,8 +1520,9 @@ def paper_files() -> dict[str, str]:
     out["table_filter_gap.tex"] = filter_gap_tex()
     out["table_carries.tex"] = tex_table(
         "carries", "Share (%) of kept training answers that carry out of a place, by kind of place, in the round "
-        "the length is first trained on; mean over starting points 2-4. NC: no-carry rule; AG: agreement rule.",
-        ["Digits", "NC: cut 1", "NC: other cuts", "NC: no cut", "AG: cut 1", "AG: other cuts", "AG: no cut"], rows)
+        "the length is first trained on; mean over the evaluation runs. NC: no-carry rule; AG: agreement rule.",
+        ["Digits", "NC: split 1", "NC: other splits", "NC: no split", "AG: split 1", "AG: other splits",
+         "AG: no split"], rows)
 
     # Section 5: longest run.
     rows = []
@@ -1261,15 +1535,15 @@ def paper_files() -> dict[str, str]:
         rows.append(row)
     out["table_exp2.tex"] = tex_table(
         "exp2", "Longest run, one round: study-set accuracy (%), all groups and joined run lengths 5-8; mean over "
-        "starting points 2-4 (lowest-highest).", ["Teacher", "All", "Joined 5", "Joined 6", "Joined 7", "Joined 8"],
+        "the evaluation runs (lowest-highest).", ["Teacher", "All", "Joined 5", "Joined 6", "Joined 7", "Joined 8"],
         rows, fit=True)
 
     out["table_check3.tex"] = check3_tex()
 
     out["table_withheld.tex"] = tex_table(
-        "withheld", "Joined runs of 4-8 before and after one round (%), confirming runs. Withheld: join at the cut "
+        "withheld", "Joined runs of 4-8 before and after one round (%), evaluation runs. Withheld: join at the split "
         "without run-across problems of left part 3-4. Control arm and edges-differ rows are observations.",
-        ["Arm", "Seed", "4", "5", "6", "7", "8"], withheld_rows(CONFIRMING), fit=True)
+        ["Arm", "Starting model", "4", "5", "6", "7", "8"], withheld_rows(CONFIRMING), fit=True)
 
     # Section 4: our checks, the baseline as run, and the variant in its favour (confirming runs).
     comp, lv = baseline_comparison()
@@ -1280,34 +1554,44 @@ def paper_files() -> dict[str, str]:
     probe_share = 100 * sum(n * p for _, n, p, _, _ in cost) / tf
     checks_share = 100 * sum(n * c for _, n, _, _, c in cost) / tf
     labels = {"ours": "Our checks", "baseline": "Baseline, as run",
-              "favour": "Baseline, variant in its favour (defined after the confirming runs)"}
-    rows = []
-    for key in ("ours", "baseline", "favour"):
-        def matched(sel, k=key):
-            g = [r for r in rows_c if sel(r)]
-            return f"{sum(r['outcome'] in p9b.MATCH[r[k]] for r in g)}/{len(g)}"
-        allm = sum(r["outcome"] in p9b.MATCH[r[key]] for r in rows_c)
-        rows.append([labels[key], f"{allm}/{len(rows_c)} ({100 * allm / len(rows_c):.1f})",
-                     matched(lambda r: r["outcome"] == "paid off"), matched(lambda r: r["outcome"] == "did nothing"),
-                     matched(lambda r: r["outcome"] in ("did harm", "taught wrong answers")),
-                     "no" if key == "ours" else "yes",
-                     f"{checks_share:.0f}" if key == "ours" else f"{probe_share:.0f}"])
+              "favour": "Baseline, variant in its favour (defined after the evaluation runs)"}
+
+    def rule_rows(rs, cost_cols=True):
+        out_rows = []
+        for key in ("ours", "baseline", "favour"):
+            def share(sel, k=key, pred=None):
+                g = [r for r in rs if sel(r)]
+                return f"{sum((r[k] == pred) if pred else r['outcome'] in p9b.MATCH[r[k]] for r in g)}/{len(g)}"
+            allm = sum(r["outcome"] in p9b.MATCH[r[key]] for r in rs)
+            out_rows.append([labels[key], f"{allm}/{len(rs)} ({100 * allm / len(rs):.1f})",
+                             share(lambda r: r["outcome"] == "paid off"), share(lambda r: r["outcome"] == "did nothing"),
+                             share(lambda r: r["outcome"] in HARM, pred="does harm"),
+                             ("no" if key == "ours" else "yes") if cost_cols else "",
+                             (f"{checks_share:.0f}" if key == "ours" else f"{probe_share:.0f}") if cost_cols else ""])
+        return out_rows
+    weak = [r for r in rows_c if r["case"] == p9b.CASES[5]]
+    rows = rule_rows(rows_c) + [[f"Weak starting models only ({len(weak)} cases)", "", "", "", "", "", ""]] + [
+        r for r in rule_rows(weak, cost_cols=False)]
     out["table_baseline.tex"] = tex_table(
-        "baseline", f"Our checks against the train-briefly-and-look baseline, confirming runs (cells matched, %). "
-        f"The baseline trains 200 updates and reads accuracy on the test problems, so it needs their reference "
-        f"answers; our checks do not. Cost: share of a full round. Levels fitted on starting points 0-1: as run "
+        "baseline", f"Our checks against the train-briefly-and-look baseline, evaluation runs (cases correctly "
+        f"predicted, %). Harmful cases flagged: harmful cases (did harm, or taught wrong answers) predicted to do "
+        f"harm. The baseline trains 200 updates and reads accuracy on the test problems, so it needs their correct "
+        f"answers; our checks do not. Cost: share of a full round. Levels fitted on the calibration runs: as run "
         f"G = {lv['G']}, H = {lv['H']}, D = {lv['D']}; variant Z = {lf['Z']}, G = {lf['G']}, H = {lf['H']}, D = {lf['D']}.",
-        ["Rule", "All", "Paid off", "Did nothing", "Did harm", "Reference answers", "Cost %"], rows, fit=True)
+        ["Rule", "All", "Paid off", "Did nothing", "Harmful cases flagged", "Correct answers", "Cost %"], rows,
+        fit=True, rule_before={3})
 
     out["figure_exp1.tex"] = tex_figure("exp1", "figure_exp1.pdf",
-                                        "Accuracy after round 4 (run f: round 3), confirming runs; mean over starting "
-                                        "points 2-4, range as bars.")
+                                        "Accuracy after round 4 (run f: round 3), evaluation runs; mean over the "
+                                        "three starting models, range as bars.")
     out["figure_exp2.tex"] = tex_figure("exp2", "figure_exp2.pdf",
                                         "Longest run: accuracy by joined run length before and after one round, "
-                                        "confirming runs.")
+                                        "evaluation runs.")
     out["figure_checks.tex"] = tex_figure("checks", "figure_checks.pdf",
-                                          "Check 1 (all classified cells) and check 2b (cells that reach it) by "
-                                          "outcome group; dashed: the levels fixed before the confirming runs.")
+                                          "Novelty (all cases with an outcome) and confirmed share (cases that "
+                                          "reach the agreement check) by outcome. Dashed: the levels fixed before the "
+                                          "evaluation runs. Shaded: the range within which a level gives the same "
+                                          "predictions on the evaluation runs (computed after them).")
     return out
 
 

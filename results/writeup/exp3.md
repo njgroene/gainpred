@@ -136,6 +136,8 @@ Misses in the confirming runs: si-nocarry-weak-s2200-seed2 r1 8 digits (paid off
 | si-vote-seed4-authors | 3 | does nothing | did nothing |
 | si-vote-seed4-authors | 4 | does nothing | did nothing |
 
+**Margins (computed after the evaluation runs):** among cases that pass check 0 and keep at least 5%, check 1 is at most 40.2% where the verdict is does nothing and at least 60.9% elsewhere; check 2b is at most 27.8% where it is does harm (42 cells) and at least 50.7% where it is pays off (31 cells). Any check-1 level in between, and any 2b level in between, gives the same verdicts (checked).
+
 ## Learning runs (starting points 0-1), shown separately
 
 Where the 2b level was set, so not a test of it: 169 of 176 classified cells match (96.0%).
