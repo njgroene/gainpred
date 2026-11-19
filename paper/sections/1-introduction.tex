@@ -1,3 +1,96 @@
 \section{Introduction}
 \label{sec:introduction}
 
+\citet{shin2026compositional} introduced compositional self-improvement, a way
+for a model to extend itself to problems it cannot yet solve without any new
+labels. The model splits a hard problem into easier ones it already solves,
+combines their answers into an answer for the hard problem, and trains on the
+result. Repeating this takes it far beyond the problems it started with. The
+appeal is plain: labelled data is scarcest exactly where a model is weakest,
+and here the model supplies its own.
+
+The same paper shows that each such training round can be a gamble. A round
+might help, do nothing, or leave the model worse than before, and
+\citet{shin2026compositional} explain why. The answers to the easier problems
+may be wrong. Combining them may introduce errors even when they are right.
+And the answers that can be built may never include what the model still needs
+to learn. From these they draw three lessons: teach the easy skills well, find
+where combining breaks, and check what the built answers can reach.
+
+The three lessons identified by \citet{shin2026compositional} are very useful,
+but difficult to put into practice for a model that is improving itself
+autonomously. This is because each lesson relies on something the model does
+not necessarily have access to without human intervention
+(Table~\ref{tab:what-each-needs}). To find out why a round failed, the authors
+compare the answers the model built with the correct ones. To keep wrong
+answers out of training, they use a filter written for the task. When adding
+two long numbers, for example, joining the sums of their halves goes wrong
+whenever a digit is carried from one half into the other, so their filter
+discards those problems. A model teaching \emph{itself} has no correct answers
+to the hard problems, and no one to write an effective filter. In this paper,
+we therefore ask whether it is possible to predict the outcome of a round
+\emph{before it is run, using only the model's own answers}. We introduce
+three checks that make this possible(Section~\ref{sec:teacher-and-student}), so
+that a round that is not expected to help can be skipped. We also show that
+the checks require less compute than the obvious alternative, training briefly
+and peeking at early progress.
+
+\begin{table}[t]
+\centering
+\caption{What each way of assessing a training round requires, and what it
+  tells us. The first two rows are from \citet{shin2026compositional}; the
+  third is proposed here. A rule means a statement, written by hand, of when
+  combining gives a wrong answer.}
+\label{tab:what-each-needs}
+\small
+\begin{tabular}{lccl}
+\toprule
+ & Needs correct & Needs a rule & \\
+Tool & answers & for the task & What it tells us about the round \\
+\midrule
+Diagnosis & Yes & No & Why a round failed \\
+Filter & No & Yes & Which built answers to discard \\
+Checks introduced in this paper & No & No & What a round will do, before it is run \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Our approach is to see one model in two roles. As the \emph{teacher}, it
+applies the split-and-combine procedure; as the \emph{student}, it answers the
+same problem directly. Training makes the student imitate the teacher, so a
+round can help only if the teacher's answers differ from the student's, are
+correct, and include something the student lacks. The last two conditions
+restate the failure modes identified by \citet{shin2026compositional}; the
+first is new. For each of these three conditions, we introduce a check that
+can be performed before the round is run, using only the model's own outputs
+(Section~\ref{sec:teacher-and-student}). 
+
+We test all three checks in the expertimental setting used by \citet{shin2026compositional}, with
+every threshold fixed before the final evaluation (Section~\ref{sec:setup}).
+Before each round our checks are used to predict whether the round will help,
+do nothing or do harm. This prediction matched what the round went on to do in
+nearly all cases, far more often than any fixed guess would, and flagged every
+harmful round, for only a small fraction of the training round's cost.
+Starting the round and peeking at early progress was no more accurate, cost
+several times as much, and needs correct answers
+(Section~\ref{sec:do-the-checks-predict}). A fourth check that we had also
+specified in advance, on how well the model solves the easier problems, failed
+to predict harm. 
+
+Our experiments yield three further findings about training on self-built answers: 
+on how to select them, on what the teacher can build, and on what the student can learn from them (Section 5).
+
+The evidence presented in this paper comes from one small model and two
+synthetic tasks, chosen because every outcome can be verified and harmful
+rounds can be produced on purpose. Although the thresholds we use are specific
+to each task, we expect the three checks, and the framing of self-improvement
+as a teacher--student loop, to be useful in other settings.
+Section~\ref{sec:beyond-synthetic-tasks} examines how this framing accounts
+for self-improvement loops reported by others.
+
+Finally, Section~\ref{sec:discussion-and-limits} discusses the implications of
+our work for self-improvement loops, and the work planned to test the proposed
+checks in more complex settings. If the checks carry over, a recursively
+self-improving model need not run a round to learn its outcome: from its own
+answers alone, it could tell when another round will help, when it will do
+harm, and when no further round can help.

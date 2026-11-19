@@ -1,31 +1,32 @@
 % Abstract (owner's text, verbatim). Prose, unlike the other section files.
 \begin{abstract}
-A model can improve itself by splitting hard problems into easier ones it
-  already solves, combining their answers, and training on the result.
-  \citet{shin2026compositional} showed that such rounds can either help, do
-  nothing, or do harm, and diagnosed reasons for failures. We ask whether the
-  outcome of additional training rounds can be predicted before training and
-  without access to correct answers. We view the self-improvement loop as
-  consisting of a teacher (the model applying a new procedure and old data to
-  answer new problems) and a student (the model answering new questions
-  directly), and derive three conditions that determine if a training round will
-  help:
-  1/ the teacher's answers must differ from the student's,
-  2/ be correct, and
-  3/ include useful information that the student lacks.
+  A model can improve itself by splitting hard problems into easier ones it can
+  already solve, combining their answers, and then training on the resulting
+  data. \citet{shin2026compositional} showed that such training rounds can help,
+  do nothing, or harm the model, and diagnosed the failures after training, using
+  correct answers. We ask the complementary question: can the outcome of a
+  training round be predicted before training, without access to correct
+  answers, and at a lower cost than running the round itself? We view round $i$
+  of the self-improvement loop as a teacher (the model $M_{i-1}$ applying the
+  split-and-combine procedure, which produces the dataset $D_i$) and a student
+  ($M_{i-1}$ answering directly). In this view, training on $D_i$ can help only
+  if the teacher's answers differ from the student's, are correct, and include
+  information the student lacks. The last two conditions restate failure modes
+  identified by Shin et al.; the first is new. We propose a check for each,
+  performed before training: comparing the teacher's answers with the student's,
+  comparing different ways of splitting the same problem, and examining what the
+  combining step is able to produce. None uses correct answers or requires
+  knowing which problems the procedure gets wrong. Reproducing Shin et al.'s
+  setup with a 14M-parameter Transformer on two tasks, and fixing all thresholds
+  before the final evaluation, we find that our checks predict a round's outcome
+  in 96.5\% of 258 cases and flag every harmful round, at about a tenth of the
+  cost of the round itself. Starting the round and peeking at early progress is
+  no more accurate, costs more than half a round, and requires correct answers.
+  These results suggest that a recursively self-improving model need not run a
+  round to learn its outcome: from its own answers alone, it could tell when
+  another round will help, when it will do harm, and when no further round can
+  help.
 
-  Reproducing Shin et al.'s setup with a 14M-parameter
-  Transformer on two tasks, and fixing all thresholds before the final
-  evaluation, we find that our three checks predict a round's outcome in 96.5\%
-  of 258 cases and flag every harmful round, at about a tenth of the cost of
-  running the training round and peaking if performance improves.
 
-  We also report three further findings. First, Shin et al.\ rely on
-  hand-written rules for each task to discard wrong answers; simply requiring
-  that two different ways of splitting a problem give the same answer works
-  almost as well. Second, on a task where their procedure cannot build the
-  answers the model needs, changing how answers are combined raises accuracy
-  from 53\% to 97--99\%. Third, the model learns to combine familiar parts in
-  ways it was never shown, but never learns an answer that was absent from its
-  training data.
+
 \end{abstract}

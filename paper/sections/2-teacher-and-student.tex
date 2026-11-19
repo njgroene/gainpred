@@ -1,4 +1,335 @@
 \section{Teacher and student}
 \label{sec:teacher-and-student}
 
+% Needs in the preamble of main.tex:
+%   \usepackage{amssymb}
+%   \usepackage{array}
+%   \usepackage{tikz}
+%   \usetikzlibrary{arrows.meta,positioning,calc}
 
+This section introduces the teacher--student framework used in our paper, as
+well as the diagnostic checks that follow from it. We use the addition task as
+a running example throughout; Section~\ref{sec:setup} gives the details of the
+tasks and the experimental setup.
+
+\subsection{One round, two roles}
+\label{sec:two-roles}
+
+At the start of round $i$, we have a single model, $M_{i-1}$, alongside a pool of
+hard problems (longer than anything the model has been trained on), with no
+correct answers attached. We put $M_{i-1}$ to work in two distinct
+roles (Figure~\ref{fig:roles}).
+
+Acting as the \emph{student}, the model simply tackles a hard problem head-on
+and produces a direct answer. Acting as the \emph{teacher}, it follows a
+structured procedure: it breaks the hard problem into smaller, easier pieces,
+solves each piece individually, stitches those partial solutions back together,
+and decides whether to keep or discard the resulting answer in a final step we call
+\emph{selection}. Crucially, the teacher is not a separate, stronger model. It
+is the exact same model, just guided by a decomposition procedure.
+
+The answers that survive selection form the training set $D_i$, which is then
+used to update $M_{i-1}$ into $M_i$. Because the student is trained on the
+teacher's outputs, each round simply pulls the student's predictions toward the
+teacher's. Three practical consequences immediately follow:
+
+\begin{itemize}
+\item If the teacher produces the exact same answers as the student, there is
+  nothing new to learn, and the round achieves nothing.
+\item If the teacher's answers are wrong, training pulls the student toward
+  errors, actively degrading performance.
+\item If the teacher is fundamentally incapable of generating the solutions the
+  student lacks, no amount of iteration will bridge the gap, and progress
+  stalls.
+\end{itemize}
+
+For a round of self-improvement to actually work, the teacher's answers must
+therefore \emph{differ} from the student's, be \emph{correct}, and
+\emph{cover what the student is missing}. While the second and third requirements
+restate the failure modes identified by \citet{shin2026compositional}, the first
+is our own addition.
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+  font=\small,
+  node distance=5mm and 5mm,
+  box/.style={draw, rounded corners=2pt, minimum height=8mm,
+    inner xsep=4pt, align=center},
+  model/.style={box, fill=black!10},
+  plain/.style={align=center},
+  flow/.style={-{Stealth[length=2mm]}, semithick},
+  chk/.style={font=\footnotesize\itshape, text=blue!55!black, align=center},
+  chkline/.style={dashed, blue!55!black},
+]
+% Teacher row
+\node[box] (split) {Split};
+\node[model, right=of split] (pieces) {Answer\\each piece};
+\node[box, right=of pieces] (combine) {Combine};
+\node[box, right=of combine] (select) {Select};
+\node[plain, right=of select] (built) {kept\\answer};
+\node[box, right=7mm of built] (train) {Train};
+\node[plain, right=of train] (next) {$M_i$};
+% Student row
+\node[model, below=13mm of pieces] (direct) {Answer\\directly};
+\node[plain] (dans) at (built |- direct) {direct\\answer};
+% Problem
+\node[plain, left=6mm of split] (x) at ($(split.west)!0.5!(split.west |-
+  direct)$) {hard\\problem};
+% Flows
+\draw[flow] (x.east) -- ++(2mm,0) |- (split.west);
+\draw[flow] (x.east) -- ++(2mm,0) |- (direct.west);
+\draw[flow] (split) -- (pieces);
+\draw[flow] (pieces) -- (combine);
+\draw[flow] (combine) -- (select);
+\draw[flow] (select) -- (built);
+\draw[flow] (built) -- (train);
+\draw[flow] (train) -- (next);
+\draw[flow] (direct) -- (dans);
+% Role labels
+\node[plain, below=1mm of split.south west, anchor=north west]
+  {\textbf{Teacher}};
+\node[plain, below=1mm of direct.south west, anchor=north west]
+  {\textbf{Student}};
+% Checks
+\draw[chkline, {Stealth[length=1.6mm]}-{Stealth[length=1.6mm]}]
+  (built) -- node[chk, right=1pt] {novelty:\\do they\\differ?} (dans);
+\node[chk, above=4mm of combine] (agr)
+  {agreement: does a second split give the same answer?};
+\draw[chkline] (agr.west) -| (split.north);
+\node[chk] (con) at ($(combine.south)+(0,-7.5mm)$)
+  {construction: is the\\answer ever new?};
+\draw[chkline] (con.north) -- (combine.south);
+\end{tikzpicture}
+\caption{One round of self-improvement, seen as two roles of one model. Shaded
+  boxes are calls to the model $M_{i-1}$. The teacher's kept answers are the
+  training set $D_i$. Dashed lines mark where each check looks; none of them
+  uses a correct answer to the hard problem.}
+\label{fig:roles}
+\end{figure}
+
+\subsection{A worked example}
+\label{sec:worked-example}
+
+Figure~\ref{fig:example} walks through a concrete example of both roles in
+action. Here, a model trained only on three- to seven-digit numbers is asked to
+add two eight-digit numbers. Unsurprisingly, the student's direct attempt fails.
+To solve it as a teacher, the model splits each number in two, adds the left
+and right pieces separately, and concatenates the two results. With the first
+split, this breaks down: the right-hand pieces sum to a five-digit number, and
+the extra carry digit gets stuck awkwardly in the middle of the combined string
+instead of carrying over to the left. However, the next two splits happen to
+cut at boundaries with no carry, so both yield the right total.
+
+What enters the training set next comes down to the selection rule. Without any
+filtering, the teacher blindly keeps the flawed first answer. The filter
+proposed by \citet{shin2026compositional}, which we call the \emph{no-carry
+rule}, recognizes that an oversized partial sum signals an overflow error and
+discards the example entirely. By contrast, our \emph{agreement rule} requires
+no domain-specific arithmetic knowledge: it simply keeps an answer if at least
+two different splits arrive at the same result.
+
+\begin{figure}[t]
+\centering
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+\multicolumn{3}{@{}l}{\textbf{Problem:} \texttt{35128624 + 21415273}
+  \quad (correct answer \texttt{56543897}, not available to the model)} \\
+\midrule
+\multicolumn{3}{@{}l}{\textbf{Student} answers directly:
+  \texttt{56533897} \;$\times$} \\
+\midrule
+\multicolumn{3}{@{}l}{\textbf{Teacher} splits, answers each piece, and writes
+  the sums side by side:} \\
+Split & Sums of the pieces & Built answer \\
+\texttt{3512|8624} & \texttt{3512+2141 = 5653},\;
+  \texttt{8624+5273 = 13897} & \texttt{565313897} \;$\times$ \\
+\texttt{351|28624} & \texttt{351+214 = 565},\;
+  \texttt{28624+15273 = 43897} & \texttt{56543897} \;\checkmark \\
+\texttt{35128|624} & \texttt{35128+21415 = 56543},\;
+  \texttt{624+273 = 897} & \texttt{56543897} \;\checkmark \\
+\midrule
+\multicolumn{3}{@{}l}{\textbf{Selection} decides what is kept for training:} \\
+No selection & keeps the first split's answer & \texttt{565313897}
+  \;$\times$ \\
+No-carry rule  & \texttt{13897} does not fit in four digits & nothing kept \\
+Agreement rule & two of the three splits agree & \texttt{56543897}
+  \;\checkmark \\
+\bottomrule
+\end{tabular}
+\caption{One addition problem seen by the student and by the teacher. The
+  marks \checkmark{} and $\times$ are for the reader: the model never sees
+  them. The student's answer is illustrative. The no-carry rule is the
+  hand-written filter of \citet{shin2026compositional}; the agreement rule
+  needs no knowledge of carrying.}
+\label{fig:example}
+\end{figure}
+
+\subsection{Two questions before every round}
+\label{sec:two-questions}
+
+Before committing to a training round, we draw a fresh batch of hard problems
+and have the model play both roles. No weights are updated, and no correct
+answers are consulted. Instead, we ask two diagnostic questions.
+
+\paragraph{Is there anything new?} The \emph{novelty check} calculates the
+fraction of the teacher's kept answers that actually differ from the student's
+direct predictions. If nearly all of them match what the student already outputs,
+training will be a dead end. With a reliable teacher, novelty is high on problem
+lengths the student has yet to master, and drops near zero on lengths it
+already knows. While comparing direct and decomposed answers has previously
+been used to catch reasoning errors \citep{bottman2026operadic,yang2024decc}, we
+use it here to gauge whether a training round has anything left to teach. Of
+course, novelty alone cannot distinguish progress from regression: a different
+answer might fix a student's mistake, or introduce a brand-new one.
+
+\paragraph{Does a second split agree?} A valid solution should not depend on
+where we happened to slice the input. Combining errors, on the other hand, are
+usually sensitive to the cut point, as illustrated in Figure~\ref{fig:example} where a
+carry ruins the first split while leaving the others untouched. To test for
+this, the \emph{agreement check} re-derives each kept answer using alternative
+splits and measures the fraction reproduced identically by at least one other
+split, which we call the \emph{confirmed share}. A low confirmed share warns
+that much of the teacher's training data is unreliable. Two caveats are worth
+noting here. First, the alternative splits must cut at distinct positions; two
+splits sharing a boundary will fail at that boundary in the exact same way,
+giving a false sense of consensus. Second, agreement does not guarantee
+correctness: two different splits can still converge on the same mistake.
+
+The agreement rule of Figure~\ref{fig:example} is this same check, used as a
+selection step. Because it keeps only answers that a second split confirms,
+any teacher using it has a confirmed share of 100\% by construction, and only
+the novelty check remains informative in that setting.
+
+\subsection{One question per procedure}
+\label{sec:one-question}
+
+Our third diagnostic evaluates the decomposition procedure itself, not any
+particular round, so it only needs to be run once per procedure.
+
+\paragraph{Can the teacher build anything new?} The \emph{construction check}
+measures how often the teacher's final answer is identical to one of the
+individual sub-problem answers it started with. If this happens 100\% of the
+time, the teacher is merely \emph{handing back} partial solutions: every answer
+it produces for a hard problem is already something the model outputs for an
+easier piece, so it can show the student nothing beyond the sub-problems.
+Concatenating sums never falls into this trap, because the combined number is
+always longer than either partial sum. On our second task, finding the longest
+run of repeated characters in a string, the procedure from
+\citet{shin2026compositional} always hands back: it simply returns the longest
+run found inside an isolated piece, meaning it can never detect a run spanning
+across a cut. Because this limitation is structural, we can measure it upfront
+by substituting an oracle solver for the model before any training begins. In
+practice, real models yielded identical scores on addition and nearly identical
+ones on the string task (Table~\ref{tab:check3}).
+
+That said, passing the construction check is necessary rather than sufficient.
+A procedure might be capable of constructing novel answers in general while
+still systematically filtering out the exact cases the student needs to see.
+The no-carry rule illustrates this blind spot: it constructs valid multi-digit
+sums beyond the student's reach, yet because it discards every problem
+involving a carry across the boundary, the student is never shown a carry at
+that position. The construction check is blind to this filtering bias, a
+limitation whose consequences we examine in Section~\ref{sec:three-further-findings}.
+
+\subsection{From answers to a prediction}
+\label{sec:prediction}
+
+For any given round and problem length, we combine our two per-round checks to
+forecast one of three outcomes: the round will \emph{pay off}, \emph{do
+nothing}, or \emph{do harm}. The rule also includes a third per-round check that we specified in advance:
+because the teacher relies on the model's ability to solve smaller
+sub-problems, a \emph{basics check} measures accuracy on easy problems.
+The prediction is given by three questions asked in order
+(Figure~\ref{fig:prediction}); the first that is answered ``no'' decides.
+
+% Flowchart of the prediction rule. Needs in the preamble:
+%   \usepackage{tikz}
+%   \usetikzlibrary{arrows.meta,positioning}
+\begin{figure}[t]
+    \centering
+    \begin{tikzpicture}[
+      font=\small,
+      every node/.append style={execute at begin node={\hyphenpenalty=10000\relax}},
+      node distance=5mm and 16mm,
+      q/.style={draw, rounded corners=2pt, text width=70mm, align=left,
+        inner sep=5pt},
+      res/.style={draw, thick, rounded corners=2pt, text width=38mm,
+        align=left, inner sep=5pt, fill=black!8},
+      flow/.style={-{Stealth[length=2mm]}, semithick},
+      lab/.style={font=\footnotesize\itshape, inner sep=2pt},
+    ]
+    \node[q] (basics) {\textbf{Basics.} Are the easy problems solved?\\
+      {\footnotesize Accuracy is at least 98\% on every group of easy problems.}};
+    \node[q, below=of basics] (novelty) {\textbf{Novelty.} Is there anything
+      new?\\
+      {\footnotesize The teacher keeps at least 5\% of the sample, and at least
+      50\% of the kept answers differ from the student's.}};
+    \node[q, below=of novelty] (agree) {\textbf{Agreement.} Does a second split
+      agree?\\
+      {\footnotesize At least 38\% of the kept answers are confirmed by another
+      split.}};
+    \node[res, right=of basics] (harm1) {\textbf{Does harm}\\
+      {\footnotesize The teacher would build on wrong answers.}};
+    \node[res, right=of novelty] (nothing) {\textbf{Does nothing}\\
+      {\footnotesize The teacher has nothing to teach.}};
+    \node[res, right=of agree] (harm2) {\textbf{Does harm}\\
+      {\footnotesize The teacher's answers cannot be trusted.}};
+    \node[res, below=of agree.south west, anchor=north west] (pays)
+      {\textbf{Pays off}\\
+      {\footnotesize Enough new answers, and enough of them confirmed.}};
+    \draw[flow] (basics) -- node[lab, above] {no} (harm1);
+    \draw[flow] (novelty) -- node[lab, above] {no} (nothing);
+    \draw[flow] (agree) -- node[lab, above] {no} (harm2);
+    \draw[flow] ([xshift=10mm]basics.south west) --
+      node[lab, right] {yes} ([xshift=10mm]novelty.north west);
+    \draw[flow] ([xshift=10mm]novelty.south west) --
+      node[lab, right] {yes} ([xshift=10mm]agree.north west);
+    \draw[flow] ([xshift=10mm]agree.south west) --
+      node[lab, right] {yes} ([xshift=10mm]pays.north west);
+    \end{tikzpicture}
+    \caption{How the checks give a prediction for one round at one problem length.
+      The questions are asked in order, and the first ``no'' decides. Thresholds
+      were calibrated on a separate set of pilot runs prior to evaluation (Section~\ref{sec:setup}).
+      The basics check is the only one that uses correct answers, and only for easy problems.}
+    \label{fig:prediction}
+    \end{figure}
+
+Novelty is tested before agreement because an answer the student already knows
+can never change the model. Both the ordering of these rules and their numerical 
+thresholds were calibrated on a separate set of pilot runs prior to evaluation (Section~\ref{sec:setup}).
+The construction check is omitted from these round-by-round rules since it is
+run once upfront to verify whether a procedure can ever teach anything beyond
+the pieces.
+
+Table~\ref{tab:checks} summarizes all four checks, and
+Section~\ref{sec:do-the-checks-predict} evaluates how well our forecasts matched
+actual training outcomes. In short, the novelty and agreement checks proved
+highly predictive, whereas the basics check did not.
+
+\begin{table}[t]
+\centering
+\caption{The checks. Kept answers are those the teacher's selection step
+  retains for training. The first three use no correct answers. The version of
+  the construction check for addition was defined after the evaluation runs.}
+\label{tab:checks}
+\small
+\begin{tabular}{@{}l>{\raggedright\arraybackslash}p{0.25\linewidth}>{\raggedright\arraybackslash}p{0.36\linewidth}l@{}}
+\toprule
+Check & Question & What is measured & Asked \\
+\midrule
+Novelty & Is there anything new? & Share of kept answers that differ from the
+  student's direct answer & Every round \\
+\addlinespace
+Agreement & Does a second split agree? & Share of kept answers that another
+  split reproduces & Every round \\
+\addlinespace
+Construction & Can the teacher build anything new? & Share of the teacher's
+  answers identical to an answer for one of the pieces & Once per procedure \\
+\addlinespace
+Basics & Are the easy problems solved? & Accuracy on easy problems & Every
+  round \\
+\bottomrule
+\end{tabular}
+\end{table}
