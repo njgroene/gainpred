@@ -1145,6 +1145,57 @@ def tex_figure(label: str, pdf: str, caption: str, width: str = r"\linewidth") -
                       rf"\label{{fig:{label}}}", r"\end{figure}"]) + "\n"
 
 
+PREDICTIONS = ("pays off", "does nothing", "does harm")
+OUTCOME_ROWS = (("Paid off", {"paid off"}), ("Did nothing", {"did nothing"}),
+                ("Did harm", {"did harm", "taught wrong answers"}))
+
+
+def p9b_tables(conf: list) -> tuple[str, str]:
+    """Section 4: (summary table, confusion table) over the evaluation cases ``conf``.
+
+    The summary compares the prediction rule with always giving one prediction. The
+    confusion table counts cases by outcome (rows) and prediction (columns); "Did harm"
+    pools "did harm" and "taught wrong answers", exactly as ``p9b.MATCH`` does. The two
+    tables must agree, or nothing is written: the grid sums to the number of cases, its
+    diagonal is the rule's count, and each row is the matching "Always ..." count. The
+    caption's second sentence is added only when every error lies in the "Does harm"
+    column.
+    """
+    from gainpred import p9b
+
+    n = len(conf)
+    hits = sum(c.outcome in p9b.MATCH[c.verdict] for c in conf)
+    always = {v: sum(c.outcome in p9b.MATCH[v] for c in conf) for v in PREDICTIONS}
+    rows = [["Our prediction rule", f"{hits}/{n}", f"{100 * hits / n:.1f}"]]
+    rows += [[f"Always “{v}”", f"{always[v]}/{n}", f"{100 * always[v] / n:.1f}"]
+             for v in ("does nothing", "does harm", "pays off")]
+    summary = tex_table("p9b-summary", "Cases correctly predicted in the evaluation runs, for our prediction rule "
+                        "and for always giving the same prediction.", ["Rule", "Cases correctly predicted", "%"], rows)
+
+    grid = [[sum(c.outcome in members and c.verdict == v for c in conf) for v in PREDICTIONS]
+            for _, members in OUTCOME_ROWS]
+    if sum(map(sum, grid)) != n:
+        raise ValueError(f"confusion grid sums to {sum(map(sum, grid))}, not {n} cases")
+    if sum(grid[i][i] for i in range(3)) != hits:
+        raise ValueError(f"confusion diagonal {sum(grid[i][i] for i in range(3))} != the rule's {hits}")
+    for i, v in enumerate(PREDICTIONS):
+        if sum(grid[i]) != always[v]:
+            raise ValueError(f"row {OUTCOME_ROWS[i][0]} sums to {sum(grid[i])}, not always-{v}'s {always[v]}")
+    errors = [(i, j) for i in range(3) for j in range(3) if i != j and grid[i][j]]
+    caption = f"Predictions before training against outcomes after training, for the {n} evaluation cases."
+    if all(j == PREDICTIONS.index("does harm") for _, j in errors):
+        caption += " Every error is a prediction of harm that did not occur."
+    lines = [GENERATED_NOTE.rstrip(), r"\begin{table}[t]", r"\centering", rf"\caption{{{tex_escape(caption)}}}",
+             r"\label{tab:p9b-confusion}", r"\small", r"\begin{tabular}{lrrr}", r"\toprule",
+             r" & \multicolumn{3}{c}{" + tex_escape("Prediction") + r"} \\", r"\cmidrule(l){2-4}",
+             " & ".join(tex_escape(h) for h in ("Outcome", "Pays off", "Does nothing", "Does harm")) + r" \\",
+             r"\midrule"]
+    lines += [" & ".join(tex_escape(c) for c in (label, *map(str, row))) + r" \\"
+              for (label, _), row in zip(OUTCOME_ROWS, grid)]
+    lines += [r"\bottomrule", r"\end{tabular}", r"\end{table}"]
+    return summary, "\n".join(lines) + "\n"
+
+
 def paper_files() -> dict[str, str]:
     """Main-text tables and figure wrappers. Confirming runs are the evidence throughout."""
     from gainpred import p9b
@@ -1154,28 +1205,16 @@ def paper_files() -> dict[str, str]:
     n = len(conf)
     out = {}
 
-    # Section 4: the verdict rule against always giving one verdict, and by outcome group.
-    hits = sum(c.outcome in p9b.MATCH[c.verdict] for c in conf)
-    rows = [["Verdict rule (fixed in advance)", f"{hits}/{n}", f"{100 * hits / n:.1f}"]]
-    for v in ("does nothing", "pays off", "does harm"):
-        m = sum(c.outcome in p9b.MATCH[v] for c in conf)
-        rows.append([f"Always “{v}”", f"{m}/{n}", f"{100 * m / n:.1f}"])
-    for name, members in (("paid off", {"paid off"}), ("did nothing", {"did nothing"}),
-                          ("did harm or taught wrong answers", {"did harm", "taught wrong answers"})):
-        g = [c for c in conf if c.outcome in members]
-        m = sum(c.outcome in p9b.MATCH[c.verdict] for c in g)
-        rows.append([f"Verdict rule, cells that {name}", f"{m}/{len(g)}", f"{100 * m / max(len(g), 1):.1f}"])
-    out["table_p9b_summary.tex"] = tex_table(
-        "p9b-summary", "Verdicts given before training against outcomes after training, confirming runs "
-        "(starting points 2-4, classified cells).", ["Rule", "Cells matched", "%"], rows)
+    # Section 4: the prediction rule against always giving one prediction, and the confusion grid.
+    out["table_p9b_summary.tex"], out["table_p9b_confusion.tex"] = p9b_tables(conf)
 
     rows = []
     for case in p9b.CASES:
         g = [c for c in conf if p9b.case_of(c) == case]
         if g:
             rows.append([case, str(len(g)), str(sum(c.outcome in p9b.MATCH[c.verdict] for c in g))])
-    out["table_p9b_cases.tex"] = tex_table("p9b-cases", "Verdict matches by case, confirming runs.",
-                                           ["Case", "Cells", "Matches"], rows)
+    out["table_p9b_cases.tex"] = tex_table("p9b-cases", "Cases correctly predicted, by kind of case, in the "
+                                           "evaluation runs.", ["Kind of case", "Cases", "Correctly predicted"], rows)
 
     # Section 4: cost of the checks, per teacher, confirming runs (all rounds pooled per teacher).
     est, rows = replay_tokens_estimate(), []
