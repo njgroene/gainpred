@@ -106,3 +106,53 @@ def compare_easy(events: list[dict], runs_dir: Path) -> list[str]:
         if any(abs(logged[k] - e["easy"][k]) > 1e-9 for k in logged):
             bad.append(f"{e['run']} round {e['round']}: logged {logged['all']:.4f}, now {e['easy']['all']:.4f}")
     return bad
+
+
+RESULTS = Path("results/reproduction.jsonl")
+
+
+def wall(name: str) -> dict:
+    """Seconds from the spawn (results/launches.jsonl) to the last write on the volume."""
+    import subprocess
+    from datetime import datetime
+
+    spawned = next(json.loads(line)["time"] for line in Path("results/launches.jsonl").read_text().splitlines()
+                   if json.loads(line)["run"] == name)
+    listing = json.loads(subprocess.run(["uv", "run", "modal", "volume", "ls", "--json", "gainpred",
+                                         f"runs/{name}/attempt_1"], capture_output=True, text=True,
+                                        check=True).stdout)
+    last = max(datetime.fromisoformat(f["created_modified"]) for f in listing)
+    return {"event": "wall", "seconds": (last - datetime.fromisoformat(spawned)).total_seconds(),
+            "source": "spawn time to the last write on the volume, start-up included"}
+
+
+def fetch(name: str = "reproduction-eval") -> list[dict]:
+    """Download the call's folder, merge its attempts into ``results/reproduction.jsonl``.
+
+    Refuses (raises) unless all 27 checkpoints were scored and the easy-set identity check
+    passes, so a partial or mismatched result never reaches the paper.
+    """
+    import subprocess
+
+    subprocess.run(["uv", "run", "modal", "volume", "get", "--force", "gainpred", f"runs/{name}", "runs/"],
+                   capture_output=True, check=True)
+    lines = [json.loads(line) for log in sorted((Path("runs") / name).glob("attempt_*/reproduction.jsonl"))
+             for line in log.read_text().splitlines()]
+    events = [e for e in lines if e["event"] == "checkpoint"]
+    want = {str(p.relative_to(Path("runs"))) for *_, p in checkpoints(Path("runs"))}
+    if {e["checkpoint"] for e in events} != want or len(events) != len(want):
+        raise ValueError(f"{len(events)} checkpoints scored, {len(want)} wanted")
+    bad = compare_easy(events, Path("runs"))
+    if bad:
+        raise ValueError("easy-set accuracy differs from the logged one:\n" + "\n".join(bad))
+    RESULTS.write_text("".join(json.dumps(e) + "\n" for e in events))
+    # The raw log, for the run list and the spending estimate (gainpred.status), plus its wall time.
+    raw = Path("results/reproduction") / f"{name}.jsonl"
+    raw.parent.mkdir(exist_ok=True)
+    raw.write_text("".join(json.dumps(e) + "\n" for e in lines) + json.dumps(wall(name)) + "\n")
+    print(f"{RESULTS}: {len(events)} checkpoints; easy-set identity check passed")
+    return events
+
+
+if __name__ == "__main__":
+    fetch()

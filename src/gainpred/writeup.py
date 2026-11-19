@@ -1419,6 +1419,59 @@ def round_level_tex(conf: list) -> str:
                      ["Outcome", "Pays off", "Does nothing", "Does harm"], rows)
 
 
+# Shin et al.'s exact addition figures (arXiv 2611.00452v1): (mean over new lengths 8-23,
+# accuracy at 23 digits), in %. Starting model and filtered final round: their Table 10;
+# unfiltered final round: their appendix C.1 text. Their per-length results are heatmaps only.
+SHIN_ADDITION = (("Starting model", "0.0", "0.0"),
+                 ("Filtered composition, last round (8)", "93.7", "80.0"),
+                 ("Unfiltered composition, last round (8)", "33.5", "11.0"))
+REPRO_TEACHERS = (("nocarry", "No-carry rule"), ("noselect", "No selection"))
+
+
+def reproduction_rows(events: list[dict]) -> list[list[str]]:
+    """Our rows: (model, mean over 8-15 digits, accuracy at 15 digits), each as the mean of the
+    three evaluation runs with the range in brackets. The 8-15 mean averages the per-length
+    accuracies, as Shin et al. do ("rows with a size range average the accuracy per size")."""
+    def cell(values: list[float]) -> str:
+        values = [100 * v for v in values]
+        return f"{statistics.mean(values):.1f} ({min(values):.1f}–{max(values):.1f})"
+
+    def new_lengths(e):
+        return statistics.mean(e["reproduction"][str(d)] for d in range(8, 16))
+
+    def row(label, picked):
+        assert len(picked) == 3, (label, len(picked))
+        return [label, cell([new_lengths(e) for e in picked]), cell([e["reproduction"]["15"] for e in picked])]
+
+    rows = [row("Starting model", [e for e in events if e["round"] == 0])]
+    for key, label in REPRO_TEACHERS:
+        for k in range(1, 5):
+            rows.append(row(f"{label}, round {k}", [e for e in events if e["round"] == k and f"-{key}-" in e["run"]]))
+    return rows
+
+
+def reproduction_tex() -> str | None:
+    """Appendix: the reproduction test set, set beside Shin et al.'s reported figures.
+    None until ``python -m gainpred.reproduction`` has written results/reproduction.jsonl."""
+    from gainpred.reproduction import RESULTS
+
+    if not RESULTS.exists():
+        return None
+    events = [json.loads(line) for line in RESULTS.read_text().splitlines()]
+    ours = reproduction_rows(events)
+    rows = [["This paper (8–15 digits; 15 digits)", "", ""], *ours,
+            ["Shin et al. (8–23 digits; 23 digits)", "", ""], *([a, b, c] for a, b, c in SHIN_ADDITION)]
+    return tex_table(
+        "reproduction",
+        "Accuracy (%) on the reproduction test set: 100 problems per length, 3 to 15 digits, greedy answers, "
+        "scored after all experiments on the saved models of the evaluation runs (mean of three runs, range in "
+        "brackets). Shin et al.'s figures are those they report (their Table 10 and appendix C.1); they train "
+        "8 rounds up to 23 digits and test up to 23 digits, so their columns cover 8-23 and 23 digits, ours "
+        "8-15 and 15 digits. The no-carry rule corresponds to their filtered composition, no selection to "
+        "their unfiltered composition.",
+        ["Model", "Mean over new lengths", "Longest length"], rows, rule_before={len(ours) + 1})
+
+
 PREDICTIONS = ("pays off", "does nothing", "does harm")
 OUTCOME_ROWS = (("Paid off", {"paid off"}), ("Did nothing", {"did nothing"}),
                 ("Did harm", {"did harm", "taught wrong answers"}))
@@ -1488,6 +1541,8 @@ def paper_files() -> dict[str, str]:
     out["table_weak.tex"] = weak_tex()
     out["table_no_outcome.tex"] = no_outcome_tex()
     out["table_round_level.tex"] = round_level_tex(conf)
+    if (repro := reproduction_tex()) is not None:
+        out["table_reproduction.tex"] = repro
 
     # Section 4: cost of the checks, per teacher, confirming runs (all rounds pooled per teacher).
     est, rows = replay_tokens_estimate(), []

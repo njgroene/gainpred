@@ -63,3 +63,22 @@ def test_a_retry_skips_what_an_earlier_attempt_scored(tmp_path, monkeypatch):
     assert len(first) == 4  # 3 checkpoints + done
     score("repro", runs, data, "cpu", ["si-x"])
     assert (runs / "repro" / "attempt_2" / "reproduction.jsonl").read_text().splitlines() == ['{"event": "done"}']
+
+
+def test_table_rows_average_per_length_and_need_three_runs():
+    import pytest
+
+    from gainpred.writeup import reproduction_rows
+
+    def ev(run, k, acc):
+        return {"run": run, "round": k, "reproduction": {str(d): acc(d) for d in range(3, 16)}}
+
+    events = [ev(f"si-nocarry-seed{s}-authors", k, lambda d: 1.0 if d < 15 else 0.5) for s in (2, 3, 4)
+              for k in range(5)]
+    events += [ev(f"si-noselect-seed{s}-authors", k, lambda d: 0.0) for s in (2, 3, 4) for k in range(1, 5)]
+    events = [e for e in events if not (e["round"] == 0 and "noselect" in e["run"])]
+    rows = reproduction_rows(events)
+    assert len(rows) == 9
+    assert rows[1] == ["No-carry rule, round 1", "93.8 (93.8–93.8)", "50.0 (50.0–50.0)"]  # (7 + 0.5) / 8
+    with pytest.raises(AssertionError):
+        reproduction_rows(events[1:])

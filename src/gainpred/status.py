@@ -69,6 +69,12 @@ def gpu_seconds_check3(path: Path) -> float:
                if '"event": "cell"' in line)
 
 
+def gpu_seconds_reproduction(path: Path) -> float:
+    """Reproduction scoring (inference only): its log has no timings, so ``gainpred.reproduction.fetch``
+    adds a ``wall`` event, spawn time to the last write on the volume (start-up included)."""
+    return sum(json.loads(line)["seconds"] for line in path.read_text().splitlines() if '"event": "wall"' in line)
+
+
 def tripwires(starts: list[Run], rounds: list[RoundsRun]) -> list[tuple[str, str]]:
     out = []
     # 1. The no-carry rule below 90% at any length in a finished four-round run.
@@ -141,6 +147,7 @@ def collect(results_dir: Path = RESULTS_DIR):
     seconds |= {p.stem: gpu_seconds_probe(p) for p in sorted((results_dir / "probes").glob("*.jsonl"))}
     seconds |= {p.stem: gpu_seconds_check3(p) for folder in ("check3", "check3_3cut")
                 for p in sorted((results_dir / folder).glob("*.jsonl"))}
+    seconds |= {p.stem: gpu_seconds_reproduction(p) for p in sorted((results_dir / "reproduction").glob("*.jsonl"))}
     states = {}
     for r in starts:
         states[r.name] = "done" if r.done else "incomplete"
@@ -148,7 +155,7 @@ def collect(results_dir: Path = RESULTS_DIR):
         states[r.name] = "done" if r.of("done") else f"incomplete ({len(r.of('round_done'))} rounds)"
     # Probes and check-3 calls log to results/probes and results/check3; a fetched log with a
     # "done" event is a finished call (before this, finished ones were listed as running).
-    for folder in ("probes", "check3", "check3_3cut"):
+    for folder in ("probes", "check3", "check3_3cut", "reproduction"):
         for p in sorted((results_dir / folder).glob("*.jsonl")):
             if '"event": "done"' in p.read_text():
                 states[p.stem] = "done"
