@@ -95,3 +95,14 @@ def test_three_cut_rule_draws_and_cuts_as_before_the_five_cut_change():
     assert old12 == now12  # 8-12 digits: the same either way
     assert old13 != now13  # 13-15: more nonzero starting digits under five cuts
     assert cuts_of(now13[0]) == ADDITION_CUTS[13]  # restored afterwards
+
+
+def test_paper_table_fails_when_a_length_differs():
+    import pytest
+
+    from gainpred.writeup import check3_one_value
+    assert check3_one_value("Paper test", "No-carry rule", ["0.0"] * 8) == "0.0"
+    with pytest.raises(ValueError):
+        check3_one_value("Paper test", "No-carry rule", ["0.0"] * 7 + ["0.1"])
+    with pytest.raises(ValueError):
+        check3_one_value("confirming runs", "Agreement rule", ["0.0–0.1"] * 8)

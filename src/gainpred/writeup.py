@@ -391,17 +391,37 @@ def check3_md() -> str:
     return "\n".join(lines)
 
 
+CHECK3_READING = {"0.0": "Builds a new answer", "100.0": "Hands back"}
+CHECK3_CAPTION = (
+    "Check 3 on addition: share (%) of a teacher's kept answers identical to one of the piece answers it "
+    "asked for (piece sums of every cut it built; for sample and vote, its five samples). Real models: each "
+    "round's check sample redrawn with the model before the round; range over starting points and rounds. "
+    "Defined after the confirming runs.")
+
+
+def check3_one_value(title: str, label: str, values: list[str]) -> str:
+    """The single check-3 value of one teacher over lengths 8-15 (and seeds, rounds).
+
+    The paper table shows one number per teacher, so it may only do that when every
+    length gives the same single value; otherwise generation fails (the per-length
+    table stays in results/writeup/check3_addition.md)."""
+    if len(set(values)) != 1 or "–" in values[0]:
+        raise ValueError(f"check 3 differs across lengths for {label} ({title}): {values}")
+    return values[0]
+
+
 def check3_tex() -> str:
+    """One row per teacher: paper test, learning runs, confirming runs, and the reading."""
+    blocks = {title.split(" (")[0]: dict((r[0], r[1:]) for r in rows) for title, rows in check3_addition_rows()}
+    order = ("Paper test", "Real models, learning runs", "Real models, confirming runs")
     rows = []
-    for title, block in check3_addition_rows():
-        short = title.split(" (")[0].replace("Real models, ", "")
-        rows += [[short if i == 0 else "", *r] for i, r in enumerate(block)]
-    return tex_table(
-        "check3_addition", "Check 3 on addition: share (%) of a teacher's kept answers identical to one of the "
-        "piece answers it asked for (piece sums of every cut it built; for sample and vote, its five samples). "
-        "Real models: each round's check sample redrawn with the model before the round; range over starting "
-        "points and rounds. Defined after the confirming runs.",
-        ["", "Teacher"] + [str(d) for d in LENGTHS], rows, spec="ll" + "r" * len(LENGTHS), fit=True)
+    for _, label in TEACHER_ROWS:
+        vals = [check3_one_value(b, label, blocks[b][label]) for b in order]
+        if len(set(vals)) != 1 or vals[0] not in CHECK3_READING:
+            raise ValueError(f"check 3 for {label} is not one of 0 and 100 everywhere: {vals}")
+        rows.append([label, *vals, CHECK3_READING[vals[0]]])
+    return tex_table("check3_addition", CHECK3_CAPTION,
+                     ["Teacher", "Paper test", "Learning runs", "Confirming runs", "Reading"], rows, spec="lrrrl")
 
 
 # ---------------------------------------------------------------- what the filter removes
