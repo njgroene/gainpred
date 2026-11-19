@@ -3,6 +3,7 @@
 Usage::
 
     uv run python -m gainpred.run_paper_test     # 10,000 problems per size -> results/paper_test_longest_run.md
+                                                 # (and the same numbers as .json, for gainpred.writeup)
 
 What it shows
 =============
@@ -41,6 +42,7 @@ simulation in ``boundary_share``.
 from __future__ import annotations
 
 import argparse
+import json
 import math
 import random
 from pathlib import Path
@@ -52,6 +54,7 @@ from gainpred.run_teachers import RUN_TEACHER_NAMES, RUN_TEACHERS, PerfectRunSol
 
 SEED = 3_101  # its own seed: these problems are never trained or tested on
 OUT = Path("results/paper_test_longest_run.md")
+OUT_JSON = OUT.with_suffix(".json")
 KINDS = ("all", RANDOM_JOIN, RUN_ACROSS)
 
 Table = dict[str, dict[str, dict[int, dict[str, float | None]]]]
@@ -167,9 +170,11 @@ def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
     parser.add_argument("-n", type=int, default=10_000, help="hard strings per length")
     args = parser.parse_args()
-    markdown = to_markdown(paper_test(args.n), args.n, boundary_share())
+    table = paper_test(args.n)
+    markdown = to_markdown(table, args.n, boundary_share())
     OUT.parent.mkdir(parents=True, exist_ok=True)
     OUT.write_text(markdown)
+    OUT_JSON.write_text(json.dumps({"problems_per_length": args.n, "seed": SEED, "table": table}, indent=1) + "\n")
     print(markdown)
     print(f"wrote {OUT}")
 

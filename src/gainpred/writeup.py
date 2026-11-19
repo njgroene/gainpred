@@ -392,36 +392,72 @@ def check3_md() -> str:
 
 
 CHECK3_READING = {"0.0": "Builds a new answer", "100.0": "Hands back"}
+CHECK3_HALF = "Builds in about half of cases"  # join at the cut: a new answer only when the run crosses the join
 CHECK3_CAPTION = (
-    "Check 3 on addition: share (%) of a teacher's kept answers identical to one of the piece answers it "
-    "asked for (piece sums of every cut it built; for sample and vote, its five samples). Real models: each "
-    "round's check sample redrawn with the model before the round; range over starting points and rounds. "
-    "Defined after the confirming runs.")
+    "The construction check. Each value is the share (%) of a procedure's kept answers that are identical to "
+    "one of the answers it was given for the pieces. At 0% the procedure always builds an answer that none of "
+    "its pieces contained, so it can show the student something new. At 100% it only hands back an answer the "
+    "model already gives. Sample and vote does not split the problem: its \u201cpieces\u201d are five direct "
+    "answers sampled from the model, and it returns one of them. Perfect solver: every piece answered "
+    "correctly, before any training. Trained models: each round's check sample, answered by the model before "
+    "that round. Addition values are the same at every length from 8 to 15 digits, in every round and from "
+    "every starting model. Longest-run values are the lowest and highest over lengths 12 to 20 (trained "
+    "models: starting points 2-4). The addition rows were added after all experiments were complete, so they "
+    "did not influence the predictions.")
 
 
 def check3_one_value(title: str, label: str, values: list[str]) -> str:
-    """The single check-3 value of one teacher over lengths 8-15 (and seeds, rounds).
+    """The single check-3 value of one addition procedure over lengths 8-15 (and seeds, rounds).
 
-    The paper table shows one number per teacher, so it may only do that when every
-    length gives the same single value; otherwise generation fails (the per-length
+    The paper table shows one number per addition procedure, so it may only do that when
+    every length gives the same single value; otherwise generation fails (the per-length
     table stays in results/writeup/check3_addition.md)."""
     if len(set(values)) != 1 or "–" in values[0]:
         raise ValueError(f"check 3 differs across lengths for {label} ({title}): {values}")
     return values[0]
 
 
-def check3_tex() -> str:
-    """One row per teacher: paper test, learning runs, confirming runs, and the reading."""
-    blocks = {title.split(" (")[0]: dict((r[0], r[1:]) for r in rows) for title, rows in check3_addition_rows()}
-    order = ("Paper test", "Real models, learning runs", "Real models, confirming runs")
+def lo_hi(xs: list[float]) -> str:
+    """Lowest-highest (one value if they are equal)."""
+    if not xs:
+        return "–"
+    return f"{min(xs):.1f}" if f"{min(xs):.1f}" == f"{max(xs):.1f}" else f"{min(xs):.1f}–{max(xs):.1f}"
+
+
+def check3_merged_rows() -> list[list[str]]:
+    """One row per procedure: (task, procedure, perfect solver, trained models, reading).
+
+    Addition: one value per procedure, asserted identical across lengths 8-15, rounds and
+    starting models (learning and confirming), and equal for the perfect solver and the
+    trained models. Longest run: lowest-highest over lengths 12-20 (perfect solver: the
+    paper test; trained models: the logged checks of starting points 2-4)."""
     rows = []
-    for _, label in TEACHER_ROWS:
+    blocks = {title.split(" (")[0]: dict((r[0], r[1:]) for r in rs) for title, rs in check3_addition_rows()}
+    order = ("Paper test", "Real models, learning runs", "Real models, confirming runs")
+    for i, (_, label) in enumerate(TEACHER_ROWS):
         vals = [check3_one_value(b, label, blocks[b][label]) for b in order]
         if len(set(vals)) != 1 or vals[0] not in CHECK3_READING:
             raise ValueError(f"check 3 for {label} is not one of 0 and 100 everywhere: {vals}")
-        rows.append([label, *vals, CHECK3_READING[vals[0]]])
-    return tex_table("check3_addition", CHECK3_CAPTION,
-                     ["Teacher", "Paper test", "Learning runs", "Confirming runs", "Reading"], rows, spec="lrrrl")
+        rows.append(["Addition" if i == 0 else "", label, vals[0], vals[0], CHECK3_READING[vals[0]]])
+    pt = json.loads((RESULTS_DIR / "paper_test_longest_run.json").read_text())["table"]
+    for i, (t, label) in enumerate(RUN_TEACHERS):
+        perfect = [100 * v["check_3"] for v in pt[t]["all"].values() if v["check_3"] is not None]
+        trained = [100 * e["check_3"] for s in CONFIRMING for e in events(f"runs-{t}-seed{s}-u30000")
+                   if e["event"] == "checks" and e.get("check_3") is not None]
+        if t == "join_at_the_cut":
+            reading = CHECK3_HALF
+        else:
+            if {min(perfect + trained), max(perfect + trained)} != {100.0}:
+                raise ValueError(f"check 3 for {label} is not 100 everywhere")
+            reading = CHECK3_READING["100.0"]
+        rows.append(["Longest run" if i == 0 else "", label, lo_hi(perfect), lo_hi(trained), reading])
+    return rows
+
+
+def check3_tex() -> str:
+    """The construction check for both tasks, one row per procedure (section 5)."""
+    return tex_table("check3", CHECK3_CAPTION, ["Task", "Procedure", "Perfect solver", "Trained models", "Reading"],
+                     check3_merged_rows(), spec="llrrl")
 
 
 # ---------------------------------------------------------------- what the filter removes
@@ -1170,7 +1206,6 @@ def paper_files() -> dict[str, str]:
     rows = [[str(d), m(nc[d]["cut 1"]), m(nc[d]["other cuts"]), m(nc[d]["no cut"]), m(ag[d]["cut 1"]),
              m(ag[d]["other cuts"]), m(ag[d]["no cut"])] for d in LENGTHS]
     out["table_filter_gap.tex"] = filter_gap_tex()
-    out["table_check3_addition.tex"] = check3_tex()
     out["table_carries.tex"] = tex_table(
         "carries", "Share (%) of kept training answers that carry out of a place, by kind of place, in the round "
         "the length is first trained on; mean over starting points 2-4. NC: no-carry rule; AG: agreement rule.",
@@ -1190,14 +1225,7 @@ def paper_files() -> dict[str, str]:
         "starting points 2-4 (lowest-highest).", ["Teacher", "All", "Joined 5", "Joined 6", "Joined 7", "Joined 8"],
         rows, fit=True)
 
-    rows = []
-    for pattern, label in CHECK3_ARMS:
-        v = [100 * e["check_3"] for s in CONFIRMING for e in events(pattern.format(s=s))
-             if e["event"] == "checks" and e.get("check_3") is not None]
-        rows.append([label, mean_range(v)])
-    out["table_check3.tex"] = tex_table(
-        "check3", "Check 3: share (%) of teacher outputs identical to a piece answer, over lengths 12-20 and "
-        "starting points 2-4 (lowest-highest).", ["Teacher", "Check 3"], rows)
+    out["table_check3.tex"] = check3_tex()
 
     out["table_withheld.tex"] = tex_table(
         "withheld", "Joined runs of 4-8 before and after one round (%), confirming runs. Withheld: join at the cut "
