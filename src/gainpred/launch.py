@@ -7,6 +7,7 @@ Usage::
     uv run python -m gainpred.launch runs-main runs-start-seed0 --seed 0            # longest run: starting training
     uv run python -m gainpred.launch runs-rounds runs-join-seed0 --start runs-start-seed0 --teacher join_at_the_cut
     uv run python -m gainpred.launch probe probe-si-nocarry-seed2-authors --of si-nocarry-seed2-authors
+    uv run python -m gainpred.launch reproduction reproduction-eval   # appendix: reproduction test set
     uv run python -m gainpred.launch status            # every spawned run: running, done or failed
 
 Why this exists
@@ -171,6 +172,8 @@ def main() -> None:
     c3.add_argument("--of", required=True, help="the original run whose check samples are redrawn")
     c3.add_argument("--three-cuts", action="store_true", help="draw and cut as before the five-cut change")
     c3.add_argument("--only", default="", help="only these cells, round:digits comma-separated (e.g. 3:13,4:14)")
+    rp = sub.add_parser("reproduction", help="score evaluation-run checkpoints on the reproduction test set")
+    rp.add_argument("run")
     sub.add_parser("status", help="state of every spawned run")
     args = parser.parse_args()
 
@@ -194,6 +197,8 @@ def main() -> None:
     elif args.command == "check3":
         only = [[int(x) for x in c.split(":")] for c in args.only.split(",") if c] or None
         spawn("check3", args.run, {"of": args.of, "three_cuts": args.three_cuts, "only": only})
+    elif args.command == "reproduction":
+        spawn("reproduction", args.run, {})
     elif args.command == "runs-rounds":
         spawn("self_improve_runs", args.run, {
             "start": args.start, "teacher": args.teacher, "build_seconds": args.build_seconds,

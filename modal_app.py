@@ -287,3 +287,19 @@ def check3(run: str, of: str, three_cuts: bool = False, only: list[list[int]] | 
                three_cuts=three_cuts, only=[tuple(c) for c in only] if only else None)
     finally:
         volume.commit()
+
+
+@app.function(image=image, gpu=GPU, volumes={str(VOLUME_PATH): volume}, timeout=60 * 60)
+def reproduction(run: str) -> None:
+    """Reproduction table (appendix): score the evaluation-run checkpoints of the no-carry rule
+    and no selection on test_reproduction (3-15 digits, 100 each). Inference only."""
+    volume.reload()  # see self_improve
+    import torch
+
+    from gainpred.reproduction import score
+
+    print(f"GPU: {torch.cuda.get_device_name()}  torch {torch.__version__}")
+    try:
+        score(run, VOLUME_PATH / "runs", VOLUME_PATH / "data" / "addition", torch.device("cuda"))
+    finally:
+        volume.commit()
