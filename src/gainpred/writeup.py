@@ -393,7 +393,7 @@ def check3_md() -> str:
 
 
 CHECK3_READING = {"0.0": "Builds a new answer", "100.0": "Hands back"}
-CHECK3_HALF = "Builds in about half of cases"  # join at the cut: a new answer only when the run crosses the join
+CHECK3_HALF = "Hands back about half, builds the rest"  # join at the cut: a new answer only when the run crosses the join
 CHECK3_CAPTION = (
     "The construction check. Each value is the share (%) of a procedure's kept answers that are identical to "
     "one of the answers it was given for the pieces. At 0% the procedure always builds an answer that none of "
@@ -458,7 +458,7 @@ def check3_merged_rows() -> list[list[str]]:
 def check3_tex() -> str:
     """The construction check for both tasks, one row per procedure (section 5)."""
     return tex_table("check3", CHECK3_CAPTION, ["Task", "Procedure", "Perfect solver", "Trained models", "Reading"],
-                     check3_merged_rows(), spec="llrrl")
+                     check3_merged_rows(), spec="llrrl", span=("Answers handed back (%)", 3, 4))
 
 
 # ---------------------------------------------------------------- what the filter removes
@@ -1144,15 +1144,21 @@ def paper_words(text: str) -> str:
 
 def tex_table(label: str, caption: str, header: list[str], rows: list[list[str]], spec: str | None = None,
               small: bool = True, fit: bool = False, rule_before: set[int] = frozenset(),
-              bold: set[tuple[int, int]] = frozenset()) -> str:
+              bold: set[tuple[int, int]] = frozenset(), span: tuple[str, int, int] | None = None) -> str:
     """A booktabs table; every cell is escaped. Captions say what is shown, not what it means.
     ``fit`` scales a wide table down to the text width. ``bold``: (row, column) cells whose leading
-    value (the mean, not the range after it) is set in bold."""
+    value (the mean, not the range after it) is set in bold. ``span`` = (text, first, last): a header
+    spanning columns first..last (1-based) above the column names, with a rule under it."""
     spec = spec or "l" + "r" * (len(header) - 1)
     lines = [GENERATED_NOTE.rstrip(), r"\begin{table}[htbp]", r"\centering", rf"\caption{{{tex_escape(caption)}}}",
              rf"\label{{tab:{label}}}"] + ([r"\small"] if small else []) + ([r"\resizebox{\linewidth}{!}{%"] if fit else []) + [
-             rf"\begin{{tabular}}{{{spec}}}", r"\toprule", " & ".join(tex_escape(h) for h in header) + r" \\",
-             r"\midrule"]
+             rf"\begin{{tabular}}{{{spec}}}", r"\toprule"]
+    if span:
+        text, first, last = span
+        cells = [""] * (first - 1) + [rf"\multicolumn{{{last - first + 1}}}{{c}}{{{tex_escape(text)}}}"] + \
+            [""] * (len(header) - last)
+        lines += [" & ".join(cells) + r" \\", rf"\cmidrule(lr){{{first}-{last}}}"]
+    lines += [" & ".join(tex_escape(h) for h in header) + r" \\", r"\midrule"]
     def cell(i, j, c):
         text = tex_escape(paper_words(c))
         return re.sub(r"^(\S+)", r"\\textbf{\1}", text, count=1) if (i, j) in bold else text

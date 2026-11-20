@@ -18,6 +18,8 @@
 \small
 \begin{tabular}{llrrl}
 \toprule
+ &  & \multicolumn{2}{c}{Answers handed back (\%)} &  \\
+\cmidrule(lr){3-4}
 Task & Procedure & Perfect solver & Trained models & Reading \\
 \midrule
 Addition & No-carry rule & 0.0 & 0.0 & Builds a new answer \\
@@ -25,7 +27,7 @@ Addition & No-carry rule & 0.0 & 0.0 & Builds a new answer \\
  & No selection & 0.0 & 0.0 & Builds a new answer \\
  & Sample and vote & 100.0 & 100.0 & Hands back \\
 Longest run & Join at the split & 48.0--50.5 & 47.3--51.1
-  & Builds in about half of cases \\
+  & Hands back about half, builds the rest \\
  & Edges-differ rule & 100.0 & 100.0 & Hands back \\
  & Pick the longer & 100.0 & 100.0 & Hands back \\
 \bottomrule

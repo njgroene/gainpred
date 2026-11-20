@@ -106,3 +106,17 @@ def test_paper_table_fails_when_a_length_differs():
         check3_one_value("Paper test", "No-carry rule", ["0.0"] * 7 + ["0.1"])
     with pytest.raises(ValueError):
         check3_one_value("confirming runs", "Agreement rule", ["0.0–0.1"] * 8)
+
+
+def test_paper_table_spans_the_value_columns_and_reads_join_at_the_split():
+    from pathlib import Path
+
+    from gainpred.writeup import check3_merged_rows, check3_tex
+    rows = {r[1]: r for r in check3_merged_rows()}
+    assert rows["Join at the cut"][4] == "Hands back about half, builds the rest"
+    lines = check3_tex().splitlines()
+    i = lines.index(r" &  & \multicolumn{2}{c}{Answers handed back (\%)} &  \\")
+    assert lines[i - 1] == r"\toprule" and lines[i + 1] == r"\cmidrule(lr){3-4}"
+    assert lines[i + 2].startswith("Task & Procedure & Perfect solver & Trained models & Reading")
+    assert "Hands back about half, builds the rest" in " ".join(
+        Path("paper/generated/table_check3.tex").read_text().split())
