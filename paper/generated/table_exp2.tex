@@ -3,7 +3,8 @@
 \centering
 \caption{Longest run, one round: accuracy (\%) on the test problems, all groups
   and crossing runs of 5-8; mean over the evaluation runs (lowest-highest). All
-  pools ten groups of 1,000 problems, nine of which contain a crossing run.}
+  pools ten groups of 1,000 problems, nine of which contain a crossing run. Best
+  in each column in bold.}
 \label{tab:exp2}
 \small
 \resizebox{\linewidth}{!}{%
@@ -12,16 +13,15 @@
 Teacher & All & Crossing run 5 & Crossing run 6 & Crossing run 7
   & Crossing run 8 \\
 \midrule
-Before & 53.5 (46.3--58.0) & 57.3 (19.1--78.2) & 1.5 (0.0--4.5) & 0.0 (0.0--0.0)
-  & 0.0 (0.0--0.0) \\
-Join at the split & 98.0 (96.9--98.6) & 99.2 (98.3--99.7) & 99.4 (99.0--99.7)
-  & 97.1 (96.3--98.1) & 91.5 (85.6--94.9) \\
-Edges-differ rule & 53.4 (53.0--53.9) & 44.0 (39.6--47.7) & 0.0 (0.0--0.0)
-  & 0.0 (0.0--0.0) & 0.0 (0.0--0.0) \\
-Pick the longer & 23.6 (22.6--24.4) & 0.0 (0.0--0.0) & 0.0 (0.0--0.0)
-  & 0.0 (0.0--0.0) & 0.0 (0.0--0.0) \\
-Join at the split, withheld & 75.1 (74.9--75.6) & 98.3 (97.7--98.8)
-  & 98.0 (96.8--99.5) & 0.0 (0.0--0.0) & 0.0 (0.0--0.0) \\
+Before the round & 53.5 (46.3--58.0) & 57.3 (19.1--78.2) & 1.5 (0.0--4.5) & 0.0
+  & 0.0 \\
+Pick the longer & 23.6 (22.6--24.4) & 0.0 & 0.0 & 0.0 & 0.0 \\
+Edges-differ rule (Shin et al.) & 53.4 (53.0--53.9) & 44.0 (39.6--47.7) & 0.0
+  & 0.0 & 0.0 \\
+\midrule
+Join at the split (ours) & \textbf{98.0} (96.9--98.6)
+  & \textbf{99.2} (98.3--99.7) & \textbf{99.4} (99.0--99.7)
+  & \textbf{97.1} (96.3--98.1) & \textbf{91.5} (85.6--94.9) \\
 \bottomrule
 \end{tabular}
 }

@@ -37,3 +37,19 @@ def test_section5_numbers_are_in_numbers_tex():
 def test_section5_inputs_the_slim_table():
     text = Path("paper/sections/5-three-further-findings.tex").read_text()
     assert r"\input{generated/table_withheld_slim}" in text and r"\input{generated/table_withheld}" not in text
+
+
+def test_exp2_rows_order_bold_and_zero_ranges():
+    from gainpred.writeup import exp2_paper_rows
+    rows, bold = exp2_paper_rows()
+    assert [r[0] for r in rows] == ["Before the round", "Pick the longer", "Edges-differ rule (Shin et al.)",
+                                    "Join at the split (ours)"]
+    assert bold == {(3, j) for j in range(1, 6)}  # ours is best in every column
+    assert rows[1][2:] == ["0.0"] * 4 and rows[0][4] == "0.0"  # zero columns print no range
+    assert rows[0][3] == "1.5 (0.0–4.5)"  # a range that is not all zero stays
+    text = (GENERATED / "table_exp2.tex").read_text()
+    assert "withheld" not in text.lower() and r"\textbf{98.0} (96.9--98.6)" in text
+    assert "Best in each column in bold." in " ".join(text.split())
+    lines = text.splitlines()
+    assert lines.index(r"\midrule", lines.index(r"\midrule") + 1) < next(
+        i for i, l in enumerate(lines) if l.startswith("Join at the split (ours)"))

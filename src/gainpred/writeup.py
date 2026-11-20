@@ -1143,16 +1143,21 @@ def paper_words(text: str) -> str:
 
 
 def tex_table(label: str, caption: str, header: list[str], rows: list[list[str]], spec: str | None = None,
-              small: bool = True, fit: bool = False, rule_before: set[int] = frozenset()) -> str:
+              small: bool = True, fit: bool = False, rule_before: set[int] = frozenset(),
+              bold: set[tuple[int, int]] = frozenset()) -> str:
     """A booktabs table; every cell is escaped. Captions say what is shown, not what it means.
-    ``fit`` scales a wide table down to the text width."""
+    ``fit`` scales a wide table down to the text width. ``bold``: (row, column) cells whose leading
+    value (the mean, not the range after it) is set in bold."""
     spec = spec or "l" + "r" * (len(header) - 1)
     lines = [GENERATED_NOTE.rstrip(), r"\begin{table}[htbp]", r"\centering", rf"\caption{{{tex_escape(caption)}}}",
              rf"\label{{tab:{label}}}"] + ([r"\small"] if small else []) + ([r"\resizebox{\linewidth}{!}{%"] if fit else []) + [
              rf"\begin{{tabular}}{{{spec}}}", r"\toprule", " & ".join(tex_escape(h) for h in header) + r" \\",
              r"\midrule"]
+    def cell(i, j, c):
+        text = tex_escape(paper_words(c))
+        return re.sub(r"^(\S+)", r"\\textbf{\1}", text, count=1) if (i, j) in bold else text
     for i, r in enumerate(rows):
-        lines += ([r"\midrule"] if i in rule_before else []) + [" & ".join(tex_escape(paper_words(c)) for c in r) + r" \\"]
+        lines += ([r"\midrule"] if i in rule_before else []) + [" & ".join(cell(i, j, c) for j, c in enumerate(r)) + r" \\"]
     lines += [r"\bottomrule", r"\end{tabular}"] + (["}"] if fit else []) + [r"\end{table}"]
     return "\n".join(lines) + "\n"
 
@@ -1473,6 +1478,47 @@ def reproduction_tex() -> str | None:
         "8-15 and 15 digits. The no-carry rule corresponds to their filtered composition, no selection to "
         "their unfiltered composition.",
         ["Model", "Mean over new lengths", "Longest length"], rows, rule_before={len(ours) + 1})
+
+
+# ---------------------------------------------------------------- section 5: experiment 2 table
+
+EXP2_ROWS = (("Before the round", "runs-join_at_the_cut-seed{s}-u30000", 0),
+             ("Pick the longer", "runs-pick_the_longer-seed{s}-u30000", 1),
+             ("Edges-differ rule (Shin et al.)", "runs-edges_differ-seed{s}-u30000", 1),
+             ("Join at the split (ours)", "runs-join_at_the_cut-seed{s}-u30000", 1))
+
+
+def mean_range_or_zero(xs: list[float]) -> str:
+    """``mean_range``, but a column of zeros prints "0.0" (no "(0.0–0.0)")."""
+    return "0.0" if f"{min(xs):.1f}" == f"{max(xs):.1f}" == "0.0" else mean_range(xs)
+
+
+def exp2_paper_rows() -> tuple[list[list[str]], set[tuple[int, int]]]:
+    """(rows, bold cells): all groups and crossing runs of 5-8, evaluation runs. Bold: the highest
+    mean in each column, as printed (ties all bold)."""
+    values = []
+    for label, run, rnd in EXP2_ROWS:
+        evs = [evals(run.format(s=s), "study")[rnd] for s in CONFIRMING]
+        values.append((label, [[100 * e["all"] for e in evs]] + [[joined(e, k) for e in evs] for k in (5, 6, 7, 8)]))
+    rows = [[label, *(mean_range_or_zero(c) for c in cols)] for label, cols in values]
+    bold = set()
+    for j in range(5):
+        means = [f"{statistics.mean(cols[j]):.1f}" for _, cols in values]
+        best = max(means, key=float)
+        bold |= {(i, j + 1) for i, m in enumerate(means) if m == best}
+    return rows, bold
+
+
+def exp2_tex() -> str:
+    rows, bold = exp2_paper_rows()
+    groups = all_groups()
+    return tex_table(
+        "exp2", f"Longest run, one round: accuracy (%) on the test problems, all groups and crossing runs of 5-8; "
+        f"mean over the evaluation runs (lowest-highest). All pools {NUMBER_WORDS[len(groups)]} groups of "
+        f"1,000 problems, {NUMBER_WORDS[sum(g != 'random_join' for g in groups)]} of which contain a crossing run. "
+        "Best in each column in bold.",
+        ["Teacher", "All", "Crossing run 5", "Crossing run 6", "Crossing run 7", "Crossing run 8"], rows, fit=True,
+        rule_before={3}, bold=bold)
 
 
 # ---------------------------------------------------------------- section 5: slim withheld table and numbers
@@ -1831,20 +1877,7 @@ def paper_files() -> dict[str, str]:
          "AG: no split"], rows)
 
     # Section 5: longest run.
-    rows = []
-    for label, run, rnd in (("Before", "runs-join_at_the_cut-seed{s}-u30000", 0),
-                            *((lab, f"runs-{t}-seed{{s}}-u30000", 1) for t, lab in RUN_TEACHERS),
-                            ("Join at the cut, withheld", "runs-join_at_the_cut-withheld-seed{s}-u30000", 1)):
-        evs = [evals(run.format(s=s), "study").get(rnd) for s in CONFIRMING]
-        row = [label, mean_range([100 * e["all"] for e in evs])]
-        row += [mean_range([joined(e, k) for e in evs]) for k in (5, 6, 7, 8)]
-        rows.append(row)
-    groups = all_groups()
-    out["table_exp2.tex"] = tex_table(
-        "exp2", f"Longest run, one round: accuracy (%) on the test problems, all groups and crossing runs of 5-8; "
-        f"mean over the evaluation runs (lowest-highest). All pools {NUMBER_WORDS[len(groups)]} groups of "
-        f"1,000 problems, {NUMBER_WORDS[sum(g != 'random_join' for g in groups)]} of which contain a crossing run.",
-        ["Teacher", "All", "Crossing run 5", "Crossing run 6", "Crossing run 7", "Crossing run 8"], rows, fit=True)
+    out["table_exp2.tex"] = exp2_tex()
 
     out["table_check3.tex"] = check3_tex()
 
