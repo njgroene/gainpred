@@ -174,6 +174,8 @@ def main() -> None:
     c3.add_argument("--only", default="", help="only these cells, round:digits comma-separated (e.g. 3:13,4:14)")
     rp = sub.add_parser("reproduction", help="score evaluation-run checkpoints on the reproduction test set")
     rp.add_argument("run")
+    ca = sub.add_parser("control-answers", help="amendment 23: longest-run models answer the study test set")
+    ca.add_argument("run")
     sub.add_parser("status", help="state of every spawned run")
     args = parser.parse_args()
 
@@ -199,6 +201,8 @@ def main() -> None:
         spawn("check3", args.run, {"of": args.of, "three_cuts": args.three_cuts, "only": only})
     elif args.command == "reproduction":
         spawn("reproduction", args.run, {})
+    elif args.command == "control-answers":
+        spawn("control_answers", args.run, {}, task="longest_run")
     elif args.command == "runs-rounds":
         spawn("self_improve_runs", args.run, {
             "start": args.start, "teacher": args.teacher, "build_seconds": args.build_seconds,

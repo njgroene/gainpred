@@ -303,3 +303,21 @@ def reproduction(run: str) -> None:
         score(run, VOLUME_PATH / "runs", VOLUME_PATH / "data" / "addition", torch.device("cuda"))
     finally:
         volume.commit()
+
+
+@app.function(image=image, gpu=GPU, volumes={str(VOLUME_PATH): volume}, timeout=60 * 60)
+def control_answers(run: str) -> None:
+    """Protocol amendment 23: the 20 longest-run models (control arm before and after the withheld
+    round, withheld version, edges-differ rule; starting models 0-4) answer the study test set.
+    Inference only."""
+    volume.reload()  # see self_improve
+    import torch
+
+    from gainpred.control_answers import answer_all
+
+    print(f"GPU: {torch.cuda.get_device_name()}  torch {torch.__version__}")
+    make_run_data.local()
+    try:
+        answer_all(run, VOLUME_PATH / "runs", VOLUME_PATH / "data" / "longest_run", torch.device("cuda"))
+    finally:
+        volume.commit()
