@@ -20,36 +20,7 @@ hard problems (longer than anything the model has been trained on), with no
 correct answers attached. We put $M_{i-1}$ to work in two distinct
 roles (Figure~\ref{fig:roles}).
 
-Acting as the \emph{student}, the model simply tackles a hard problem head-on
-and produces a direct answer. Acting as the \emph{teacher}, it follows a
-structured procedure: it breaks the hard problem into smaller, easier pieces,
-solves each piece individually, stitches those partial solutions back together,
-and decides whether to keep or discard the resulting answer in a final step we call
-\emph{selection}. Crucially, the teacher is not a separate, stronger model. It
-is the exact same model, just guided by a decomposition procedure.
-
-The answers that survive selection form the training set $D_i$, which is then
-used to update $M_{i-1}$ into $M_i$. Because the student is trained on the
-teacher's outputs, each round simply pulls the student's predictions toward the
-teacher's. Three practical consequences immediately follow:
-
-\begin{itemize}
-\item If the teacher produces the exact same answers as the student, there is
-  nothing new to learn, and the round achieves nothing.
-\item If the teacher's answers are wrong, training pulls the student toward
-  errors, actively degrading performance.
-\item If the teacher is fundamentally incapable of generating the solutions the
-  student lacks, no amount of iteration will bridge the gap, and progress
-  stalls.
-\end{itemize}
-
-For a round of self-improvement to actually work, the teacher's answers must
-therefore \emph{differ} from the student's, be \emph{correct}, and
-\emph{cover what the student is missing}. While the second and third requirements
-restate the failure modes identified by \citet{shin2026compositional}, the first
-is our own addition.
-
-\begin{figure}[H]
+\begin{figure}[htbp]
 \centering
 \begin{tikzpicture}[
   font=\small,
@@ -108,8 +79,45 @@ is our own addition.
 \label{fig:roles}
 \end{figure}
 
+Acting as the \emph{student}, the model simply tackles a hard problem head-on
+and produces a direct answer. Acting as the \emph{teacher}, it follows a
+structured procedure: it breaks the hard problem into smaller, easier pieces,
+solves each piece individually, stitches those partial solutions back together,
+and decides whether to keep or discard the resulting answer in a final step we call
+\emph{selection}. Crucially, the teacher is not a separate, stronger model. It
+is the exact same model, just guided by a decomposition procedure.
+
+The answers that survive selection form the training set $D_i$, which is then
+used to update $M_{i-1}$ into $M_i$. Because the student is trained on the
+teacher's outputs, each round simply pulls the student's predictions toward the
+teacher's. Three practical consequences immediately follow:
+
+\begin{itemize}
+\item If the teacher produces the exact same answers as the student, there is
+  nothing new to learn, and the round achieves nothing.
+\item If the teacher's answers are wrong, training pulls the student toward
+  errors, actively degrading performance.
+\item If the teacher is fundamentally incapable of generating the solutions the
+  student lacks, no amount of iteration will bridge the gap, and progress
+  stalls.
+\end{itemize}
+
+For a round of self-improvement to actually work, the teacher's answers must
+therefore \emph{differ} from the student's, be \emph{correct}, and
+\emph{cover what the student is missing}. While the second and third requirements
+restate the failure modes identified by \citet{shin2026compositional}, the first
+is our own addition.
+
 \subsection{A worked example}
 \label{sec:worked-example}
+
+This teacher-student model is not new to this study. Treating a model with extra help as the teacher of the
+same model without it goes back to distillation with privileged information
+\citep{lopezpaz2016unifying}, and recent work uses exactly these two roles to
+write the help a model gets from its prompts into its weights
+\citep{zhang2026basersi}. That work uses the gap between teacher and student
+to change the student's weights. We use it to decide, beforehand, whether
+changing them is worthwhile.
 
 Figure~\ref{fig:example} walks through a concrete example of both roles in
 action. Here, a model trained only on three- to seven-digit numbers is asked to
@@ -129,7 +137,7 @@ discards the example entirely. By contrast, our \emph{agreement rule} requires
 no domain-specific arithmetic knowledge: it simply keeps an answer if at least
 two different splits arrive at the same result.
 
-\begin{figure}[t]
+\begin{figure}[htbp]
 \centering
 \small
 \begin{tabular}{@{}lll@{}}
@@ -224,6 +232,8 @@ by substituting an oracle solver for the model before any training begins. In
 practice, real models yielded identical scores on addition and nearly identical
 ones on the string task (Table~\ref{tab:check3}).
 
+\input{generated/table_check3}
+
 That said, passing the construction check is necessary rather than sufficient.
 A procedure might be capable of constructing novel answers in general while
 still systematically filtering out the exact cases the student needs to see.
@@ -247,7 +257,7 @@ The prediction is given by three questions asked in order
 % Flowchart of the prediction rule. Needs in the preamble:
 %   \usepackage{tikz}
 %   \usetikzlibrary{arrows.meta,positioning}
-\begin{figure}[t]
+\begin{figure}[htbp]
     \centering
     \begin{tikzpicture}[
       font=\small,
@@ -308,7 +318,7 @@ Section~\ref{sec:do-the-checks-predict} evaluates how well our forecasts matched
 actual training outcomes. In short, the novelty and agreement checks proved
 highly predictive, whereas the basics check did not.
 
-\begin{table}[t]
+\begin{table}[htbp]
 \centering
 \caption{The checks. Kept answers are those the teacher's selection step
   retains for training. The first three use no correct answers. The version of

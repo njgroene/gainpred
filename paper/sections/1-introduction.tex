@@ -35,7 +35,7 @@ that a round that is not expected to help can be skipped. We also show that
 the checks require less compute than the obvious alternative, training briefly
 and peeking at early progress.
 
-\begin{table}[t]
+\begin{table}[htbp]
 \centering
 \caption{What each way of assessing a training round requires, and what it
   tells us. The first two rows are from \citet{shin2026compositional}; the
@@ -55,7 +55,8 @@ Checks introduced in this paper & No & No & What a round will do, before it is r
 \end{tabular}
 \end{table}
 
-Our approach is to see one model in two roles. As the \emph{teacher}, it
+Our approach is to see one model in two roles, a view also seen in work on
+distillation \citep{lopezpaz2016unifying,zhang2026basersi}. As the \emph{teacher}, it
 applies the split-and-combine procedure; as the \emph{student}, it answers the
 same problem directly. Training makes the student imitate the teacher, so a
 round can help only if the teacher's answers differ from the student's, are
@@ -93,4 +94,10 @@ our work for self-improvement loops, and the work planned to test the proposed
 checks in more complex settings. If the checks carry over, a recursively
 self-improving model need not run a round to learn its outcome: from its own
 answers alone, it could tell when another round will help, when it will do
-harm, and when no further round can help.
+harm, and when no further round can help. 
+
+Section~\ref{sec:beyond-synthetic-tasks} examines how this framing accounts
+for self-improvement loops reported by others, including one that uses the
+same two roles on a large vision-language model \citep{zhang2026basersi} and
+one in which a navigation policy keeps only the repairs that it can verify
+itself \citep{wu2026aerorsi}.

@@ -1,20 +1,21 @@
 \section{Setup}
 \label{sec:setup}
 
-We evaluate our prediction rule in the setting of \citet{shin2026compositional},
-introducing three components needed to properly test predictions: teachers chosen so that
-all three possible outcomes occur, a fixed rule for classifying what a round achieved, and
-separate runs for calibrating the prediction rule versus evaluating it. The
-prediction rule itself is tested on addition, while a second task supports the construction
+We evaluate our prediction rule in the setting of
+\citet{shin2026compositional}, introducing three components needed to properly
+test predictions: teachers chosen so that all three possible outcomes occur, a
+fixed rule for classifying what a round achieved, and separate runs for
+calibrating the prediction rule versus evaluating it. The prediction rule
+itself is tested on addition, while a second task supports the construction
 check and the findings in Section~\ref{sec:three-further-findings}.
 
 \subsection{Model, tasks, and training}
 \label{sec:setting}
 
 The model is a character-level Transformer with roughly 14M parameters and no
-positional encoding, trained from scratch. All hyperparameters and settings follow
-\citet{shin2026compositional}; where their paper leaves details unspecified, we use values
-confirmed by the authors (personal communication).
+positional encoding, trained from scratch. All hyperparameters and settings
+follow \citet{shin2026compositional}; where their paper leaves details
+unspecified, we use values confirmed by the authors (personal communication).
 % TODO: ask Changho Shin for permission to cite the confirmation this way.
 Appendix~\ref{app:settings} details every setting and every departure from
 their original setup.
@@ -22,47 +23,56 @@ their original setup.
 % Shin et al. report; the reproduction test set exists but is not yet used.
 
 \paragraph{Addition.} The task is to add two numbers of equal length. The
-starting model is trained with ground-truth answers on numbers of three to seven
-digits; we refer to these as \emph{easy problems}. Four sequential rounds then extend the maximum
-length to 9, 11, 13, and 15 digits. In each round, the teacher generates answers to
-fresh problems at every length from 8 digits up to the current maximum until
-it has retained 10,000 examples per length. The model is then trained on these retained examples alongside
-easy problems that it answers itself. Because every teacher trains on the exact same
-number of retained examples, teachers differ only in which answers they keep, not in data volume.
+starting model is trained with correct answers on numbers of three to seven
+digits; we refer to these as \emph{easy problems}. Four sequential rounds then
+extend the maximum length to 9, 11, 13, and 15 digits. In each round, the
+teacher generates answers to fresh problems at every length from 8 digits up
+to the current maximum until it has retained 10,000 examples per length. The
+model is then trained on these retained examples alongside easy problems that
+it answers itself. Every teacher has the same quota, so teachers differ in
+which answers they keep, not in data volume. The one exception is sample and
+vote, which could not fill the quota in 7 of 60 length-and-round combinations
+in the evaluation runs.
 
 To construct an answer, the teacher splits both numbers at the same index into
-segments of three to seven digits. Each problem is assigned three fixed splits in
-advance (five for 13 to 15 digits), with no two cuts at the same position.
-The first split supplies the candidate answer, while the remaining splits are used for the agreement
-check and the agreement rule.
+pieces of three to seven digits. Each problem is assigned three fixed splits
+in advance (five for 13 to 15 digits), with no two cuts at the same position.
+The first split supplies the candidate answer, while the remaining splits are
+used for the agreement check and the agreement rule.
 
 \paragraph{Longest run.} The second task is to find the longest run of a
 repeated symbol in a string of digits. The starting model is trained on strings
-of 6 to 10 symbols, and a single round extends it to strings of 12 to 20 symbols, each
-composed of two segments. Section~\ref{sec:three-further-findings} describes the
-teachers used for this task.
+of 6 to 10 symbols, and a single round extends it to strings of 12 to 20
+symbols, each composed of two pieces.
+Section~\ref{sec:three-further-findings} describes the teachers used for this
+task.
 
 \subsection{Teachers}
 \label{sec:teachers}
+
 With the hand-written filter of \citet{shin2026compositional}, every addition
 round in our reproduction paid off: the filter removes exactly the answers
 that would do harm. That is the situation a self-improving model is not in.
 Without the filter the same rounds teach wrong answers, as
-\citet{shin2026compositional} also report, and on the second task even their
-filter leaves the student stalled. To test predictions we therefore introduce teachers designed to help, to have no effect, and to cause harm
-(Table~\ref{tab:teachers}), alongside two variations that probe the same question from
-different angles: starting models whose training was stopped early (so that they
-still make mistakes on easy problems), and a round with no filtering applied to a model
-previously trained under the no-carry rule. A third source of cases
-requires no additional runs: because each round regenerates training data for every length from 8 digits up,
-lengths learned in earlier rounds are retrained, where we expect accuracy to remain unchanged. The distribution of outcomes in our evaluation is thus deliberately constructed and does not
-reflect how often training rounds fail in practice.
+\citet{shin2026compositional} also report, and on the second task their filter
+leaves runs that cross the split unlearned, in their experiments and in ours.
+To test predictions we therefore run, alongside their filter, teachers that
+need no knowledge of the task, and that we expected to help, to have no
+effect, or to cause harm (Table~\ref{tab:teachers}). Two variations probe the
+same question from different angles: starting models whose training was
+stopped early (so that they still make mistakes on easy problems), and a round
+with no filtering applied to a model previously trained under the no-carry
+rule. A third source of cases requires no additional runs: because each round
+regenerates training data for every length from 8 digits up, lengths learned
+in earlier rounds are retrained, where we expect accuracy to remain unchanged.
+The distribution of outcomes in our evaluation is thus deliberately
+constructed and does not reflect how often training rounds fail in practice.
 
-\begin{table}[t]
+\begin{table}[htbp]
 \centering
-\caption{The teachers used on addition and the expected effect of a round taught
-  by each. All teachers except ``Sample and vote'' construct answers by splitting the
-  problem and concatenating the sums of the pieces.}
+\caption{The teachers used on addition and the expected effect of a round
+  taught by each. All teachers except ``Sample and vote'' construct answers by
+  splitting the problem and concatenating the sums of the pieces.}
 \label{tab:teachers}
 \small
 \begin{tabular}{@{}l>{\raggedright\arraybackslash}p{0.55\linewidth}l@{}}
@@ -72,12 +82,13 @@ Teacher & What it keeps for training & Expected \\
 No-carry rule & The first split's answer, provided no piece sum overflows its
   digit length \citep{shin2026compositional} & Pays off \\
 \addlinespace
-Agreement rule & Any answer produced by at least two distinct splits & Pays off \\
+Agreement rule & Any answer produced by at least two distinct splits & Pays
+  off \\
 \addlinespace
 No selection & The first split's answer, unconditionally & Does harm \\
 \addlinespace
-Sample and vote & No splitting: five direct answers are sampled, and one appearing at
-  least three times is kept & Does nothing \\
+Sample and vote & No splitting: five direct answers are sampled, and one
+  appearing at least three times is kept & Does nothing \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -101,29 +112,7 @@ it was taught in an earlier round or already answered more than half
 correctly, we ask whether the score held or fell. Within 3 points, the round
 did nothing. A larger fall, there or on easy problems, is harm.
 
-A new length needs a different rule, because its score starts near zero and
-cannot fall. A rise alone does not show that the round was good. With no
-selection, for example, the score at a new length rises from 0\% to about
-50\%: every problem without a carry at the split is answered correctly and
-every problem with one incorrectly, because the student has been trained to
-write the wrong answer. Given to a model that had already mastered a length,
-the same teaching makes its score fall from about 99\% to about 50\%. We
-therefore compare the score with the best that any teacher's student reached
-at that length, in the same round and from the same starting model. A rise of
-at least 20 points that ends within 10 points of the best is a round that paid
-off. A rise that ends 30 points or more below the best means the student was
-taught wrong answers, and we count it as harm. A rise of less than 10 points
-is a round that did little or nothing.
-
-These lines suit this setting, where a round that works takes a new length
-from nothing to 70\% or more at once, and a round that does not work leaves it
-near zero (Section~\ref{sec:do-the-checks-predict}). Elsewhere they would have
-to be chosen again. The rule was fixed before the evaluation and leaves a few
-cases without an outcome, for example a length the model could mostly do that
-improved further. We leave these out of the main count and report them
-separately in Section~\ref{sec:do-the-checks-predict}.
-
-\begin{table}[H]
+\begin{table}[htbp]
 \centering
 \caption{The outcome of a round at one problem length. Scores are accuracies
   on test problems, in percentage points. ``The best'' is the highest score
@@ -146,78 +135,69 @@ New & Paid off & Rises by at least 20 points, to within 10 of the best \\
 \end{tabular}
 \end{table}
 
-\begin{table}[t]
-\centering
-\caption{Cases correctly predicted in the evaluation runs, for our prediction
-  rule and for always giving the same prediction.}
-\label{tab:p9b-summary}
-\small
-\begin{tabular}{lrr}
-\toprule
-Rule & Cases correctly predicted & \% \\
-\midrule
-Our prediction rule & 249/258 & 96.5 \\
-Always ``does nothing'' & 178/258 & 69.0 \\
-Always ``does harm'' & 43/258 & 16.7 \\
-Always ``pays off'' & 37/258 & 14.3 \\
-\bottomrule
-\end{tabular}
-\end{table}
+A new length needs a different rule, because its score starts near zero and
+cannot fall. A rise alone does not show that the round was good. With no
+selection, for example, the score at a new length rises from 0\% to about
+50\%: every problem without a carry at the split is answered correctly and
+every problem with one incorrectly, because the student has been trained to
+write the wrong answer. Given to a model that had already mastered a length,
+the same teaching makes its score fall from about 99\% to about 50\%. We
+therefore compare the score with the best that any teacher's student reached
+at that length, in the same round and from the same starting model. A rise of
+at least 20 points that ends within 10 points of the best is a round that paid
+off. A rise that ends 30 points or more below the best means the student was
+taught wrong answers, and we count it as harm. A rise of less than 10 points
+is a round that did little or nothing.
 
-\begin{table}[t]
-\centering
-\caption{Predictions before training against outcomes after training, for the
-  258 evaluation cases. Every error is a prediction of harm that did not
-  occur.}
-\label{tab:p9b-confusion}
-\small
-\begin{tabular}{lrrr}
-\toprule
- & \multicolumn{3}{c}{Prediction} \\
-\cmidrule(l){2-4}
-Outcome & Pays off & Does nothing & Does harm \\
-\midrule
-Paid off & 31 & 0 & 6 \\
-Did nothing & 0 & 175 & 3 \\
-Did harm & 0 & 0 & 43 \\
-\bottomrule
-\end{tabular}
-\end{table}
+These lines suit this setting, where a round that works takes a new length
+from nothing to 70\% or more at once, and a round that does not work leaves it
+near zero (Section~\ref{sec:do-the-checks-predict}). Elsewhere they would have
+to be chosen again. The rule was fixed before the evaluation and leaves a few
+cases without an outcome, for example a length the model could mostly do that
+improved further. We leave these out of the main count and report them
+separately in Section~\ref{sec:do-the-checks-predict}.
 
 \subsection{Calibration and evaluation}
 \label{sec:calibration}
 
 We trained five starting models from distinct random seeds. Two were allocated
-to \emph{calibration runs}, where we selected the ordering of the diagnostic questions and
-the thresholds for novelty and agreement (the threshold for the basics check was fixed
-prior to any runs). The remaining three models were reserved for \emph{evaluation runs}. Both the
-prediction rule and the outcome criteria were frozen as a tagged commit in our 
-repository before any evaluation run began. We also pre-registered our success criterion: the prediction had to match the actual outcome in at least
-90\% of cases, with at least five instances each of ``did nothing'' and ``did harm.''
+to \emph{calibration runs}, where we selected the ordering of the diagnostic
+questions and the thresholds for novelty and agreement (the threshold for the
+basics check was fixed prior to any runs). The remaining three models were
+reserved for \emph{evaluation runs}. Both the prediction rule and the outcome
+criteria were frozen as a tagged commit in our repository before any
+evaluation run began. We also stated our success criterion in advance: the
+prediction had to match the actual outcome in at least 90\% of cases, with at
+least five instances each of ``did nothing'' and ``did harm.''
 
-Three adjustments were made between the calibration runs and the freeze. First, we moved novelty
-ahead of agreement, increasing agreement between predictions and outcomes on the calibration set from
-107/176 to 166/176. Second, we increased the number of splits for 13- to 15-digit problems from
-three to five, because using only three artificially depressed the confirmed share of an otherwise sound teacher. Third, we added the 10-point and 50\% conditions to the outcome rule. Finally, requiring a minimum of 5\% retained answers guards against sampling noise: when a
-teacher keeps fewer than a hundred answers, the proportion of novel examples fluctuates
-widely across samples.
+Four adjustments were made between the calibration runs and the freeze. First,
+we moved novelty ahead of agreement, raising the number of calibration cases
+correctly predicted from 107 to 166 of 176. Second, we increased the number of
+splits for 13- to 15-digit problems from three to five, because using only
+three artificially depressed the confirmed share of an otherwise sound
+teacher. Third, we added the 10-point and 50\% conditions to the outcome rule.
+Fourth, we added the minimum of 5\% retained answers, which guards against
+sampling noise: when a teacher keeps fewer than a hundred answers, the
+proportion of novel examples fluctuates widely across samples.
 
-The evaluation runs yield 270 cases in total. The outcome rule classifies 258 of them;
-Section~\ref{sec:do-the-checks-predict} analyzes these 258 cases and reports separately
-on the remaining 12. Because cases sharing a run are not statistically independent, we also break down
-results by starting model. Every run we initiated—including failed
-ones—is documented in the repository, and any metric or rule defined after the evaluation
-runs is explicitly marked as such where introduced.
+The evaluation runs yield 270 cases in total. The outcome rule classifies 258
+of them; Section~\ref{sec:do-the-checks-predict} analyzes these 258 cases and
+reports separately on the remaining 12. Because cases sharing a run are not
+statistically independent, we also break down results by starting model. Every
+run we initiated---including failed ones---is documented in the repository,
+and any metric or rule defined after the evaluation runs is explicitly marked
+as such where introduced.
 
 \subsection{Baselines and cost}
 \label{sec:baselines}
 
-We compare our prediction rule against two baselines. The first is a majority-class baseline that always predicts
-the most frequent outcome. The second reflects standard practice without diagnostic checks:
-begin the round, train for 200 of the 3,000 updates, evaluate accuracy on the
-test set, and extrapolate from the early change. Its thresholds were tuned on the
-same calibration runs. Unlike our checks, however, this baseline requires ground-truth answers to
-hard problems.
+We compare our prediction rule against two baselines. The first is a
+majority-class baseline that always predicts the most frequent outcome. The
+second is the obvious alternative to diagnostic checks: begin the round, train
+for 200 of the 3,000 updates, evaluate accuracy on the test set, and
+extrapolate from the early change. Its thresholds were tuned on the same calibration runs.
 
-Computational cost is measured in wall-clock GPU time on a single GPU. For each round, we compare the
-time required to run the checks against the total time of the full round (generating the retained answers and training on them).
+Computational cost is measured in wall-clock GPU time on a single GPU. For
+each round, we compare the time required to run the checks against the total
+time of the full round (generating the retained answers and training on
+them).

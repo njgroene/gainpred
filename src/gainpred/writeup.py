@@ -1145,7 +1145,7 @@ def tex_table(label: str, caption: str, header: list[str], rows: list[list[str]]
     """A booktabs table; every cell is escaped. Captions say what is shown, not what it means.
     ``fit`` scales a wide table down to the text width."""
     spec = spec or "l" + "r" * (len(header) - 1)
-    lines = [GENERATED_NOTE.rstrip(), r"\begin{table}[H]", r"\centering", rf"\caption{{{tex_escape(caption)}}}",
+    lines = [GENERATED_NOTE.rstrip(), r"\begin{table}[htbp]", r"\centering", rf"\caption{{{tex_escape(caption)}}}",
              rf"\label{{tab:{label}}}"] + ([r"\small"] if small else []) + ([r"\resizebox{\linewidth}{!}{%"] if fit else []) + [
              rf"\begin{{tabular}}{{{spec}}}", r"\toprule", " & ".join(tex_escape(h) for h in header) + r" \\",
              r"\midrule"]
@@ -1156,7 +1156,7 @@ def tex_table(label: str, caption: str, header: list[str], rows: list[list[str]]
 
 
 def tex_figure(label: str, pdf: str, caption: str, width: str = r"\linewidth") -> str:
-    return "\n".join([GENERATED_NOTE.rstrip(), r"\begin{figure}[H]", r"\centering",
+    return "\n".join([GENERATED_NOTE.rstrip(), r"\begin{figure}[htbp]", r"\centering",
                       rf"\includegraphics[width={width}]{{generated/{pdf}}}", rf"\caption{{{tex_escape(caption)}}}",
                       rf"\label{{fig:{label}}}", r"\end{figure}"]) + "\n"
 
@@ -1512,7 +1512,7 @@ def p9b_tables(conf: list) -> tuple[str, str]:
     caption = f"Predictions before training against outcomes after training, for the {n} evaluation cases."
     if all(j == PREDICTIONS.index("does harm") for _, j in errors):
         caption += " Every error is a prediction of harm that did not occur."
-    lines = [GENERATED_NOTE.rstrip(), r"\begin{table}[H]", r"\centering", rf"\caption{{{tex_escape(caption)}}}",
+    lines = [GENERATED_NOTE.rstrip(), r"\begin{table}[htbp]", r"\centering", rf"\caption{{{tex_escape(caption)}}}",
              r"\label{tab:p9b-confusion}", r"\small", r"\begin{tabular}{lrrr}", r"\toprule",
              r" & \multicolumn{3}{c}{" + tex_escape("Prediction") + r"} \\", r"\cmidrule(l){2-4}",
              " & ".join(tex_escape(h) for h in ("Outcome", "Pays off", "Does nothing", "Does harm")) + r" \\",
