@@ -458,7 +458,7 @@ def check3_merged_rows() -> list[list[str]]:
 def check3_tex() -> str:
     """The construction check for both tasks, one row per procedure (section 5)."""
     return tex_table("check3", CHECK3_CAPTION, ["Task", "Procedure", "Perfect solver", "Trained models", "Reading"],
-                     check3_merged_rows(), spec="llrrl", span=("Answers handed back (%)", 3, 4))
+                     check3_merged_rows(), spec="llrrl", span=("Answers handed back (%)", 3, 4), fit=True)
 
 
 # ---------------------------------------------------------------- what the filter removes
