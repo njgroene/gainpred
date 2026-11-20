@@ -1,0 +1,22 @@
+{"event": "model", "role": "a", "seed": 0, "run": "runs-join_at_the_cut-withheld-seed0-longruns", "round": 0, "checkpoint": "runs-start-seed0-longruns/checkpoints/step_030000.pt"}
+{"event": "model", "role": "b", "seed": 0, "run": "runs-join_at_the_cut-withheld-seed0-longruns", "round": 1, "checkpoint": "runs-join_at_the_cut-withheld-seed0-longruns/round_1/checkpoints/step_003000.pt"}
+{"event": "model", "role": "c", "seed": 0, "run": "runs-join_at_the_cut-withheld-seed0-u30000", "round": 1, "checkpoint": "runs-join_at_the_cut-withheld-seed0-u30000/round_1/checkpoints/step_003000.pt"}
+{"event": "model", "role": "d", "seed": 0, "run": "runs-edges_differ-seed0-u30000", "round": 1, "checkpoint": "runs-edges_differ-seed0-u30000/round_1/checkpoints/step_003000.pt"}
+{"event": "model", "role": "a", "seed": 1, "run": "runs-join_at_the_cut-withheld-seed1-longruns", "round": 0, "checkpoint": "runs-start-seed1-longruns/checkpoints/step_030000.pt"}
+{"event": "model", "role": "b", "seed": 1, "run": "runs-join_at_the_cut-withheld-seed1-longruns", "round": 1, "checkpoint": "runs-join_at_the_cut-withheld-seed1-longruns/round_1/checkpoints/step_003000.pt"}
+{"event": "model", "role": "c", "seed": 1, "run": "runs-join_at_the_cut-withheld-seed1-u30000", "round": 1, "checkpoint": "runs-join_at_the_cut-withheld-seed1-u30000/round_1/checkpoints/step_003000.pt"}
+{"event": "model", "role": "d", "seed": 1, "run": "runs-edges_differ-seed1-u30000", "round": 1, "checkpoint": "runs-edges_differ-seed1-u30000/round_1/checkpoints/step_003000.pt"}
+{"event": "model", "role": "a", "seed": 2, "run": "runs-join_at_the_cut-withheld-seed2-longruns", "round": 0, "checkpoint": "runs-start-seed2-longruns/checkpoints/step_030000.pt"}
+{"event": "model", "role": "b", "seed": 2, "run": "runs-join_at_the_cut-withheld-seed2-longruns", "round": 1, "checkpoint": "runs-join_at_the_cut-withheld-seed2-longruns/round_1/checkpoints/step_003000.pt"}
+{"event": "model", "role": "c", "seed": 2, "run": "runs-join_at_the_cut-withheld-seed2-u30000", "round": 1, "checkpoint": "runs-join_at_the_cut-withheld-seed2-u30000/round_1/checkpoints/step_003000.pt"}
+{"event": "model", "role": "d", "seed": 2, "run": "runs-edges_differ-seed2-u30000", "round": 1, "checkpoint": "runs-edges_differ-seed2-u30000/round_1/checkpoints/step_003000.pt"}
+{"event": "model", "role": "a", "seed": 3, "run": "runs-join_at_the_cut-withheld-seed3-longruns", "round": 0, "checkpoint": "runs-start-seed3-longruns/checkpoints/step_030000.pt"}
+{"event": "model", "role": "b", "seed": 3, "run": "runs-join_at_the_cut-withheld-seed3-longruns", "round": 1, "checkpoint": "runs-join_at_the_cut-withheld-seed3-longruns/round_1/checkpoints/step_003000.pt"}
+{"event": "model", "role": "c", "seed": 3, "run": "runs-join_at_the_cut-withheld-seed3-u30000", "round": 1, "checkpoint": "runs-join_at_the_cut-withheld-seed3-u30000/round_1/checkpoints/step_003000.pt"}
+{"event": "model", "role": "d", "seed": 3, "run": "runs-edges_differ-seed3-u30000", "round": 1, "checkpoint": "runs-edges_differ-seed3-u30000/round_1/checkpoints/step_003000.pt"}
+{"event": "model", "role": "a", "seed": 4, "run": "runs-join_at_the_cut-withheld-seed4-longruns", "round": 0, "checkpoint": "runs-start-seed4-longruns/checkpoints/step_030000.pt"}
+{"event": "model", "role": "b", "seed": 4, "run": "runs-join_at_the_cut-withheld-seed4-longruns", "round": 1, "checkpoint": "runs-join_at_the_cut-withheld-seed4-longruns/round_1/checkpoints/step_003000.pt"}
+{"event": "model", "role": "c", "seed": 4, "run": "runs-join_at_the_cut-withheld-seed4-u30000", "round": 1, "checkpoint": "runs-join_at_the_cut-withheld-seed4-u30000/round_1/checkpoints/step_003000.pt"}
+{"event": "model", "role": "d", "seed": 4, "run": "runs-edges_differ-seed4-u30000", "round": 1, "checkpoint": "runs-edges_differ-seed4-u30000/round_1/checkpoints/step_003000.pt"}
+{"event": "done"}
+{"event": "wall", "seconds": 71.0, "source": "spawn time to the last write on the volume, start-up included"}
