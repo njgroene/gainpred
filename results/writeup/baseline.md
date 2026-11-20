@@ -76,7 +76,7 @@ Mean seconds per round on one A10 GPU. Probe = rebuild the training data + repla
 | Agreement rule | 12 | 376 | 592 | 63% | 49 | 8% |
 | No selection | 12 | 97 | 300 | 32% | 34 | 11% |
 | Sample and vote | 12 | 742 | 945 | 79% | 52 | 6% |
-| Run f (no selection) | 3 | 111 | 329 | 34% | 40 | 12% |
+| No selection after the no-carry rule | 3 | 111 | 329 | 34% | 40 | 12% |
 | No-carry rule, weak starting models | 6 | 63 | 214 | 29% | 10 | 5% |
 | Join at the cut | 3 | 79 | 247 | 32% | 45 | 18% |
 | Edges-differ rule | 3 | 55 | 216 | 26% | 38 | 18% |
@@ -94,7 +94,7 @@ Over all rounds: probe 56% of the full round; our checks 9%.
 | Agreement rule | 8 | 378 | 591 | 64% | 49 | 8% |
 | No selection | 8 | 98 | 302 | 32% | 34 | 11% |
 | Sample and vote | 8 | 1056 | 1256 | 84% | 56 | 4% |
-| Run f (no selection) | 2 | 111 | 325 | 34% | 37 | 11% |
+| No selection after the no-carry rule | 2 | 111 | 325 | 34% | 37 | 11% |
 | No-carry rule, weak starting models | 4 | 63 | 215 | 29% | 10 | 5% |
 
 Over all rounds: probe 65% of the full round; our checks 7%.

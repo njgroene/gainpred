@@ -26,7 +26,7 @@ Check tokens: exact for longest run. For addition the log sums replay and check 
 | Sample and vote | 2 | 3 | 814 | 13,426 | 7 | 37 | 745 | 162 | 6,189 | 4% |
 | Sample and vote | 3 | 3 | 1313 | 19,682 | 7 | 62 | 1,207 | 173 | 6,265 | 4% |
 | Sample and vote | 4 | 3 | 550 | 8,329 | 7 | 92 | 1,762 | 183 | 6,149 | 11% |
-| Run f (no selection) | 3 | 3 | 68 | 1,646 | 7 | 40 | 877 | 194 | 8,386 | 13% |
+| No selection after the no-carry rule | 3 | 3 | 68 | 1,646 | 7 | 40 | 877 | 194 | 8,386 | 13% |
 | No-carry rule, weak starting models | 1 | 6 | 25 | 624 | 7 | 10 | 226 | 153 | 6,268 | 5% |
 | Join at the cut | 1 | 3 | 47 | 1,104 | 0 | 45 | 1,032 | 150 | 3,072 | 18% |
 | Edges-differ rule | 1 | 3 | 23 | 552 | 0 | 38 | 888 | 150 | 3,072 | 18% |
@@ -56,7 +56,7 @@ Over every round above: checks take 9% of the timed round seconds (0.77 of 8.48 
 | Sample and vote | 2 | 2 | 1030 | 16,703 | 7 | 39 | 749 | 160 | 5,935 | 3% |
 | Sample and vote | 3 | 2 | 1422 | 17,706 | 7 | 69 | 1,204 | 171 | 6,172 | 4% |
 | Sample and vote | 4 | 2 | 1414 | 14,212 | 7 | 99 | 1,715 | 178 | 5,803 | 6% |
-| Run f (no selection) | 3 | 2 | 68 | 1,647 | 7 | 37 | 801 | 194 | 8,391 | 12% |
+| No selection after the no-carry rule | 3 | 2 | 68 | 1,647 | 7 | 37 | 801 | 194 | 8,391 | 12% |
 | No-carry rule, weak starting models | 1 | 4 | 25 | 636 | 7 | 10 | 224 | 154 | 6,269 | 5% |
 | Join at the cut | 1 | 2 | 47 | 1,104 | 0 | 53 | 1,224 | 149 | 3,072 | 21% |
 | Edges-differ rule | 1 | 2 | 23 | 552 | 0 | 47 | 1,080 | 150 | 3,072 | 21% |

@@ -90,7 +90,8 @@ def test_round_level_table():
 
 OLD_TERMS = [r"\bverdicts?\b", r"\bcells?\b", r"\bmatched\b", r"\b(un)?classified\b", r"\bconfirming\b",
              r"\blearning runs?\b", r"\bstarting points?\b", r"\bcheck (0|1|2b|3)\b", r"\b2b\b", r"\bcuts?\b",
-             r"\breference answers?\b"]
+             r"\breference answers?\b", r"\bstudy[- ](set|group)\b", r"\brun f\b", r"\bjoined\b",
+             r"\brun-across\b"]
 
 
 def test_generated_files_use_the_papers_words():

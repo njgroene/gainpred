@@ -1,0 +1,39 @@
+"""Section 5 artefacts: the slim withheld table, the section 5 numbers, and caption wording."""
+import re
+from pathlib import Path
+
+from gainpred.writeup import all_groups, section5_numbers, withheld_slim_rows
+
+GENERATED = Path("paper/generated")
+
+
+def test_slim_withheld_table_has_three_rows_and_the_label():
+    rows = withheld_slim_rows()
+    assert [r[0].split(":")[0] for r in rows] == ["Shown combinations", "Withheld combinations", "Answers never shown"]
+    assert [r[1] for r in rows] == ["478", "877", "2,000"]
+    assert all(re.fullmatch(r"\d+\.\d–\d+\.\d → \d+\.\d–\d+\.\d", r[2]) for r in rows)
+    text = (GENERATED / "table_withheld_slim.tex").read_text()
+    assert r"\label{tab:withheld}" in text
+    assert r"\label{tab:withheld-full}" in (GENERATED / "table_withheld.tex").read_text()
+
+
+def test_exp2_caption_counts_the_groups_all_pools():
+    groups = all_groups()
+    assert len(groups) == 10 and sum(g != "random_join" for g in groups) == 9
+    text = " ".join((GENERATED / "table_exp2.tex").read_text().split())
+    assert "All pools ten groups of 1,000 problems, nine of which contain a crossing run" in text
+
+
+def test_section5_numbers_are_in_numbers_tex():
+    nums = section5_numbers()
+    generated = (GENERATED / "numbers.tex").read_text()
+    for k, v in nums.items():
+        assert rf"\newcommand{{\{k}}}{{{v}}}" in generated, k
+    assert float(nums["gpKeptNoCarryMax"]) < 0.05 and nums["gpKeptNoCarry"] == "0.0"
+    assert float(nums["gpKeptAgreementLow"]) < float(nums["gpNaturalCarryLow"])
+    assert float(nums["gpBuildRatio"]) > 1
+
+
+def test_section5_inputs_the_slim_table():
+    text = Path("paper/sections/5-three-further-findings.tex").read_text()
+    assert r"\input{generated/table_withheld_slim}" in text and r"\input{generated/table_withheld}" not in text

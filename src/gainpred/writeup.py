@@ -566,7 +566,7 @@ def filter_gap_tex() -> str:
     return tex_table(
         "filter_gap", "What the filter removes and whether the student learns it anyway, evaluation runs, in "
         "the round that first trains each length. Kept: share (%) of kept training answers with a carry out of "
-        "the split-1 place. Carry: accuracy (%) on the study group with a carry across split 1, before and after "
+        "the split-1 place. Carry: accuracy (%) on the test problems with a carry across split 1, before and after "
         "the round (mean over the evaluation runs; lowest in brackets). No-carry: the other group after. "
         "NC: no-carry rule; AG: agreement rule. Defined after the evaluation runs.",
         ["Digits", "NC kept", "NC carry before", "NC carry after", "NC no-carry after",
@@ -800,7 +800,7 @@ def round_cost(run: str, rnd: int, addition: bool, replay_est: float) -> dict | 
 
 
 COST_ARMS = tuple((f"si-{arm}-seed{{s}}-authors", label, True, range(1, 5)) for arm, label in ARMS) + (
-    ("run f", "Run f (no selection)", True, range(3, 4)),
+    ("run f", "No selection after the no-carry rule", True, range(3, 4)),
     ("weak", "No-carry rule, weak starting models", True, range(1, 2)),
 ) + tuple((f"runs-{t}-seed{{s}}-u30000", label, False, range(1, 2)) for t, label in RUN_TEACHERS) + (
     ("runs-join_at_the_cut-withheld-seed{s}-u30000", "Join at the cut, withheld", False, range(1, 2)),
@@ -907,8 +907,8 @@ def figures() -> list[str]:
                (lambda s: addition_run("noselect", s, 4), 4, "no-carry", COLOURS[2], "-", "No selection, no-carry group"),
                (lambda s: addition_run("noselect", s, 4), 4, "carry", COLOURS[2], "--", "No selection, carry group (drawn 2 points up)"),
                (lambda s: addition_run("vote", s, 4), 4, "mean", COLOURS[3], "-", "Sample and vote"),
-               (runf_run, 3, "no-carry", "#6250d6", "-", "Run f, no-carry group"),
-               (runf_run, 3, "carry", "#6250d6", "--", "Run f, carry group")]
+               (runf_run, 3, "no-carry", "#6250d6", "-", "No selection after no-carry, no-carry group"),
+               (runf_run, 3, "carry", "#6250d6", "--", "No selection after no-carry, carry group")]
     for run_of, rnd, group, colour, ls, label in series1:
         ys, lo, hi = [], [], []
         for d in LENGTHS:
@@ -923,7 +923,8 @@ def figures() -> list[str]:
                     color=colour, lw=2, ls=ls, marker=marker, ms=5 if lift else 4, capsize=2, label=label,
                     zorder=3 if lift else 2)
     ax.set_xlabel("Digits"); ax.set_ylabel("Accuracy (%)"); ax.set_ylim(-3, 103)
-    ax.set_title("Experiment 1: evaluation runs after round 4 (run f: round 3); mean of three starting models, range as bars",
+    ax.set_title("Experiment 1: evaluation runs after round 4 (no selection after no-carry: round 3); mean of three "
+                 "starting models, range as bars",
                  loc="left", fontsize=9)
     ax.legend(frameon=False, ncol=2, fontsize=7, loc="center left", bbox_to_anchor=(0.02, 0.62))
     fig.tight_layout(); fig.savefig(OUT / "figures" / "exp1_accuracy.png", dpi=200); fig.savefig(PAPER / "figure_exp1.pdf"); plt.close(fig)
@@ -951,9 +952,9 @@ def figures() -> list[str]:
     draw(axes[1], series("runs-join_at_the_cut-withheld-seed{s}-longruns", 0), NEUTRAL, "Control, before", ls="--")
     draw(axes[1], series("runs-join_at_the_cut-withheld-seed{s}-longruns", 1), COLOURS[1], "Control, after")
     axes[1].axvspan(6.5, 8.4, color="#f1f0ec", zorder=0)
-    axes[1].set_title("Withheld round (joined runs 7-8 never taught)", loc="left", fontsize=9)
+    axes[1].set_title("Withheld round (crossing runs of 7-8: answers never shown)", loc="left", fontsize=9)
     for ax in axes:
-        ax.set_xlabel("Joined run length"); ax.set_xticks(xs); ax.legend(frameon=False, fontsize=7)
+        ax.set_xlabel("Crossing run length"); ax.set_xticks(xs); ax.legend(frameon=False, fontsize=7)
     axes[0].set_ylabel("Accuracy (%), evaluation runs")
     fig.tight_layout(); fig.savefig(OUT / "figures" / "exp2_joined.png", dpi=200); fig.savefig(PAPER / "figure_exp2.pdf"); plt.close(fig)
     made.append("exp2_joined.png")
@@ -1137,7 +1138,8 @@ def tex_escape(text: str) -> str:
 
 def paper_words(text: str) -> str:
     """The paper's name for a procedure whose code name uses the old word "cut"."""
-    return text.replace("Join at the cut", "Join at the split").replace("join at the cut", "join at the split")
+    return (text.replace("Join at the cut", "Join at the split").replace("join at the cut", "join at the split")
+            .replace(" (run f)", ""))
 
 
 def tex_table(label: str, caption: str, header: list[str], rows: list[list[str]], spec: str | None = None,
@@ -1289,11 +1291,12 @@ def section4_numbers() -> dict[str, str]:
 
 # Which numbers were computed after the evaluation runs (said in numbers.tex, and in the text).
 AFTER_EVALUATION = ("gpCorrectNoBasics", "gpVariant", "gpNoveltyMargin", "gpConfirmedMargin", "gpConfirmedHarmCases",
-                    "gpConfirmedPaysCases", "gpRounds", "gpCtrlAfterSeven", "gpWithheldSeven", "gpEdgesFive")
+                    "gpConfirmedPaysCases", "gpRounds", "gpCtrlAfterSeven", "gpWithheldSeven", "gpEdgesFive",
+                    "gpKeptNoCarry", "gpCarryAfter", "gpNaturalCarry")
 
 
 def numbers_tex(nums: dict[str, str]) -> str:
-    lines = [GENERATED_NOTE.rstrip(), "% Numbers cited in the text of section 4, so the prose cannot drift from the data.",
+    lines = [GENERATED_NOTE.rstrip(), "% Numbers cited in the text, so the prose cannot drift from the data.",
              "% Marked 'after': computed after the evaluation runs (not part of the frozen analysis)."]
     for k, v in nums.items():
         note = "  % after" if k.startswith(AFTER_EVALUATION) else ""
@@ -1470,6 +1473,121 @@ def reproduction_tex() -> str | None:
         "8-15 and 15 digits. The no-carry rule corresponds to their filtered composition, no selection to "
         "their unfiltered composition.",
         ["Model", "Mean over new lengths", "Longest length"], rows, rule_before={len(ours) + 1})
+
+
+# ---------------------------------------------------------------- section 5: slim withheld table and numbers
+
+NUMBER_WORDS = {n: w for n, w in enumerate(("zero", "one", "two", "three", "four", "five", "six", "seven", "eight",
+                                            "nine", "ten", "eleven", "twelve"))}
+
+
+def all_groups() -> list[str]:
+    """The longest-run test groups the logged "all" pools (every group of test_study, in file order)."""
+    seen = []
+    for line in (Path("data/longest_run/test_study.jsonl")).read_text().splitlines():
+        g = json.loads(line)["group"]
+        if g not in seen:
+            seen.append(g)
+    return seen
+
+
+def span(values: list[float]) -> str:
+    return f"{min(values):.1f}–{max(values):.1f}"
+
+
+def withheld_slim_rows() -> list[list[str]]:
+    """The withheld version, evaluation runs, before -> after (lowest-highest over starting models).
+
+    Crossing runs of 6 by left part come from results/withheld_split.json (every test problem with
+    a crossing run of 6, both groupings; scripts/withheld_split.py); crossing runs of 7-8 from the
+    round logs (the two groups pooled, 1,000 problems each)."""
+    split = json.loads((RESULTS_DIR / "withheld_split.json").read_text())
+    rows = []
+    for label, key in (("Shown combinations: crossing run of 6, left part 1-2", "6|1-2"),
+                       ("Withheld combinations: crossing run of 6, left part 3-4", "6|3-4")):
+        before = [100 * split[f"seed{s} before"][key][0] for s in CONFIRMING]
+        after = [100 * split[f"seed{s} withheld"][key][0] for s in CONFIRMING]
+        n = {split[f"seed{s} {w}"][key][1] for s in CONFIRMING for w in ("before", "withheld")}
+        assert len(n) == 1, (key, n)
+        rows.append([label, f"{n.pop():,}", f"{span(before)} → {span(after)}"])
+    evs = [evals(f"runs-join_at_the_cut-withheld-seed{s}-u30000", "study") for s in CONFIRMING]
+    before = [(joined(e[0], 7) + joined(e[0], 8)) / 2 for e in evs]
+    after = [(joined(e[1], 7) + joined(e[1], 8)) / 2 for e in evs]
+    rows.append(["Answers never shown: crossing runs of 7-8", "2,000", f"{span(before)} → {span(after)}"])
+    return rows
+
+
+def withheld_slim_tex() -> str:
+    return tex_table(
+        "withheld", "The withheld version (join at the split, trained without crossing runs whose left part is "
+        "3-4), evaluation runs: accuracy (%) before → after the round, lowest-highest over the three starting "
+        "models. Left part: how many symbols of the crossing run lie in the left piece. The teacher shows "
+        "crossing runs of 6 with left part 1-2, never with left part 3-4, and never an answer of 7 or 8 on "
+        "long strings.", ["Test problems", "Problems", "Before → after"], withheld_slim_rows())
+
+
+def natural_carry(d: int, n: int = 20_000) -> float:
+    """Share (%) of freshly drawn hard d-digit problems that carry out of the split-1 place(s) (mean
+    over its boundaries, as in ``carry_shares``): the rate before any selection. Seeded, so fixed."""
+    import random
+
+    from gainpred.data import draw_hard
+
+    places = {d - 1 - p for p in cut_positions(ADDITION_CUTS[d][0])}
+    rng, hits = random.Random(1_000 + d), 0
+    for _ in range(n):
+        p = draw_hard(rng, d)
+        a, b, carry = p.a, p.b, 0
+        for place in range(d):
+            carry = 1 if a % 10 + b % 10 + carry >= 10 else 0
+            hits += carry and place in places
+            a, b = a // 10, b // 10
+    return 100 * hits / n / len(places)
+
+
+def section5_numbers() -> dict[str, str]:
+    """Every number section 5's text cites (evaluation runs), as LaTeX macro name -> value."""
+    nums = {}
+    # Agreement minus no-carry after round 4: every gap is a shortfall, so the macros give its size.
+    for group, suffix in (("mean", ""), ("carry", "Carry")):
+        pm = pass_mark(CONFIRMING, group)
+        assert all(v[0] <= 0 and v[1] <= 0 for v in pm.values()), f"agreement ahead somewhere ({group})"
+        d_mean = min(pm, key=lambda d: pm[d][0])
+        d_worst = min(pm, key=lambda d: pm[d][1])
+        nums |= {f"gpGapMean{suffix}": f"{-pm[d_mean][0]:.1f}", f"gpGapMean{suffix}Digits": str(d_mean),
+                 f"gpGapWorst{suffix}": f"{-pm[d_worst][1]:.1f}", f"gpGapWorst{suffix}Digits": str(d_worst),
+                 f"gpGapWorst{suffix}Model": str(pm[d_worst][2])}
+    # Longest run, one round: all groups and crossing runs of 6-8, mean over the evaluation runs.
+    for name, run, rnd in (("Before", "runs-join_at_the_cut-seed{s}-u30000", 0),
+                           ("Join", "runs-join_at_the_cut-seed{s}-u30000", 1),
+                           ("Edges", "runs-edges_differ-seed{s}-u30000", 1),
+                           ("Longer", "runs-pick_the_longer-seed{s}-u30000", 1)):
+        evs = [evals(run.format(s=s), "study")[rnd] for s in CONFIRMING]
+        nums[f"gpLr{name}All"] = f"{statistics.mean(100 * e['all'] for e in evs):.1f}"
+        nums[f"gpLr{name}Long"] = f"{statistics.mean(statistics.mean(joined(e, k) for k in (6, 7, 8)) for e in evs):.1f}"
+    # Filter gap (defined after the evaluation runs): kept share and the carry group after.
+    for arm, name in FILTER_ARMS:
+        rows = filter_gap_rows(arm, CONFIRMING)
+        after = [r["after"] for r in rows if r["after"] is not None]
+        key = "NoCarry" if arm == "nocarry" else "Agreement"
+        nums[f"gpCarryAfter{key}Mean"] = f"{statistics.mean(after):.1f}"
+        nums[f"gpCarryAfter{key}Lowest"] = f"{min(after):.1f}"
+    kept_nc = [r["kept_carry"] for r in filter_gap_rows("nocarry", CONFIRMING) if r["kept_carry"] is not None]
+    # Not exactly 0: the rule reads the model's piece answers, and a wrong piece sum can let a carry
+    # through (1-4 answers in 10,000 in a few runs). "0.0" holds to one decimal; the maximum is given too.
+    assert f"{max(kept_nc):.1f}" == "0.0", "the no-carry rule kept a visible share of split-1 carries"
+    nums["gpKeptNoCarry"] = "0.0"
+    nums["gpKeptNoCarryMax"] = f"{max(kept_nc):.2f}"
+    ag = carries_per_place("agreement", CONFIRMING)
+    means = [statistics.mean(ag[d]["cut 1"]) for d in LENGTHS if ag[d]["cut 1"]]
+    nums["gpKeptAgreementLow"], nums["gpKeptAgreementHigh"] = f"{min(means):.1f}", f"{max(means):.1f}"
+    natural = [natural_carry(d) for d in LENGTHS]
+    nums["gpNaturalCarryLow"], nums["gpNaturalCarryHigh"] = f"{min(natural):.1f}", f"{max(natural):.1f}"
+    # Build time, all four rounds of every evaluation run: agreement rule over no-carry rule.
+    def build_seconds(arm):
+        return sum(round_cost(addition_run(arm, s, r), r, True, 0.0)["build_s"] for s in CONFIRMING for r in range(1, 5))
+    nums["gpBuildRatio"] = f"{build_seconds('agreement') / build_seconds('nocarry'):.1f}"
+    return nums
 
 
 # ---------------------------------------------------------------- control-arm answers (amendment 23)
@@ -1667,7 +1785,7 @@ def paper_files() -> dict[str, str]:
     out["table_p9b_summary.tex"], out["table_p9b_confusion.tex"] = p9b_tables(conf)
 
     out["table_p9b_cases.tex"] = cases_tex(conf)
-    out["numbers.tex"] = numbers_tex(section4_numbers() | control_numbers())
+    out["numbers.tex"] = numbers_tex(section4_numbers() | section5_numbers() | control_numbers())
     if (ctrl := control_tex()) is not None:
         out["table_control_answers.tex"] = ctrl
     out["table_rise.tex"] = rise_tex(conf)
@@ -1721,16 +1839,19 @@ def paper_files() -> dict[str, str]:
         row = [label, mean_range([100 * e["all"] for e in evs])]
         row += [mean_range([joined(e, k) for e in evs]) for k in (5, 6, 7, 8)]
         rows.append(row)
+    groups = all_groups()
     out["table_exp2.tex"] = tex_table(
-        "exp2", "Longest run, one round: study-set accuracy (%), all groups and joined run lengths 5-8; mean over "
-        "the evaluation runs (lowest-highest).", ["Teacher", "All", "Joined 5", "Joined 6", "Joined 7", "Joined 8"],
-        rows, fit=True)
+        "exp2", f"Longest run, one round: accuracy (%) on the test problems, all groups and crossing runs of 5-8; "
+        f"mean over the evaluation runs (lowest-highest). All pools {NUMBER_WORDS[len(groups)]} groups of "
+        f"1,000 problems, {NUMBER_WORDS[sum(g != 'random_join' for g in groups)]} of which contain a crossing run.",
+        ["Teacher", "All", "Crossing run 5", "Crossing run 6", "Crossing run 7", "Crossing run 8"], rows, fit=True)
 
     out["table_check3.tex"] = check3_tex()
 
+    out["table_withheld_slim.tex"] = withheld_slim_tex()
     out["table_withheld.tex"] = tex_table(
-        "withheld", "Joined runs of 4-8 before and after one round (%), evaluation runs. Withheld: join at the split "
-        "without run-across problems of left part 3-4. Control arm and edges-differ rows are observations.",
+        "withheld-full", "Crossing runs of 4-8 before and after one round (%), evaluation runs. Withheld: join at "
+        "the split without crossing runs of left part 3-4. Control arm and edges-differ rows are observations.",
         ["Arm", "Starting model", "4", "5", "6", "7", "8"], withheld_rows(CONFIRMING), fit=True)
 
     # Section 4: our checks, the baseline as run, and the variant in its favour (confirming runs).
@@ -1770,10 +1891,11 @@ def paper_files() -> dict[str, str]:
         fit=True, rule_before={3})
 
     out["figure_exp1.tex"] = tex_figure("exp1", "figure_exp1.pdf",
-                                        "Accuracy after round 4 (run f: round 3), evaluation runs; mean over the "
+                                        "Accuracy after round 4 (no selection after the no-carry rule: after its one "
+                                        "round, round 3), evaluation runs; mean over the "
                                         "three starting models, range as bars.")
     out["figure_exp2.tex"] = tex_figure("exp2", "figure_exp2.pdf",
-                                        "Longest run: accuracy by joined run length before and after one round, "
+                                        "Longest run: accuracy by crossing-run length before and after one round, "
                                         "evaluation runs.")
     out["figure_checks.tex"] = tex_figure("checks", "figure_checks.pdf",
                                           "Novelty (all cases with an outcome) and confirmed share (cases that "
