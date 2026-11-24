@@ -1,0 +1,5 @@
+{"event": "config", "of": "si-nocarry-weak-s1425-seed2-r2", "teacher": "no_carry", "seed": 2, "only": [[1, 8], [1, 9]]}
+{"event": "case", "round": 1, "digits": 8, "redrawn": {"kept": 767, "check_1": 1.0, "check_2b": 0.5410691003911343, "teachable": 0.3835}, "logged": {"problems": 2000, "kept": 767, "check_1": 1.0, "check_2b": 0.5410691003911343, "teachable": 0.3835}, "seconds": 4.4694976920000045, "start_checkpoint": "start-seed2-authors-s1425/checkpoints/step_001425.pt"}
+{"event": "case", "round": 1, "digits": 9, "redrawn": {"kept": 771, "check_1": 1.0, "check_2b": 0.2438391699092088, "teachable": 0.3855}, "logged": {"problems": 2000, "kept": 771, "check_1": 1.0, "check_2b": 0.2438391699092088, "teachable": 0.3855}, "seconds": 5.393011640999987, "start_checkpoint": "start-seed2-authors-s1425/checkpoints/step_001425.pt"}
+{"event": "round_done", "round": 1}
+{"event": "done"}

@@ -1,0 +1,5 @@
+{"event": "config", "of": "si-nocarry-weak-s2200-seed2", "teacher": "no_carry", "seed": 2, "only": [[1, 8], [1, 9]]}
+{"event": "case", "round": 1, "digits": 8, "redrawn": {"kept": 768, "check_1": 0.8515625, "check_2b": 0.6901041666666666, "teachable": 0.327}, "logged": {"problems": 2000, "kept": 768, "check_1": 0.8515625, "check_2b": 0.6901041666666666, "teachable": 0.327}, "seconds": 4.44689271499999, "start_checkpoint": "start-seed2-authors-s2200/checkpoints/step_002200.pt"}
+{"event": "case", "round": 1, "digits": 9, "redrawn": {"kept": 772, "check_1": 1.0, "check_2b": 0.6308290155440415, "teachable": 0.386}, "logged": {"problems": 2000, "kept": 772, "check_1": 1.0, "check_2b": 0.6308290155440415, "teachable": 0.386}, "seconds": 5.358805330999985, "start_checkpoint": "start-seed2-authors-s2200/checkpoints/step_002200.pt"}
+{"event": "round_done", "round": 1}
+{"event": "done"}

@@ -1,0 +1,5 @@
+{"event": "config", "of": "si-nocarry-weak-s3450-seed3", "teacher": "no_carry", "seed": 3, "only": [[1, 8], [1, 9]]}
+{"event": "case", "round": 1, "digits": 8, "redrawn": {"kept": 718, "check_1": 1.0, "check_2b": 0.6866295264623955, "teachable": 0.359}, "logged": {"problems": 2000, "kept": 718, "check_1": 1.0, "check_2b": 0.6866295264623955, "teachable": 0.359}, "seconds": 4.561110073999998, "start_checkpoint": "start-seed3-authors-s3450/checkpoints/step_003450.pt"}
+{"event": "case", "round": 1, "digits": 9, "redrawn": {"kept": 762, "check_1": 1.0, "check_2b": 0.6207349081364829, "teachable": 0.381}, "logged": {"problems": 2000, "kept": 762, "check_1": 1.0, "check_2b": 0.6207349081364829, "teachable": 0.381}, "seconds": 5.181926150999999, "start_checkpoint": "start-seed3-authors-s3450/checkpoints/step_003450.pt"}
+{"event": "round_done", "round": 1}
+{"event": "done"}

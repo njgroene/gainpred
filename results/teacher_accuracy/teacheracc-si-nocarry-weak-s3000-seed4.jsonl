@@ -1,0 +1,5 @@
+{"event": "config", "of": "si-nocarry-weak-s3000-seed4", "teacher": "no_carry", "seed": 4, "only": [[1, 8], [1, 9]]}
+{"event": "case", "round": 1, "digits": 8, "redrawn": {"kept": 768, "check_1": 0.9986979166666666, "check_2b": 0.7161458333333334, "teachable": 0.3835}, "logged": {"problems": 2000, "kept": 768, "check_1": 0.9986979166666666, "check_2b": 0.7161458333333334, "teachable": 0.3835}, "seconds": 4.439786728000001, "start_checkpoint": "start-seed4-authors-s3000/checkpoints/step_003000.pt"}
+{"event": "case", "round": 1, "digits": 9, "redrawn": {"kept": 716, "check_1": 1.0, "check_2b": 0.04888268156424581, "teachable": 0.358}, "logged": {"problems": 2000, "kept": 716, "check_1": 1.0, "check_2b": 0.04888268156424581, "teachable": 0.358}, "seconds": 5.354241253999987, "start_checkpoint": "start-seed4-authors-s3000/checkpoints/step_003000.pt"}
+{"event": "round_done", "round": 1}
+{"event": "done"}

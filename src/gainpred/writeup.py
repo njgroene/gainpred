@@ -995,6 +995,12 @@ def figures() -> list[str]:
     fig.legend(*ax1.get_legend_handles_labels(), frameon=False, fontsize=7, ncol=2, loc="lower center")
     fig.tight_layout(rect=(0, 0.07, 1, 1)); fig.savefig(OUT / "figures" / "exp3_checks.png", dpi=200); fig.savefig(PAPER / "figure_checks.pdf"); plt.close(fig)
     made.append("exp3_checks.png")
+
+    # Amendment 24: change against novelty (Part A) and teacher accuracy (Part B, once fetched).
+    novelty_gain_figure(plt)
+    made.append("novelty_gain.png")
+    if teacher_accuracy_figure(plt):
+        made.append("teacher_accuracy.png")
     return made
 
 
@@ -1303,7 +1309,8 @@ def section4_numbers() -> dict[str, str]:
 # Which numbers were computed after the evaluation runs (said in numbers.tex, and in the text).
 AFTER_EVALUATION = ("gpCorrectNoBasics", "gpVariant", "gpNoveltyMargin", "gpConfirmedMargin", "gpConfirmedHarmCases",
                     "gpConfirmedPaysCases", "gpRounds", "gpCtrlAfterSeven", "gpWithheldSeven", "gpEdgesFive",
-                    "gpKeptNoCarry", "gpCarryAfter", "gpNaturalCarry")
+                    "gpKeptNoCarry", "gpCarryAfter", "gpNaturalCarry", "gpNovGain", "gpTaNoCarry", "gpTaAgreement",
+                    "gpTaNoSelect", "gpTaWeak", "gpTaFull", "gpTaP")
 
 
 def numbers_tex(nums: dict[str, str]) -> str:
@@ -1824,6 +1831,266 @@ def p9b_tables(conf: list) -> tuple[str, str]:
     return summary, "\n".join(lines) + "\n"
 
 
+# ---------------------------------------------------------------- amendment 24: novelty and teacher accuracy
+#
+# Both analyses were defined after all experiments (protocol amendment 24); nothing here enters a
+# prediction. Part A reads results/p9b_cells.csv only. Part B reads results/teacher_accuracy.csv
+# (gainpred.teacher_accuracy), which holds, per case, how accurate the teacher's kept answers were
+# against the true sum.
+
+KIND_ORDER = ("No-carry rule", "Agreement rule", "No selection", "No selection after the no-carry rule",
+              "Sample and vote", "Weak starting models")
+# Colour AND marker per kind, so the figure reads in greyscale; the weak starting models are hollow.
+KIND_STYLE = {"No-carry rule": (COLOURS[0], "o"), "Agreement rule": (COLOURS[1], "s"),
+              "No selection": (COLOURS[2], "^"), "No selection after the no-carry rule": ("#6250d6", "v"),
+              "Sample and vote": (COLOURS[3], "D"), "Weak starting models": ("#0b0b0b", "X")}
+SOUND = ("No-carry rule", "Agreement rule")
+
+
+def novelty_cases() -> list[dict]:
+    """All 270 evaluation cases (with or without an outcome): kind, novelty, change and error before, in %.
+
+    Novelty is check 1, measured on the teacher's kept answers before the round; change is accuracy
+    after minus before on the test problems of that length, in points; error before = 100 - before.
+    """
+    from gainpred.teacher_accuracy import kind
+    out = []
+    for r in csv.DictReader((RESULTS_DIR / "p9b_cells.csv").open()):
+        if int(r["seed"]) not in CONFIRMING:
+            continue
+        before, after = 100 * float(r["before"]), 100 * float(r["after"])
+        out.append({"run": r["run"], "kind": kind(r["run"], r["teacher"]), "seed": int(r["seed"]),
+                    "round": int(r["round"]), "digits": int(r["digits"]), "novelty": 100 * float(r["check_1"]),
+                    "before": before, "after": after, "change": after - before, "error": 100 - before})
+    return out
+
+
+def within_bound(c: dict, slack: float = 3.0) -> bool:
+    """|change| <= novelty + 3 points: a teacher that repeats the student cannot move it much."""
+    return abs(c["change"]) <= c["novelty"] + slack
+
+
+def sound_between(cases: list[dict]) -> list[dict]:
+    """Sound teachers (no-carry and agreement rules, fully trained models) with novelty strictly in 5-95%."""
+    return sorted((c for c in cases if c["kind"] in SOUND and 5 < c["novelty"] < 95),
+                  key=lambda c: (c["novelty"], c["run"], c["round"], c["digits"]))
+
+
+def novelty_numbers() -> dict[str, str]:
+    """Part A macros (all 'after'); tests/test_amendment24.py checks each against the expected value."""
+    cases = novelty_cases()
+    outside = [c for c in cases if not within_bound(c)]
+    exc = outside[0] if len(outside) == 1 else None
+    sound = [c for c in cases if c["kind"] in SOUND]
+    err_gap = [abs(c["novelty"] - c["error"]) for c in sound]
+    chg_gap = [abs(c["change"] - c["novelty"]) for c in sound]
+    runf = [c for c in cases if c["kind"] == "No selection after the no-carry rule" and c["before"] >= 98]
+    vote = [c for c in cases if c["kind"] == "Sample and vote"]
+    weak = [c for c in cases if c["kind"] == "Weak starting models"]
+    out = {"gpNovGainCases": str(len(cases)), "gpNovGainWithin": str(len(cases) - len(outside))}
+    if exc:
+        out |= {"gpNovGainExcModel": str(exc["seed"]), "gpNovGainExcRound": str(exc["round"]),
+                "gpNovGainExcDigits": str(exc["digits"]), "gpNovGainExcBefore": f"{exc['before']:.1f}",
+                "gpNovGainExcAfter": f"{exc['after']:.1f}", "gpNovGainExcNovelty": f"{exc['novelty']:.1f}"}
+    out |= {"gpNovGainSound": str(len(sound)),
+            "gpNovGainSoundError": str(sum(g <= 5 for g in err_gap)), "gpNovGainSoundErrorGap": f"{max(err_gap):.1f}",
+            "gpNovGainSoundChange": str(sum(g <= 5 for g in chg_gap)), "gpNovGainSoundChangeGap": f"{max(chg_gap):.1f}",
+            "gpNovGainSoundBetween": str(len(sound_between(cases))),
+            "gpNovGainRunfCases": str(len(runf)), "gpNovGainRunfLow": f"{min(c['novelty'] for c in runf):.1f}",
+            "gpNovGainRunfHigh": f"{max(c['novelty'] for c in runf):.1f}",
+            "gpNovGainVote": str(len(vote)), "gpNovGainVoteMax": f"{max(abs(c['change']) for c in vote):.1f}",
+            "gpNovGainWeak": str(len(weak)), "gpNovGainWeakLow": f"{min(c['change'] for c in weak):.1f}",
+            "gpNovGainWeakHigh": f"{max(c['change'] for c in weak):.1f}"}
+    return out
+
+
+def novelty_gain_tex() -> str:
+    rows = [[c["kind"], str(c["seed"]), str(c["round"]), str(c["digits"]), f"{c['error']:.1f}",
+             f"{c['novelty']:.1f}", fmt(c["change"], True)] for c in sound_between(novelty_cases())]
+    return tex_table(
+        "novelty-gain", "The evaluation cases of the no-carry and agreement rules (fully trained starting models) "
+        "with novelty strictly between 5% and 95%, sorted by novelty; computed after the evaluation runs. Student "
+        "error before: 100 minus accuracy before the round on the test problems of that length (%). Novelty: on "
+        "the teacher's kept answers before the round (%). Change: accuracy after minus before (points).",
+        ["Teacher", "Starting model", "Round", "Digits", "Student error before", "Novelty", "Change"], rows)
+
+
+def novelty_gain_figure(plt) -> None:
+    cases = novelty_cases()
+    fig, ax = plt.subplots(figsize=(6.4, 4.2))
+    xs = [0, 100]
+    ax.fill_between(xs, [0, 100], [105, 105], color="#f1f0ec", zorder=0, lw=0)
+    ax.fill([0, 25, 0], [0, -25, -25], color="#f1f0ec", zorder=0, lw=0)  # change < -novelty, inside the axes
+    ax.plot(xs, xs, color="#52514e", lw=1, ls="--", zorder=1)
+    ax.plot(xs, [0, -100], color="#52514e", lw=1, ls="--", zorder=1)
+    for k in KIND_ORDER:
+        colour, marker = KIND_STYLE[k]
+        g = [c for c in cases if c["kind"] == k]
+        hollow = k == "Weak starting models"
+        ax.scatter([c["novelty"] for c in g], [c["change"] for c in g], s=22, marker=marker, zorder=3,
+                   facecolors="none" if hollow else colour, edgecolors=colour if hollow else "white",
+                   linewidths=1.0 if hollow else 0.4, label=f"{k} ({len(g)})")
+    for c in (c for c in cases if not within_bound(c)):
+        ax.scatter([c["novelty"]], [c["change"]], s=200, facecolors="none", edgecolors="#0b0b0b", lw=1.0, zorder=4)
+        ax.annotate(f"No-carry rule, starting model {c['seed']},\nround {c['round']}, {c['digits']} digits",
+                    (c["novelty"], c["change"]), xytext=(c["novelty"] + 6, c["change"] - 4), fontsize=7,
+                    va="top", arrowprops={"arrowstyle": "-", "color": "#52514e", "lw": 0.6})
+    ax.set_xlim(-2, 102); ax.set_ylim(-25, 105)
+    ax.set_xlabel("Novelty (%)"); ax.set_ylabel("Change in accuracy (points)")
+    ax.legend(frameon=False, fontsize=7, loc="upper left")
+    fig.tight_layout(); fig.savefig(OUT / "figures" / "novelty_gain.png", dpi=200)
+    fig.savefig(PAPER / "figure_novelty_gain.pdf"); plt.close(fig)
+
+
+NOVELTY_GAIN_CAPTION = (
+    "Change in accuracy against novelty, one point per evaluation case (all 270, with or without an outcome); "
+    "computed after the evaluation runs. Novelty is measured on the teacher's kept answers before the round; "
+    "accuracy on the test problems of that length, after the round minus before (points). Dashed: change = "
+    "novelty and change = minus novelty, the bound a teacher's novelty sets on how far it can move the student; "
+    "shaded: outside it. Circled: the one case more than 3 points outside.")
+
+
+# Part B: teacher accuracy (one inference run; results/teacher_accuracy.csv).
+
+TA_KINDS = ("No-carry rule", "Agreement rule", "No selection", "No selection after the no-carry rule",
+            "Weak starting models")
+TA_COLUMNS = (("teacher_accuracy", "Teacher accuracy"), ("confirmed_share", "Confirmed share"),
+              ("wrong_confirmed", "Wrong but confirmed"), ("accuracy_confirmed", "Accuracy among confirmed"),
+              ("accuracy_unconfirmed", "Accuracy among unconfirmed"), ("student_accuracy", "Student accuracy"))
+TA_MACRO = {"No-carry rule": "NoCarry", "Agreement rule": "Agreement", "No selection": "NoSelect",
+            "No selection after the no-carry rule": "NoSelectAfter", "Weak starting models": "Weak"}
+TA_QUANTITY = {"teacher_accuracy": "Acc", "confirmed_share": "Confirmed", "wrong_confirmed": "WrongConfirmed",
+               "accuracy_confirmed": "AccConfirmed"}
+
+
+def ta_rows() -> list[dict] | None:
+    from gainpred.teacher_accuracy import CSV, load_rows
+    return load_rows() if CSV.exists() else None
+
+
+def ta_range(rows: list[dict], key: str, decimals: int = 1) -> tuple[str, str, int]:
+    """(lowest, highest, cases with a value) of a share over cases, in %."""
+    v = [100 * r[key] for r in rows if r[key] is not None]
+    return (f"{min(v):.{decimals}f}", f"{max(v):.{decimals}f}", len(v)) if v else ("--", "--", 0)
+
+
+def ta_cell(rows, key) -> str:
+    lo, hi, _ = ta_range(rows, key)
+    return lo if lo == hi else f"{lo}–{hi}"
+
+
+def teacher_accuracy_md() -> str | None:
+    from gainpred.teacher_accuracy import predictions
+    rows = ta_rows()
+    if rows is None:
+        return None
+    lines = ["# How accurate each teacher's kept answers are (amendment 24, Part B)", "",
+             "Generated by `uv run python -m gainpred.writeup`; do not edit by hand. Defined after all experiments; "
+             "inference only (`gainpred.teacher_accuracy`). Evaluation runs (starting models 2-4); every case of the "
+             "teachers that split. Each case's check sample (2,000 problems) was redrawn from the model before the "
+             "round; kept count, novelty and confirmed share reproduce the logged values exactly in every case. "
+             "Shares are of the case's kept answers (%), scored against the true sum; range over cases.", ""]
+    header = ["Teacher", "Cases", *[label for _, label in TA_COLUMNS]]
+    for title, kinds in (("Fully trained starting models", TA_KINDS[:4]), ("Weak starting models (reported separately)",
+                                                                           TA_KINDS[4:])):
+        lines += [f"## {title}", ""]
+        lines += table(header, [[k, str(len(g := [r for r in rows if r["kind"] == k])),
+                                 *[ta_cell(g, key) for key, _ in TA_COLUMNS]] for k in kinds])
+        lines += [""]
+    lines += ["Accuracy among unconfirmed: over cases with at least one unconfirmed kept answer. Student accuracy: the "
+              "student's greedy direct answer on the same kept problems.", "",
+              "## Predictions (recorded before any answer was computed)", "",
+              "P1: in every case from a fully trained starting model, wrong-but-confirmed is at most 2% of kept "
+              "answers. P2: in every case from a fully trained starting model, accuracy among confirmed answers is "
+              "at least 98%.", ""]
+    preds = predictions(rows)
+    prow = []
+    for label, p in preds.items():
+        full = [r for r in rows if r["kind"] != "Weak starting models" and (label == "pooled" or f"seed {r['seed']}" == label)]
+        prow.append([label, str(p["cases"]), "held" if p["p1"] else f"did not hold ({len(p['p1_fail'])} cases)",
+                     ta_range(full, "wrong_confirmed", 2)[1],
+                     "held" if p["p2"] else f"did not hold ({len(p['p2_fail'])} cases)",
+                     ta_range(full, "accuracy_confirmed", 2)[0]])
+    lines += table(["Starting model", "Cases", "P1", "Largest wrong but confirmed", "P2", "Lowest accuracy among confirmed"],
+                   prow)
+    fails = {id(r): r for p in preds.values() for r in p["p1_fail"] + p["p2_fail"]}
+    if fails:
+        lines += ["", "Cases where a prediction failed:", ""]
+        lines += table(["Run", "Round", "Digits", "Kept", "Wrong but confirmed", "Accuracy among confirmed"],
+                       [[r["run"], str(r["round"]), str(r["digits"]), str(r["kept"]), pct(r["wrong_confirmed"]),
+                         pct(r["accuracy_confirmed"])] for r in fails.values()])
+    weak = [r for r in rows if r["kind"] == "Weak starting models"]
+    lines += ["", f"Weak starting models (not part of P1 or P2): wrong but confirmed {ta_cell(weak, 'wrong_confirmed')}%, "
+              f"accuracy among confirmed {ta_cell(weak, 'accuracy_confirmed')}%.", "",
+              "Consistency check (true by logic): teacher accuracy >= confirmed share - wrong but confirmed, in "
+              f"every case: {'yes' if all(r['teacher_accuracy'] is None or r['teacher_accuracy'] >= r['confirmed_share'] - r['wrong_confirmed'] - 1e-12 for r in rows) else 'NO'}.",
+              ""]
+    return "\n".join(lines)
+
+
+def teacher_accuracy_tex() -> str | None:
+    rows = ta_rows()
+    if rows is None:
+        return None
+    body = [[k, str(len(g := [r for r in rows if r["kind"] == k])), *[ta_cell(g, key) for key, _ in TA_COLUMNS[:4]]]
+            for k in TA_KINDS]
+    return tex_table(
+        "teacher-accuracy", "How accurate the teachers' kept answers are, evaluation runs, computed after all "
+        "experiments: share of a case's kept answers (%), lowest to highest over cases, against the true sum. Each "
+        "case's check sample was redrawn from the model before the round and reproduces the logged novelty and "
+        "confirmed share exactly. Wrong but confirmed: wrong, and built identically by at least one other split.",
+        ["Teacher", "Cases", "Teacher accuracy", "Confirmed share", "Wrong but confirmed", "Accuracy among confirmed"],
+        body, rule_before={4}, fit=True)
+
+
+def teacher_accuracy_numbers() -> dict[str, str]:
+    from gainpred.teacher_accuracy import predictions
+    rows = ta_rows()
+    if rows is None:
+        return {}
+    out = {}
+    for k in TA_KINDS:
+        g = [r for r in rows if r["kind"] == k]
+        for key, q in TA_QUANTITY.items():
+            lo, hi, _ = ta_range(g, key)
+            out[f"gpTa{TA_MACRO[k]}{q}Low"], out[f"gpTa{TA_MACRO[k]}{q}High"] = lo, hi
+    p = predictions(rows)["pooled"]
+    full = [r for r in rows if r["kind"] != "Weak starting models"]
+    out |= {"gpTaFullCases": str(p["cases"]),
+            "gpTaPOne": "held" if p["p1"] else "did not hold", "gpTaPOneFail": str(len(p["p1_fail"])),
+            "gpTaPOneWorst": ta_range(full, "wrong_confirmed", 2)[1],
+            "gpTaPTwo": "held" if p["p2"] else "did not hold", "gpTaPTwoFail": str(len(p["p2_fail"])),
+            "gpTaPTwoWorst": ta_range(full, "accuracy_confirmed", 2)[0]}
+    return out
+
+
+def teacher_accuracy_figure(plt) -> bool:
+    rows = ta_rows()
+    if rows is None:
+        return False
+    fig, ax = plt.subplots(figsize=(5.2, 4.2))
+    ax.plot([0, 100], [0, 100], color="#52514e", lw=1, ls="--", zorder=1)
+    for k in TA_KINDS:
+        colour, marker = KIND_STYLE[k]
+        g = [r for r in rows if r["kind"] == k and r["kept"]]
+        hollow = k == "Weak starting models"
+        ax.scatter([100 * r["confirmed_share"] for r in g], [100 * r["teacher_accuracy"] for r in g], s=22,
+                   marker=marker, zorder=3, facecolors="none" if hollow else colour,
+                   edgecolors=colour if hollow else "white", linewidths=1.0 if hollow else 0.4, label=f"{k} ({len(g)})")
+    ax.set_xlim(-2, 102); ax.set_ylim(-2, 102)
+    ax.set_xlabel("Confirmed share (%)"); ax.set_ylabel("Teacher accuracy (%)")
+    ax.legend(frameon=False, fontsize=7, loc="lower right")
+    fig.tight_layout(); fig.savefig(OUT / "figures" / "teacher_accuracy.png", dpi=200)
+    fig.savefig(PAPER / "figure_teacher_accuracy.pdf"); plt.close(fig)
+    return True
+
+
+TEACHER_ACCURACY_CAPTION = (
+    "Teacher accuracy against confirmed share, one point per evaluation case of the teachers that split; computed "
+    "after all experiments. Both are shares of the case's kept answers, accuracy against the true sum. Dashed: "
+    "accuracy = confirmed share. A point lies below the line by at most its share of wrong but confirmed answers.")
+
+
 def paper_files() -> dict[str, str]:
     """Main-text tables and figure wrappers. Confirming runs are the evidence throughout."""
     from gainpred import p9b
@@ -1837,7 +2104,14 @@ def paper_files() -> dict[str, str]:
     out["table_p9b_summary.tex"], out["table_p9b_confusion.tex"] = p9b_tables(conf)
 
     out["table_p9b_cases.tex"] = cases_tex(conf)
-    out["numbers.tex"] = numbers_tex(section4_numbers() | section5_numbers() | control_numbers())
+    out["numbers.tex"] = numbers_tex(section4_numbers() | section5_numbers() | control_numbers()
+                                     | novelty_numbers() | teacher_accuracy_numbers())
+    out["table_novelty_gain.tex"] = novelty_gain_tex()
+    out["figure_novelty_gain.tex"] = tex_figure("novelty-gain", "figure_novelty_gain.pdf", NOVELTY_GAIN_CAPTION)
+    if (ta := teacher_accuracy_tex()) is not None:
+        out["table_teacher_accuracy.tex"] = ta
+        out["figure_teacher_accuracy.tex"] = tex_figure("teacher-accuracy", "figure_teacher_accuracy.pdf",
+                                                        TEACHER_ACCURACY_CAPTION, width=r"0.75\linewidth")
     if (ctrl := control_tex()) is not None:
         out["table_control_answers.tex"] = ctrl
     out["table_rise.tex"] = rise_tex(conf)
@@ -1949,6 +2223,7 @@ def main() -> None:
     for name, build in (("exp1.md", exp1), ("exp2.md", exp2), ("exp3.md", exp3), ("cost.md", cost_md),
                         ("baseline.md", baseline_md), ("filter_gap.md", filter_gap_md),
                         ("check3_addition.md", check3_md), ("control_answers.md", control_md),
+                        ("teacher_accuracy.md", teacher_accuracy_md),
                         ("runs.md", runs_md)):
         text = build()
         if text is None:  # an analysis whose results are not fetched yet
