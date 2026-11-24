@@ -94,7 +94,7 @@ def test_paper_table_and_numbers_match_the_saved_answers(saved):
     text = control_tex()
     assert r"\label{tab:control-answers}" in text and "computed after all experiments" in text
     nums = control_numbers()
-    assert len(nums) == 9
+    assert len(nums) == 10  # nine pooled shares, plus the control arm before the round (gpCtrlBeforeSevenCorrect)
     generated = Path("paper/generated/numbers.tex").read_text()
     for k, v in nums.items():
         assert rf"\newcommand{{\{k}}}{{{v}}}  % after" in generated, k
