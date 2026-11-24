@@ -146,6 +146,9 @@ def main() -> None:
     r.add_argument("--rounds", type=int, default=4)
     r.add_argument("--start-round", type=int, default=0)
     r.add_argument("--build-seconds", type=float, default=0.0)
+    r.add_argument("--steer", choices=["novelty", "frozen", "novelty_rehearse"], default=None,
+                   help="steered rounds (amendment 25)")
+    r.add_argument("--steer-level", type=float, default=0.03)
     rm = sub.add_parser("runs-main", help="longest-run starting training")
     rm.add_argument("run")
     rm.add_argument("--seed", type=int, required=True)
@@ -217,7 +220,8 @@ def main() -> None:
     else:
         spawn("self_improve", args.run, {
             "start": args.start, "teacher": args.teacher, "rounds": args.rounds,
-            "start_round": args.start_round, "build_seconds": args.build_seconds})
+            "start_round": args.start_round, "build_seconds": args.build_seconds,
+            **({"steer": args.steer, "steer_level": args.steer_level} if args.steer else {})})
 
 
 if __name__ == "__main__":

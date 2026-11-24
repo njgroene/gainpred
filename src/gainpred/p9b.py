@@ -75,6 +75,7 @@ MAX_DIGITS_BY_ROUND = (9, 11, 13, 15)
 EASY_PASS = 0.98  # check 0 pass mark (P8)
 LEVEL_1 = 0.50  # check-1 level, decided at decision point 1
 MIN_KEPT_SHARE = 0.05  # under this share of the check sample kept: 'does nothing'
+LEVEL_2B = 0.38  # check-2b level, fixed on the learning runs (recorded 15 November 2026; results/p9b.md)
 FIVE_CUT_DIGITS = range(13, 16)
 
 
@@ -110,6 +111,9 @@ def length_accuracy(acc: dict[str, float], digits: int) -> float | None:
 def included(run: RoundsRun) -> bool:
     # Runs from an authors'-setup model: the starting models themselves are named
     # start-seed<k>-authors[-s<steps>] (the weak ones carry a step count).
+    # Steered runs (amendment 25) are not part of P9b: it is not rescored.
+    if run.config.get("rounds", {}).get("steer"):
+        return False
     return run.name.endswith("-authors") or "-authors" in str(run.config.get("start_run", ""))
 
 
@@ -177,15 +181,24 @@ def score_outcomes(cells: list[Cell]) -> None:
             c.outcome = "unclassified"
 
 
-def verdict_of(c: Cell, level_2b: float, level_1: float = LEVEL_1, use_check_0: bool = True) -> str:
-    """The frozen verdict rule (P9b). ``use_check_0=False`` only for the sensitivity line (decision point 2)."""
-    if use_check_0 and c.check_0 is False:
+def verdict(check_0: bool | None, kept_share: float | None, check_1: float | None, check_2b: float | None,
+            level_2b: float = LEVEL_2B, level_1: float = LEVEL_1, use_check_0: bool = True) -> str:
+    """The frozen verdict rule (P9b), as a pure function of the check values, in the frozen order:
+    check 0 failed -> does harm; under 5% kept, or check 1 missing or under its level -> does
+    nothing; check 2b under its level -> does harm; otherwise pays off. Also used to steer the
+    rounds of amendment 25's arm (c) (``gainpred.rounds.steer_decision``)."""
+    if use_check_0 and check_0 is False:
         return "does harm"
-    if (c.kept_share is not None and c.kept_share < MIN_KEPT_SHARE) or c.check_1 is None or c.check_1 < level_1:
+    if (kept_share is not None and kept_share < MIN_KEPT_SHARE) or check_1 is None or check_1 < level_1:
         return "does nothing"
-    if c.check_2b is not None and c.check_2b < level_2b:
+    if check_2b is not None and check_2b < level_2b:
         return "does harm"
     return "pays off"
+
+
+def verdict_of(c: Cell, level_2b: float, level_1: float = LEVEL_1, use_check_0: bool = True) -> str:
+    """The frozen verdict rule (P9b). ``use_check_0=False`` only for the sensitivity line (decision point 2)."""
+    return verdict(c.check_0, c.kept_share, c.check_1, c.check_2b, level_2b, level_1, use_check_0)
 
 
 def give_verdicts(cells: list[Cell], level_2b: float, level_1: float = LEVEL_1) -> None:

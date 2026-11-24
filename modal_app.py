@@ -145,8 +145,10 @@ def main(
 
 
 @app.function(image=image, gpu=GPU, volumes={str(VOLUME_PATH): volume}, timeout=12 * 60 * 60)
-def self_improve(run: str, start: str, teacher: str, rounds: int, start_round: int, build_seconds: float) -> None:
-    """P3 self-improvement rounds on one GPU. Output goes to /vol/runs/<run>/."""
+def self_improve(run: str, start: str, teacher: str, rounds: int, start_round: int, build_seconds: float,
+                 steer: str | None = None, steer_level: float = 0.03) -> None:
+    """P3 self-improvement rounds on one GPU. Output goes to /vol/runs/<run>/.
+    ``steer``: steered rounds (amendment 25; None = the fixed schedule)."""
     # A warm (reused) container keeps the volume as it was when the container started;
     # reload so runs that finished since then (our starting point) are visible.
     volume.reload()
@@ -159,7 +161,8 @@ def self_improve(run: str, start: str, teacher: str, rounds: int, start_round: i
     from_round = start_round or None  # 0 means "from a starting-training run"
     # Bigger generation batches than the default: a GPU answers 4,096 short prompts at once easily.
     cfg = RoundConfig(teacher=teacher, rounds=rounds, seed=start_seed(runs_dir, start, from_round),
-                      solver_batch_size=4_096, build_seconds_per_length=build_seconds or None)
+                      solver_batch_size=4_096, build_seconds_per_length=build_seconds or None,
+                      steer=steer or None, steer_level=steer_level)
     try:
         self_improve(cfg, run, start, data_dir=VOLUME_PATH / "data" / "addition",
                      device=torch.device("cuda"), runs_dir=runs_dir, start_round=from_round)
@@ -169,7 +172,7 @@ def self_improve(run: str, start: str, teacher: str, rounds: int, start_round: i
 
 @app.local_entrypoint()
 def rounds(run: str, start: str, teacher: str = "no_carry", rounds: int = 4, start_round: int = 0,
-           build_seconds: float = 0) -> None:
+           build_seconds: float = 0, steer: str = "", steer_level: float = 0.03) -> None:
     """Self-improvement rounds from a run already on the volume.
 
     ``--start-round K`` continues from round K of the self-improvement run
@@ -180,7 +183,7 @@ def rounds(run: str, start: str, teacher: str = "no_carry", rounds: int = 4, sta
     if remote != json.loads(Path("data/addition/manifest.json").read_text()):
         raise SystemExit("cloud datasets differ from local ones (fingerprints in manifest.json); not training")
     print("datasets match local fingerprints")  # gainpred.launch waits for this line
-    self_improve.remote(run, start, teacher, rounds, start_round, build_seconds)
+    self_improve.remote(run, start, teacher, rounds, start_round, build_seconds, steer or None, steer_level)
     print(f"done. download with: uv run modal volume get gainpred runs/{run} runs/")
 
 
