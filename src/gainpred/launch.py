@@ -176,6 +176,10 @@ def main() -> None:
     rp.add_argument("run")
     ca = sub.add_parser("control-answers", help="amendment 23: longest-run models answer the study test set")
     ca.add_argument("run")
+    ta = sub.add_parser("teacher-accuracy", help="amendment 24: record every answer of a run's check samples")
+    ta.add_argument("run")
+    ta.add_argument("--of", required=True, help="the original run whose check samples are redrawn")
+    ta.add_argument("--only", required=True, help="these cases, round:digits comma-separated")
     sub.add_parser("status", help="state of every spawned run")
     args = parser.parse_args()
 
@@ -199,6 +203,9 @@ def main() -> None:
     elif args.command == "check3":
         only = [[int(x) for x in c.split(":")] for c in args.only.split(",") if c] or None
         spawn("check3", args.run, {"of": args.of, "three_cuts": args.three_cuts, "only": only})
+    elif args.command == "teacher-accuracy":
+        spawn("teacher_accuracy", args.run, {"of": args.of, "only": [[int(x) for x in c.split(":")]
+                                                                    for c in args.only.split(",")]})
     elif args.command == "reproduction":
         spawn("reproduction", args.run, {})
     elif args.command == "control-answers":

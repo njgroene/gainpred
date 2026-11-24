@@ -321,3 +321,20 @@ def control_answers(run: str) -> None:
         answer_all(run, VOLUME_PATH / "runs", VOLUME_PATH / "data" / "longest_run", torch.device("cuda"))
     finally:
         volume.commit()
+
+
+@app.function(image=image, gpu=GPU, volumes={str(VOLUME_PATH): volume}, timeout=2 * 60 * 60)
+def teacher_accuracy(run: str, of: str, only: list[list[int]]) -> None:
+    """Protocol amendment 24, Part B: redraw the check samples of run ``of``'s cases (as check 3
+    does), with the model before each round, and record every answer. Inference only."""
+    volume.reload()  # see self_improve
+    import torch
+
+    from gainpred.teacher_accuracy import redraw
+
+    print(f"GPU: {torch.cuda.get_device_name()}  torch {torch.__version__}")
+    try:
+        redraw(of, run, VOLUME_PATH / "runs", VOLUME_PATH / "data" / "addition", torch.device("cuda"),
+               only=[tuple(c) for c in only])
+    finally:
+        volume.commit()

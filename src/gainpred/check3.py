@@ -167,7 +167,15 @@ def _nothing():
     yield
 
 
-def _redraw_rounds(cfg, config, src, runs_dir, data_dir, device, teacher, first_round, logged, finished, only, log):
+def redrawn_rounds(cfg, config, src, runs_dir, data_dir, device, first_round, logged, finished, only):
+    """Per round of the original run: (round, start checkpoint, solver, [(digits, check sample), ...]).
+
+    The model is the one *before* the round's training. Every logged length's sample is drawn
+    in order (so the seeded stream and the excluded problems are those of the original run),
+    then narrowed to ``only`` (a set of (round, digits), or None for all). Rounds in
+    ``finished`` or with nothing left to compute are skipped. Shared with
+    ``gainpred.teacher_accuracy`` (amendment 24), which redraws the same samples.
+    """
     from gainpred.cuts import HARD_DIGITS
     from gainpred.rounds import MAX_DIGITS_BY_ROUND, ModelSolver, draw_fresh, known_problems, rng_for, \
         start_checkpoint_of
@@ -187,9 +195,16 @@ def _redraw_rounds(cfg, config, src, runs_dir, data_dir, device, teacher, first_
                  else sorted((src / f"round_{k - 1}" / "checkpoints").glob("step_*.pt"))[-1])
         model = load_model(start, device)
         solver = ModelSolver(model, device, cfg.solver_batch_size, seed=cfg.seed * 1_000 + k)
-        for d in lengths:
+        yield k, start, solver, [(d, samples[d]) for d in lengths]
+        del model, solver
+
+
+def _redraw_rounds(cfg, config, src, runs_dir, data_dir, device, teacher, first_round, logged, finished, only, log):
+    for k, start, solver, cells in redrawn_rounds(cfg, config, src, runs_dir, data_dir, device, first_round,
+                                                  logged, finished, only):
+        for d, sample in cells:
             t0 = time.monotonic()
-            pairs = teacher_with_pieces(teacher, samples[d], solver)
+            pairs = teacher_with_pieces(teacher, sample, solver)
             report = run_checks([dec for dec, _ in pairs], solver)
             if device.type == "cuda":
                 torch.cuda.synchronize()
@@ -203,4 +218,3 @@ def _redraw_rounds(cfg, config, src, runs_dir, data_dir, device, teacher, first_
                                                            "check_2_kept", "teachable")},
                  "seconds": time.monotonic() - t0, "start_checkpoint": str(start.relative_to(runs_dir))})
         log({"event": "round_done", "round": k})
-        del model
