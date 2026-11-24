@@ -1,0 +1,64 @@
+{"event": "eval", "round": 0, "set": "easy", "accuracy": {"3": 1.0, "4": 1.0, "5": 1.0, "6": 1.0, "7": 1.0, "all": 1.0}}
+{"event": "eval", "round": 0, "set": "study", "accuracy": {"8/no-carry": 0.092, "8/carry": 0.081, "9/no-carry": 0.0, "9/carry": 0.0, "10/no-carry": 0.0, "10/carry": 0.0, "11/no-carry": 0.0, "11/carry": 0.0, "12/no-carry": 0.0, "12/carry": 0.0, "13/no-carry": 0.0, "13/carry": 0.0, "14/no-carry": 0.0, "14/carry": 0.0, "15/no-carry": 0.0, "15/carry": 0.0, "all": 0.0108125}}
+{"event": "eval", "round": 0, "set": "study5", "accuracy": {"13/no-carry": 0.0, "13/carry": 0.0, "14/no-carry": 0.0, "14/carry": 0.0, "15/no-carry": 0.0, "15/carry": 0.0, "all": 0.0}}
+{"event": "steer", "round": 1, "digits": 8, "decision": "build"}
+{"event": "steer", "round": 1, "digits": 9, "decision": "build"}
+{"event": "build", "round": 1, "digits": 8, "drawn": 28611, "kept": 10000, "shortfall": 0, "kept_share": 0.3495159204501765, "kept_right": 1.0, "stopped_by_time": false, "carries_by_place": [4429, 4635, 2697, 2233, 2858, 4796, 4962, 6068], "seconds": 38.873071065000005, "generated_tokens": 1001528}
+{"event": "build", "round": 1, "digits": 9, "drawn": 28712, "kept": 10000, "shortfall": 0, "kept_share": 0.3482864307606576, "kept_right": 1.0, "stopped_by_time": false, "carries_by_place": [4484, 4886, 4564, 2724, 2206, 2782, 4674, 4955, 5994], "seconds": 44.481537187, "generated_tokens": 1100392}
+{"event": "replay", "round": 1, "problems": 25000, "readable": 25000, "right": 0.99988}
+{"event": "eval", "round": 1, "set": "easy", "accuracy": {"3": 1.0, "4": 1.0, "5": 1.0, "6": 1.0, "7": 1.0, "all": 1.0}}
+{"event": "eval", "round": 1, "set": "study", "accuracy": {"8/no-carry": 1.0, "8/carry": 0.997, "9/no-carry": 1.0, "9/carry": 0.997, "10/no-carry": 0.061, "10/carry": 0.073, "11/no-carry": 0.0, "11/carry": 0.0, "12/no-carry": 0.0, "12/carry": 0.0, "13/no-carry": 0.0, "13/carry": 0.0, "14/no-carry": 0.0, "14/carry": 0.0, "15/no-carry": 0.0, "15/carry": 0.0, "all": 0.258}}
+{"event": "eval", "round": 1, "set": "study5", "accuracy": {"13/no-carry": 0.0, "13/carry": 0.0, "14/no-carry": 0.0, "14/carry": 0.0, "15/no-carry": 0.0, "15/carry": 0.0, "all": 0.0}}
+{"event": "round_done", "round": 1, "examples": 45000, "seconds": {"build": 90.616484342}, "generated_tokens": 2267034}
+{"event": "steer", "round": 2, "digits": 8, "decision": "rehearse"}
+{"event": "steer", "round": 2, "digits": 9, "decision": "rehearse"}
+{"event": "steer", "round": 2, "digits": 10, "decision": "build"}
+{"event": "steer", "round": 2, "digits": 11, "decision": "build"}
+{"event": "build", "round": 2, "digits": 10, "drawn": 29099, "kept": 10000, "shortfall": 0, "kept_share": 0.34365442111412764, "kept_right": 1.0, "stopped_by_time": false, "carries_by_place": [4535, 4932, 4686, 2655, 2251, 2843, 4754, 4957, 5066, 5992], "seconds": 49.20481930599999, "generated_tokens": 1200523}
+{"event": "build", "round": 2, "digits": 11, "drawn": 28862, "kept": 10000, "shortfall": 0, "kept_share": 0.346476335666274, "kept_right": 1.0, "stopped_by_time": false, "carries_by_place": [4469, 5002, 5027, 4656, 2659, 2247, 2876, 4852, 4976, 4977, 6079], "seconds": 55.15710730000001, "generated_tokens": 1292618}
+{"event": "replay", "round": 2, "problems": 25000, "readable": 25000, "right": 0.99996}
+{"event": "rehearse", "round": 2, "digits": 8, "examples": 10000, "from_round": 1}
+{"event": "rehearse", "round": 2, "digits": 9, "examples": 10000, "from_round": 1}
+{"event": "eval", "round": 2, "set": "easy", "accuracy": {"3": 1.0, "4": 1.0, "5": 1.0, "6": 1.0, "7": 1.0, "all": 1.0}}
+{"event": "eval", "round": 2, "set": "study", "accuracy": {"8/no-carry": 1.0, "8/carry": 0.999, "9/no-carry": 1.0, "9/carry": 0.996, "10/no-carry": 1.0, "10/carry": 0.998, "11/no-carry": 1.0, "11/carry": 0.996, "12/no-carry": 0.826, "12/carry": 0.818, "13/no-carry": 0.0, "13/carry": 0.0, "14/no-carry": 0.0, "14/carry": 0.0, "15/no-carry": 0.0, "15/carry": 0.0, "all": 0.6020625}}
+{"event": "eval", "round": 2, "set": "study5", "accuracy": {"13/no-carry": 0.0, "13/carry": 0.0, "14/no-carry": 0.0, "14/carry": 0.0, "15/no-carry": 0.0, "15/carry": 0.0, "all": 0.0}}
+{"event": "round_done", "round": 2, "examples": 65000, "seconds": {"build": 111.55234527599998}, "generated_tokens": 2658160}
+{"event": "steer", "round": 3, "digits": 8, "decision": "rehearse"}
+{"event": "steer", "round": 3, "digits": 9, "decision": "rehearse"}
+{"event": "steer", "round": 3, "digits": 10, "decision": "rehearse"}
+{"event": "steer", "round": 3, "digits": 11, "decision": "rehearse"}
+{"event": "steer", "round": 3, "digits": 12, "decision": "build"}
+{"event": "steer", "round": 3, "digits": 13, "decision": "build"}
+{"event": "build", "round": 3, "digits": 12, "drawn": 28861, "kept": 10000, "shortfall": 0, "kept_share": 0.3464883406673365, "kept_right": 0.9999, "stopped_by_time": false, "carries_by_place": [4507, 4949, 5008, 4649, 2660, 2189, 2841, 4703, 4966, 5030, 5084, 5974], "seconds": 60.372546683999985, "generated_tokens": 1379541}
+{"event": "build", "round": 3, "digits": 13, "drawn": 28098, "kept": 10000, "shortfall": 0, "kept_share": 0.35589721688376397, "kept_right": 1.0, "stopped_by_time": false, "carries_by_place": [4488, 4840, 4851, 4958, 4775, 2973, 2994, 4691, 4904, 4934, 4937, 4985, 6188], "seconds": 104.51711784500003, "generated_tokens": 2531482}
+{"event": "replay", "round": 3, "problems": 25000, "readable": 25000, "right": 0.99988}
+{"event": "rehearse", "round": 3, "digits": 8, "examples": 10000, "from_round": 1}
+{"event": "rehearse", "round": 3, "digits": 9, "examples": 10000, "from_round": 1}
+{"event": "rehearse", "round": 3, "digits": 10, "examples": 10000, "from_round": 2}
+{"event": "rehearse", "round": 3, "digits": 11, "examples": 10000, "from_round": 2}
+{"event": "eval", "round": 3, "set": "easy", "accuracy": {"3": 1.0, "4": 1.0, "5": 0.999, "6": 1.0, "7": 1.0, "all": 0.9998}}
+{"event": "eval", "round": 3, "set": "study", "accuracy": {"8/no-carry": 1.0, "8/carry": 0.999, "9/no-carry": 1.0, "9/carry": 1.0, "10/no-carry": 1.0, "10/carry": 0.998, "11/no-carry": 1.0, "11/carry": 1.0, "12/no-carry": 1.0, "12/carry": 1.0, "13/no-carry": 1.0, "13/carry": 1.0, "14/no-carry": 0.957, "14/carry": 0.942, "15/no-carry": 0.03, "15/carry": 0.036, "all": 0.872625}}
+{"event": "eval", "round": 3, "set": "study5", "accuracy": {"13/no-carry": 0.999, "13/carry": 0.996, "14/no-carry": 0.964, "14/carry": 0.962, "15/no-carry": 0.039, "15/carry": 0.043, "all": 0.6671666666666667}}
+{"event": "round_done", "round": 3, "examples": 85000, "seconds": {"build": 172.071585346}, "generated_tokens": 4076019}
+{"event": "steer", "round": 4, "digits": 8, "decision": "rehearse"}
+{"event": "steer", "round": 4, "digits": 9, "decision": "rehearse"}
+{"event": "steer", "round": 4, "digits": 10, "decision": "rehearse"}
+{"event": "steer", "round": 4, "digits": 11, "decision": "rehearse"}
+{"event": "steer", "round": 4, "digits": 12, "decision": "rehearse"}
+{"event": "steer", "round": 4, "digits": 13, "decision": "rehearse"}
+{"event": "steer", "round": 4, "digits": 14, "decision": "build"}
+{"event": "steer", "round": 4, "digits": 15, "decision": "build"}
+{"event": "build", "round": 4, "digits": 14, "drawn": 39402, "kept": 10000, "shortfall": 0, "kept_share": 0.2537942236434699, "kept_right": 0.9999, "stopped_by_time": false, "carries_by_place": [4427, 4839, 4477, 4218, 4322, 4169, 2546, 4104, 4371, 4362, 4346, 5026, 5055, 6033], "seconds": 151.60279620100005, "generated_tokens": 3702143}
+{"event": "build", "round": 4, "digits": 15, "drawn": 58256, "kept": 10000, "shortfall": 0, "kept_share": 0.17165613842351002, "kept_right": 1.0, "stopped_by_time": false, "carries_by_place": [4493, 4674, 3992, 3903, 3778, 3814, 3819, 3920, 3822, 3730, 3744, 4059, 4919, 4988, 6029], "seconds": 243.59841569200012, "generated_tokens": 5949398}
+{"event": "replay", "round": 4, "problems": 25000, "readable": 25000, "right": 0.9998}
+{"event": "rehearse", "round": 4, "digits": 8, "examples": 10000, "from_round": 1}
+{"event": "rehearse", "round": 4, "digits": 9, "examples": 10000, "from_round": 1}
+{"event": "rehearse", "round": 4, "digits": 10, "examples": 10000, "from_round": 2}
+{"event": "rehearse", "round": 4, "digits": 11, "examples": 10000, "from_round": 2}
+{"event": "rehearse", "round": 4, "digits": 12, "examples": 10000, "from_round": 3}
+{"event": "rehearse", "round": 4, "digits": 13, "examples": 10000, "from_round": 3}
+{"event": "eval", "round": 4, "set": "easy", "accuracy": {"3": 1.0, "4": 1.0, "5": 1.0, "6": 1.0, "7": 1.0, "all": 1.0}}
+{"event": "eval", "round": 4, "set": "study", "accuracy": {"8/no-carry": 1.0, "8/carry": 0.997, "9/no-carry": 1.0, "9/carry": 1.0, "10/no-carry": 1.0, "10/carry": 0.998, "11/no-carry": 1.0, "11/carry": 1.0, "12/no-carry": 1.0, "12/carry": 0.999, "13/no-carry": 1.0, "13/carry": 1.0, "14/no-carry": 1.0, "14/carry": 1.0, "15/no-carry": 1.0, "15/carry": 1.0, "all": 0.999625}}
+{"event": "eval", "round": 4, "set": "study5", "accuracy": {"13/no-carry": 1.0, "13/carry": 0.998, "14/no-carry": 0.999, "14/carry": 1.0, "15/no-carry": 1.0, "15/carry": 0.998, "all": 0.9991666666666666}}
+{"event": "round_done", "round": 4, "examples": 105000, "seconds": {"build": 402.3858687120003}, "generated_tokens": 9816760}
+{"event": "done"}

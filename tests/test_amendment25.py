@@ -16,9 +16,7 @@ def ready():
 
 
 def test_identity_check_passes_for_every_steered_run(ready):
-    for arm in st.arms_present():
-        if arm == "fixed":
-            continue
+    for arm in [a for a in st.arms_present() if a in ("steer3", "frozen", "rehearse")]:  # amendment 25's arms
         for s in st.SEEDS:
             ok, diffs = st.identity(arm, s)
             assert ok is not False, diffs

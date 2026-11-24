@@ -42,9 +42,11 @@ from gainpred.report import RESULTS_DIR, RoundsRun
 
 SEEDS = (2, 3, 4)
 ARMS = {"fixed": "si-agreement-seed{s}-authors", "steer3": "si-agreement-steer3-seed{s}",
-        "frozen": "si-agreement-steerfrozen-seed{s}", "rehearse": "si-agreement-steer3r-seed{s}"}
+        "frozen": "si-agreement-steerfrozen-seed{s}", "rehearse": "si-agreement-steer3r-seed{s}",
+        "schedule": "si-agreement-schedule-seed{s}"}
 ARM_LABELS = {"fixed": "Fixed schedule", "steer3": "Steered, novelty at least 3%",
-              "frozen": "Steered, rule as frozen", "rehearse": "Steered, novelty at least 3%, with rehearsal"}
+              "frozen": "Steered, rule as frozen", "rehearse": "Steered, novelty at least 3%, with rehearsal",
+              "schedule": "Schedule only"}
 STEERED = ("steer3", "frozen", "rehearse")
 HARD = range(8, 16)
 EASY = range(3, 8)
@@ -59,13 +61,37 @@ def run_name(arm: str, seed: int) -> str:
     return ARMS[arm].format(s=seed)
 
 
+LEARNING = (0, 1)
+ALL_SEEDS = (0, 1, 2, 3, 4)
+
+
+def stitched_fixed(seed: int) -> RoundsRun | None:
+    """The fixed arm for starting points 0-1 (amendment 26, arm e): rounds 1-2 of
+    ``si-agreement-seedN-authors``, then rounds 3-4 of ``si-agreement-seedN-5cut``, which continues
+    from its round 2 with five cuts at 13-15 (as the confirming runs). Evaluations of rounds 0-1 come
+    from the first run, of rounds 2-4 from the second (its round-2 evaluation is of the same model and
+    adds the five-cut test set). ``round_dirs`` says which run holds each round's training log."""
+    a, b = (RESULTS_DIR / "runs" / f"si-agreement-seed{seed}-{x}" for x in ("authors", "5cut"))
+    if not ((a / "rounds.jsonl").exists() and (b / "rounds.jsonl").exists()):
+        return None
+    first, second = RoundsRun.load(a), RoundsRun.load(b)
+    events = ([e for e in first.events if e.get("round", 0) <= (1 if e["event"] == "eval" else 2)
+               and e["event"] != "done"] +
+              [e for e in second.events if e["event"] in ("eval", "done") or e.get("round", 0) >= 3])
+    run = RoundsRun(f"si-agreement-seed{seed}-authors+5cut", first.config, events)
+    run.round_dirs = {1: first.name, 2: first.name, 3: second.name, 4: second.name}
+    return run
+
+
 def load(arm: str, seed: int) -> RoundsRun | None:
+    if arm == "fixed" and seed in LEARNING:
+        return stitched_fixed(seed)
     d = RESULTS_DIR / "runs" / run_name(arm, seed)
     return RoundsRun.load(d) if (d / "rounds.jsonl").exists() else None
 
 
-def arms_present() -> list[str]:
-    return [a for a in ARMS if all(load(a, s) is not None and load(a, s).of("done") for s in SEEDS)]
+def arms_present(seeds=SEEDS) -> list[str]:
+    return [a for a in ARMS if all(load(a, s) is not None and load(a, s).of("done") for s in seeds)]
 
 
 # ---------------------------------------------------------------- accuracy
@@ -105,6 +131,7 @@ def round_rows(arm: str, seed: int) -> list[dict]:
     run, fixed = load(arm, seed), load("fixed", seed)
     acc, acc_fixed = accuracy_by_round(run), accuracy_by_round(fixed)
     builds = {(e["round"], e["digits"]): e for e in run.of("build")}
+    rehearsed = {(e["round"], e["digits"]) for e in run.of("rehearse")}
     checks = {(e["round"], e["digits"]): e for e in run.of("checks") + run.of("closing_checks")}
     steer = decisions(run)
     rows = []
@@ -115,6 +142,7 @@ def round_rows(arm: str, seed: int) -> list[dict]:
             c, b, st = checks.get((rnd, d), {}), builds.get((rnd, d)), steer.get((rnd, d))
             rows.append({"arm": arm, "seed": seed, "round": rnd, "repair": rnd > 4, "digits": d,
                          "decision": st["decision"] if st else "teach", "verdict": (st or {}).get("verdict"),
+                         "rebuilt": b is not None, "rehearsed": (rnd, d) in rehearsed,
                          "novelty": c.get("check_1"),
                          "kept_share": c["kept"] / c["problems"] if c.get("problems") else None,
                          "confirmed": c.get("check_2b"), "before": acc[rnd - 1][d], "after": acc[rnd][d],
@@ -143,7 +171,8 @@ def seconds(arm: str, seed: int) -> dict[str, float]:
         out["build"] += b
         out["replay"] += e["seconds"].get("build", 0.0) - b
         out["checks"] += e["seconds"].get("checks", 0.0)
-        log = RESULTS_DIR / "runs" / run.name / f"round_{e['round']}" / "log.jsonl"
+        log = RESULTS_DIR / "runs" / getattr(run, "round_dirs", {}).get(e["round"], run.name) / \
+            f"round_{e['round']}" / "log.jsonl"
         if log.exists() and not e.get("skipped"):
             out["train"] += json.loads(log.read_text().splitlines()[-1]).get("seconds", {}).get("train", 0.0)
     for e in run.of("closing_done"):
@@ -168,8 +197,14 @@ def identity(arm: str, seed: int) -> tuple[bool | None, list[str]]:
         return None, []
     theirs = {e["digits"]: e for e in fixed.of("build") if e["round"] == 1}
     diffs = [f"{run.name} round 1, {d} digits, {k}: {mine[d][k]} vs fixed {theirs[d][k]}"
-             for d in (8, 9) for k in IDENTITY_KEYS if mine[d][k] != theirs[d][k]]
+             for d in (8, 9) for k in IDENTITY_KEYS if k in theirs[d] and mine[d][k] != theirs[d][k]]
     return not diffs, diffs
+
+
+def identity_not_compared(arm: str, seed: int) -> list[str]:
+    """Identity keys the fixed run did not log (the older runs of starting points 0-1)."""
+    fixed = load("fixed", seed)
+    return sorted({k for e in fixed.of("build") if e["round"] == 1 for k in IDENTITY_KEYS if k not in e})
 
 
 CHECK_KEYS = ("problems", "kept", "check_1", "teachable", "check_2_kept", "check_2b")
@@ -185,8 +220,8 @@ def check_differences(arm: str, seed: int) -> list[str]:
 
 # ---------------------------------------------------------------- measures and predictions
 
-def kept_total(arm: str) -> int:
-    return sum(e["kept"] for s in SEEDS for e in load(arm, s).of("build"))
+def kept_total(arm: str, seeds=SEEDS) -> int:
+    return sum(e["kept"] for s in seeds for e in load(arm, s).of("build"))
 
 
 def taught(arm: str, seed: int, repairs: bool = False) -> int:
@@ -204,34 +239,34 @@ def gaps(arm: str, seed: int, lengths) -> dict[int, float]:
     return {d: fixed[d] - mine[d] for d in lengths}
 
 
-def falls(arm: str) -> list[dict]:
+def falls(arm: str, seeds=SEEDS) -> list[dict]:
     """Every skipped (round, length) with its fall, before minus after (points)."""
-    return [{**r, "fall": r["before"] - r["after"]} for s in SEEDS for r in round_rows(arm, s)
+    return [{**r, "fall": r["before"] - r["after"]} for s in seeds for r in round_rows(arm, s)
             if r["decision"] == "skip"]
 
 
-def worst_fall(arm: str) -> dict | None:
-    f = falls(arm)
+def worst_fall(arm: str, seeds=SEEDS) -> dict | None:
+    f = falls(arm, seeds)
     return max(f, key=lambda r: r["fall"]) if f else None
 
 
-def s1(arm: str = "steer3") -> dict:
+def s1(arm: str = "steer3", seeds=SEEDS) -> dict:
     out = {}
-    for s in SEEDS:
+    for s in seeds:
         hard, easy = gaps(arm, s, HARD), gaps(arm, s, EASY)
         out[s] = {"held": max(hard.values()) <= MARGIN and max(easy.values()) <= MARGIN,
                   "worst_hard": max(hard.values()), "worst_hard_digits": max(hard, key=hard.get),
                   "worst_easy": max(easy.values()), "worst_easy_digits": max(easy, key=easy.get)}
-    out["pooled"] = {"held": all(out[s]["held"] for s in SEEDS),
-                     "worst_hard": max(out[s]["worst_hard"] for s in SEEDS),
-                     "worst_easy": max(out[s]["worst_easy"] for s in SEEDS)}
+    out["pooled"] = {"held": all(out[s]["held"] for s in seeds),
+                     "worst_hard": max(out[s]["worst_hard"] for s in seeds),
+                     "worst_easy": max(out[s]["worst_easy"] for s in seeds)}
     return out
 
 
-def s2(arm: str = "steer3") -> dict:
-    mine, fixed = kept_total(arm), kept_total("fixed")
+def s2(arm: str = "steer3", seeds=SEEDS) -> dict:
+    mine, fixed = kept_total(arm, seeds), kept_total("fixed", seeds)
     per = {s: (sum(e["kept"] for e in load(arm, s).of("build")),
-               sum(e["kept"] for e in load("fixed", s).of("build"))) for s in SEEDS}
+               sum(e["kept"] for e in load("fixed", s).of("build"))) for s in seeds}
     return {"kept": mine, "fixed": fixed, "share": mine / fixed, "held": mine <= fixed / 2, "per_seed": per}
 
 
@@ -249,24 +284,78 @@ def write_csv() -> None:
     print(f"{CSV}: {len(rows)} rows")
 
 
+# ---------------------------------------------------------------- amendment 26: rehearsal
+
+REH_CSV = RESULTS_DIR / "steer_rehearsal.csv"
+REH_ARMS = ("fixed", "rehearse", "schedule")
+
+
+def not_rebuilt_falls(arm: str, seeds) -> list[dict]:
+    """Every (round, length) already taught and not rebuilt in that round (its stored answers
+    rehearsed), with its fall, before minus after (points). T3 asks that none exceed 3."""
+    return [{**r, "fall": r["before"] - r["after"]} for s in seeds for r in round_rows(arm, s)
+            if r["rehearsed"] and not r["rebuilt"]]
+
+
+def worst_not_rebuilt_fall(arm: str, seeds) -> dict | None:
+    f = not_rebuilt_falls(arm, seeds)
+    return max(f, key=lambda r: r["fall"]) if f else None
+
+
+def t_predictions() -> dict:
+    """T1-T3 of amendment 26, arm (f) on starting points 0-1."""
+    t1, t2 = s1("rehearse", LEARNING), s2("rehearse", LEARNING)
+    falls_ = not_rebuilt_falls("rehearse", LEARNING)
+    t3 = {s: [r for r in falls_ if r["seed"] == s] for s in LEARNING}
+    t3_out = {s: {"held": all(r["fall"] <= MARGIN for r in rs),
+                  "worst": max((r for r in rs), key=lambda r: r["fall"], default=None)} for s, rs in t3.items()}
+    t3_out["pooled"] = {"held": all(v["held"] for v in t3_out.values()),
+                        "worst": max(falls_, key=lambda r: r["fall"], default=None)}
+    return {"T1": t1, "T2": t2, "T3": t3_out}
+
+
+def decision_differences(seed: int) -> list[dict]:
+    """(round, length) where the steered arm and schedule only differ in whether answers were built."""
+    a = {(r["round"], r["digits"]): r for r in round_rows("rehearse", seed)}
+    b = {(r["round"], r["digits"]): r for r in round_rows("schedule", seed)}
+    return [{"seed": seed, "round": k[0], "digits": k[1], "steered": a[k]["rebuilt"] if k in a else None,
+             "schedule": b[k]["rebuilt"] if k in b else None, "novelty": a[k]["novelty"] if k in a else None}
+            for k in sorted(set(a) | set(b))
+            if (a[k]["rebuilt"] if k in a else False) != (b[k]["rebuilt"] if k in b else False)]
+
+
+def write_rehearsal_csv() -> None:
+    rows = [r for a in ("rehearse", "schedule") for s in ALL_SEEDS for r in round_rows(a, s)]
+    rows += [r for s in LEARNING for r in round_rows("fixed", s)]
+    keys = ["arm", "seed", "round", "repair", "digits", "decision", "rebuilt", "rehearsed", "novelty", "confirmed",
+            "before", "after", "fixed_after", "kept", "drawn", "build_seconds"]
+    with REH_CSV.open("w", newline="") as f:
+        w = csv.DictWriter(f, fieldnames=keys, extrasaction="ignore")
+        w.writeheader()
+        w.writerows(rows)
+    print(f"{REH_CSV}: {len(rows)} rows")
+
+
 # ---------------------------------------------------------------- fetch
 
-def fetch(arms=("steer3", "frozen")) -> None:
+def fetch(arms=("steer3", "frozen"), seeds=SEEDS) -> None:
     """Download each finished steered run, copy its logs to results/runs/, check identity."""
     from gainpred.report import collect
     for arm in arms:
-        for s in SEEDS:
+        for s in seeds:
             name = run_name(arm, s)
             subprocess.run(["uv", "run", "modal", "volume", "get", "--force", "gainpred", f"runs/{name}", "runs/"],
                            capture_output=True, check=True)
     collect()
     bad = []
     for arm in arms:
-        for s in SEEDS:
+        for s in seeds:
             ok, diffs = identity(arm, s)
-            print(f"{run_name(arm, s)}: identity {'passed' if ok else 'not applicable' if ok is None else 'FAILED'}")
+            missing = identity_not_compared(arm, s)
+            print(f"{run_name(arm, s)}: identity {'passed' if ok else 'not applicable' if ok is None else 'FAILED'}"
+                  + (f" (not logged by the fixed run, so not compared: {', '.join(missing)})" if missing else ""))
             bad += diffs
-            for d in check_differences(arm, s):
+            for d in ([] if arm == "schedule" else check_differences(arm, s)):
                 print("  round-1 check differs (reported, not a stop):", d)
     if bad:
         raise SystemExit("identity check failed; the analysis stops:\n" + "\n".join(bad))
@@ -277,8 +366,11 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--fetch", action="store_true")
     ap.add_argument("--arms", default="steer3,frozen")
+    ap.add_argument("--seeds", default="2,3,4")
     a = ap.parse_args()
     if a.fetch:
-        fetch(tuple(a.arms.split(",")))
+        fetch(tuple(a.arms.split(",")), tuple(int(x) for x in a.seeds.split(",")))
     else:
         write_csv()
+        if set(REH_ARMS) <= set(arms_present(ALL_SEEDS)):
+            write_rehearsal_csv()

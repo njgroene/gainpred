@@ -1310,7 +1310,7 @@ def section4_numbers() -> dict[str, str]:
 AFTER_EVALUATION = ("gpCorrectNoBasics", "gpVariant", "gpNoveltyMargin", "gpConfirmedMargin", "gpConfirmedHarmCases",
                     "gpConfirmedPaysCases", "gpRounds", "gpCtrlAfterSeven", "gpCtrlBeforeSeven", "gpWithheldSeven", "gpEdgesFive",
                     "gpKeptNoCarry", "gpCarryAfter", "gpNaturalCarry", "gpNovGain", "gpTaNoCarry", "gpTaAgreement",
-                    "gpTaNoSelect", "gpTaWeak", "gpTaFull", "gpTaP", "gpSteer")
+                    "gpTaNoSelect", "gpTaWeak", "gpTaFull", "gpTaP", "gpSteer", "gpReh", "gpSched")
 
 
 def numbers_tex(nums: dict[str, str]) -> str:
@@ -2284,6 +2284,223 @@ def steer_md() -> str | None:
     return "\n".join(lines)
 
 
+# ---------------------------------------------------------------- amendment 26: steered rounds with rehearsal
+#
+# Defined after all other experiments. Arm (e) fixed schedule (starting points 0-1 stitched from two
+# runs), (f) steered with rehearsal, (g) schedule only. Paper words: rebuilt, rehearsed, novelty,
+# starting model, fixed schedule.
+
+REH_GROUPS = (("Starting models 0–1 (predictions recorded)", (0, 1)),
+              ("Starting models 2–4 (pilot, no prediction)", (2, 3, 4)))
+REH_LABELS = {"fixed": "Fixed schedule", "rehearse": "Steered, rehearsal", "schedule": "Schedule only"}
+
+
+def rehearsal_ready() -> bool:
+    from gainpred import steer as st
+    return set(st.REH_ARMS) <= set(st.arms_present(st.ALL_SEEDS))
+
+
+def reh_final(arm: str, seed: int) -> dict[int, float]:
+    from gainpred import steer as st
+    return st.accuracy_by_round(st.load(arm, seed))[4] if arm == "fixed" else st.final(st.load(arm, seed))
+
+
+def reh_summary(arm: str, seeds) -> dict:
+    from gainpred import steer as st
+    fixed = arm == "fixed"
+    secs = sum(sum(st.seconds(arm, s).values()) for s in seeds)
+    fsecs = sum(sum(st.seconds("fixed", s).values()) for s in seeds)
+    lowest = [min(reh_final(arm, s)[d] for d in st.HARD) for s in seeds]
+    hard = [(s, d, g) for s in seeds for d, g in st.gaps(arm, s, st.HARD).items()] if not fixed else []
+    easy = [g for s in seeds for g in st.gaps(arm, s, st.EASY).values()] if not fixed else []
+    fall = None if fixed else st.worst_not_rebuilt_fall(arm, seeds)
+    rows = {s: st.round_rows(arm, s) for s in seeds}
+    return {"rebuilt": [sum(r["rebuilt"] for r in rows[s] if not r["repair"]) for s in seeds],
+            "repairs": sum(st.repair_rounds(arm, s) for s in seeds) if not fixed else 0,
+            "repair_rebuilt": sum(r["rebuilt"] for s in seeds for r in rows[s] if r["repair"]),
+            "kept": st.kept_total(arm, seeds), "kept_pct": 100 * st.kept_total(arm, seeds) / st.kept_total("fixed", seeds),
+            "secs_pct": 100 * secs / fsecs, "lowest": lowest,
+            "worst_gap": max(hard, key=lambda x: x[2]) if hard else None, "worst_easy": max(easy) if easy else None,
+            "fall": fall}
+
+
+def reh_row(arm: str, seeds) -> list[str]:
+    m = reh_summary(arm, seeds)
+    fixed = arm == "fixed"
+    return [REH_LABELS[arm], lo_hi_int(m["rebuilt"]),
+            "–" if fixed or arm == "schedule" else (f"{m['repairs']} ({m['repair_rebuilt']})" if m["repairs"] else "0"),
+            f"{m['kept_pct']:.0f}", f"{m['secs_pct']:.0f}",
+            f"{statistics.mean(m['lowest']):.1f} ({min(m['lowest']):.1f}–{max(m['lowest']):.1f})",
+            "–" if fixed else f"{m['worst_gap'][2]:.1f}",
+            "–" if fixed or m["fall"] is None else f"{m['fall']['fall']:.1f}"]
+
+
+REH_HEADER = ["Schedule", "Rebuilt", "Repairs", "Built %", "Time %", "Lowest final", "Shortfall", "Fall"]
+
+
+def blocked_table(label: str, caption: str, header: list[str], blocks: list[tuple[str, list[list[str]]]]) -> str:
+    """A booktabs table in row blocks, each under an italic block heading; no scaling (it must fit
+    the text width at \\small as it is)."""
+    spec = "l" + "r" * (len(header) - 1)
+    lines = [GENERATED_NOTE.rstrip(), r"\begin{table}[htbp]", r"\centering", rf"\caption{{{tex_escape(caption)}}}",
+             rf"\label{{tab:{label}}}", r"\small", r"\setlength{\tabcolsep}{4pt}", rf"\begin{{tabular}}{{{spec}}}",
+             r"\toprule", " & ".join(tex_escape(h) for h in header) + r" \\"]
+    for title, rows in blocks:
+        lines += [r"\midrule", rf"\multicolumn{{{len(header)}}}{{l}}{{\emph{{{tex_escape(title)}}}}} \\"]
+        lines += [" & ".join(tex_escape(c) for c in r) + r" \\" for r in rows]
+    lines += [r"\bottomrule", r"\end{tabular}", r"\end{table}"]
+    return "\n".join(lines) + "\n"
+
+
+def rehearsal_tex() -> str | None:
+    if not rehearsal_ready():
+        return None
+    blocks = [(t, [reh_row(a, seeds) for a in ("fixed", "rehearse", "schedule")]) for t, seeds in REH_GROUPS]
+    return blocked_table(
+        "rehearsal", "Letting the checks decide where new answers are built, with every length already taught "
+        "rehearsed (agreement rule); defined after all other experiments. Predictions for starting models 0-1 were "
+        "recorded before their runs; starting models 2-4 are the pilot. Steered: a length's answers are rebuilt only "
+        "if novelty is at least 3%; other lengths already taught are rehearsed with the answers kept the last time "
+        "they were built. Schedule only: each round rebuilds its two newest lengths and rehearses the rest, with no "
+        "checks. Rebuilt: lengths rebuilt in rounds 1-4, of 20 per starting model (lowest-highest). Repairs: repair "
+        "rounds after round 4 (lengths rebuilt in them). Built %, Time %: answers built and all timed seconds, % of "
+        "the fixed schedule. Lowest final: lowest accuracy over lengths 8-15 after the last round (%), mean (range) "
+        "over starting models. Shortfall: largest amount by which a length ends below the fixed schedule after its "
+        "round 4 (points). Fall: largest fall in a round at a length already taught and not rebuilt (points).",
+        REH_HEADER, blocks)
+
+
+def rehearsal_lengths_tex() -> str | None:
+    from gainpred import steer as st
+    if not rehearsal_ready():
+        return None
+    blocks = []
+    for title, seeds in REH_GROUPS:
+        finals = {a: [reh_final(a, s) for s in seeds] for a in st.REH_ARMS}
+        blocks.append((title, [[str(d)] + [f"{statistics.mean(f[d] for f in finals[a]):.1f} "
+                                           f"({min(f[d] for f in finals[a]):.1f}–{max(f[d] for f in finals[a]):.1f})"
+                                           for a in st.REH_ARMS] for d in st.HARD]))
+    return blocked_table(
+        "rehearsal-lengths", "Final accuracy at each length (%), agreement rule: mean (range) over starting models; "
+        "the fixed schedule after round 4, the others after their last round (repairs included). Defined after all "
+        "other experiments.", ["Digits"] + [REH_LABELS[a] for a in st.REH_ARMS], blocks)
+
+
+def rehearsal_numbers() -> dict[str, str]:
+    from gainpred import steer as st
+    if not rehearsal_ready():
+        return {}
+    f, pilot = reh_summary("rehearse", st.LEARNING), reh_summary("rehearse", st.SEEDS)
+    sched = reh_summary("schedule", st.ALL_SEEDS)
+    t = st.t_predictions()
+    out = {"gpRehKeptPct": f"{f['kept_pct']:.0f}", "gpRehSecondsPct": f"{f['secs_pct']:.0f}",
+           "gpRehRebuilt": str(sum(f["rebuilt"])), "gpRehLengthRounds": str(st.LENGTH_ROUNDS * len(st.LEARNING)),
+           "gpRehRepairRounds": str(f["repairs"]), "gpRehWorstGap": f"{f['worst_gap'][2]:.1f}",
+           "gpRehWorstGapDigits": str(f["worst_gap"][1]), "gpRehWorstEasyGap": f"{f['worst_easy']:.1f}",
+           "gpRehWorstFall": f"{f['fall']['fall']:.1f}" if f["fall"] else "--",
+           "gpRehTOne": "held" if t["T1"]["pooled"]["held"] else "failed",
+           "gpRehTTwo": "held" if t["T2"]["held"] else "failed",
+           "gpRehTThree": "held" if t["T3"]["pooled"]["held"] else "failed",
+           "gpRehPilotKeptPct": f"{pilot['kept_pct']:.0f}", "gpRehPilotSecondsPct": f"{pilot['secs_pct']:.0f}",
+           "gpRehPilotWorstGap": f"{pilot['worst_gap'][2]:.1f}",
+           "gpRehPilotWorstFall": f"{pilot['fall']['fall']:.1f}" if pilot["fall"] else "--",
+           "gpSchedKeptPct": f"{sched['kept_pct']:.0f}", "gpSchedSecondsPct": f"{sched['secs_pct']:.0f}",
+           "gpSchedWorstGap": f"{sched['worst_gap'][2]:.1f}",
+           "gpSchedWorstFall": f"{sched['fall']['fall']:.1f}" if sched["fall"] else "--"}
+    sched01, sched24 = reh_summary("schedule", st.LEARNING), reh_summary("schedule", st.SEEDS)
+    out["gpRehVsSchedKeptDiff"] = f"{(f['kept'] - sched01['kept']) / 1000:.0f}"
+    out["gpRehPilotVsSchedKeptDiff"] = f"{(pilot['kept'] - sched24['kept']) / 1000:.0f}"
+    out["gpRehVsSchedWorstGap"] = f"{reh_vs_sched_gap()[0]:.1f}"
+    return out
+
+
+def reh_vs_sched_gap() -> tuple[float, int, int, float]:
+    """Largest |steered - schedule only| final accuracy at any length 8-15, any starting model:
+    (size, starting model, digits, signed difference steered minus schedule)."""
+    from gainpred import steer as st
+    best = max(((abs(reh_final("rehearse", s)[d] - reh_final("schedule", s)[d]), s, d,
+                 reh_final("rehearse", s)[d] - reh_final("schedule", s)[d]) for s in st.ALL_SEEDS for d in st.HARD))
+    return best
+
+
+def steer_rehearsal_md() -> str | None:
+    from gainpred import steer as st
+    if not rehearsal_ready():
+        return None
+    lines = ["# Steered rounds with rehearsal (amendment 26)", "",
+             "Generated by `uv run python -m gainpred.writeup`; do not edit by hand. Defined after all other "
+             "experiments. Agreement rule. Arms: (e) fixed schedule (starting models 0-1: rounds 1-2 of "
+             "`si-agreement-seedN-authors`, rounds 3-4 of `si-agreement-seedN-5cut`; 2-4: `si-agreement-seedN-authors`); "
+             "(f) steered with rehearsal (novelty at least 3%; starting models 0-1 new, 2-4 the pilot of amendment 25); "
+             "(g) schedule only (two newest lengths rebuilt per round, the rest rehearsed; no checks). Per-length rows: "
+             "`results/steer_rehearsal.csv`. All runs were timed on the same GPU type (A10).", "", "## Summary", ""]
+    for title, seeds in REH_GROUPS:
+        lines += [f"### {title}", ""]
+        lines += table(REH_HEADER, [reh_row(a, seeds) for a in ("fixed", "rehearse", "schedule")]) + [""]
+    lines += ["Fall: largest fall in a round at a length already taught and not rebuilt (its stored answers "
+              "rehearsed). Shortfall: largest amount below the fixed schedule after its round 4, lengths 8-15.", "",
+              "## Identity check (round 1 build log against the fixed schedule)", ""]
+    for arm in ("rehearse", "schedule"):
+        for s in st.ALL_SEEDS:
+            ok, diffs = st.identity(arm, s)
+            missing = st.identity_not_compared(arm, s)
+            lines.append(f"- `{st.run_name(arm, s)}`: " + ("passed" if ok else "not applicable" if ok is None
+                                                            else "FAILED: " + "; ".join(diffs))
+                         + (f" ({', '.join(missing)} not logged by the older fixed run, so not compared)" if missing else ""))
+    t = st.t_predictions()
+    lines += ["", "## Predictions (arm f, starting models 0-1; recorded before the runs)", "",
+              "T1: for each starting model, after the last round, accuracy at every length 8-15 at most 3 points below "
+              "the fixed schedule's after round 4, and at every easy length 3-7 at most 3 points below. T2: summed over "
+              "the two starting models, at most half as many answers built as the fixed schedule. T3: in no round does "
+              "accuracy at a length already taught and not rebuilt in that round fall by more than 3 points.", ""]
+    rows = []
+    for s in st.LEARNING:
+        w = t["T3"][s]["worst"]
+        rows.append([str(s), "held" if t["T1"][s]["held"] else "failed",
+                     f"{t['T1'][s]['worst_hard']:.1f} ({t['T1'][s]['worst_hard_digits']})",
+                     f"{t['T1'][s]['worst_easy']:.1f} ({t['T1'][s]['worst_easy_digits']})",
+                     f"{t['T2']['per_seed'][s][0]:,} / {t['T2']['per_seed'][s][1]:,}",
+                     "held" if t["T3"][s]["held"] else "failed",
+                     "–" if w is None else f"{w['fall']:.1f} (round {w['round']}, {w['digits']} digits)"])
+    w = t["T3"]["pooled"]["worst"]
+    rows.append(["pooled", "held" if t["T1"]["pooled"]["held"] else "failed", f"{t['T1']['pooled']['worst_hard']:.1f}",
+                 f"{t['T1']['pooled']['worst_easy']:.1f}", f"{t['T2']['kept']:,} / {t['T2']['fixed']:,}",
+                 "held" if t["T3"]["pooled"]["held"] else "failed", "–" if w is None else f"{w['fall']:.1f}"])
+    lines += table(["Starting model", "T1", "Largest shortfall 8-15 (digits)", "Largest shortfall 3-7 (digits)",
+                    "Answers built (steered / fixed)", "T3", "Largest fall not rebuilt"], rows)
+    lines += ["", f"T2: {'held' if t['T2']['held'] else 'failed'} ({100 * t['T2']['share']:.1f}% of the fixed "
+              "schedule's answers). Shortfalls are signed: negative means the steered arm ended higher.", "",
+              "## Steered against schedule only", "",
+              "Where the two differ in whether a length's answers were rebuilt (rounds 1-4; repair rounds exist only in "
+              "the steered arm):", ""]
+    diffs = [d for s in st.ALL_SEEDS for d in st.decision_differences(s)]
+    lines += table(["Starting model", "Round", "Digits", "Steered", "Schedule only", "Novelty %"],
+                   [[str(d["seed"]), str(d["round"]), str(d["digits"]),
+                     {True: "rebuilt", False: "not rebuilt", None: "–"}[d["steered"]],
+                     {True: "rebuilt", False: "not rebuilt", None: "–"}[d["schedule"]], pct(d["novelty"])]
+                    for d in diffs])
+    rows = []
+    for s in st.ALL_SEEDS:
+        a, b = reh_final("rehearse", s), reh_final("schedule", s)
+        ka, kb = st.kept_total("rehearse", (s,)), st.kept_total("schedule", (s,))
+        dmax = max(st.HARD, key=lambda d: abs(a[d] - b[d]))
+        rows.append([str(s), f"{ka:,}", f"{kb:,}", f"{a[dmax] - b[dmax]:+.1f} ({dmax})"])
+    lines += ["", "Answers built and the largest difference in final accuracy (steered minus schedule only, points; "
+              "digits):", ""]
+    lines += table(["Starting model", "Steered built", "Schedule built", "Largest accuracy difference"], rows)
+    for arm in ("rehearse", "schedule"):
+        lines += ["", f"## {REH_LABELS[arm]}: per-length decisions", ""]
+        rows = [[str(s), str(r["round"]) + (" (repair)" if r["repair"] else ""), str(r["digits"]),
+                 "rebuilt" if r["rebuilt"] else ("rehearsed" if r["rehearsed"] else "not rebuilt, nothing stored"),
+                 pct(r["novelty"]), f"{r['before']:.1f}", f"{r['after']:.1f}",
+                 "–" if r["fixed_after"] is None else f"{r['fixed_after']:.1f}", f"{r['kept']:,}"]
+                for s in st.ALL_SEEDS for r in st.round_rows(arm, s)]
+        lines += table(["Starting model", "Round", "Digits", "Answers", "Novelty %", "Before", "After", "Fixed after",
+                        "Built"], rows)
+    lines += [""]
+    return "\n".join(lines)
+
+
 def paper_files() -> dict[str, str]:
     """Main-text tables and figure wrappers. Confirming runs are the evidence throughout."""
     from gainpred import p9b
@@ -2298,7 +2515,10 @@ def paper_files() -> dict[str, str]:
 
     out["table_p9b_cases.tex"] = cases_tex(conf)
     out["numbers.tex"] = numbers_tex(section4_numbers() | section5_numbers() | control_numbers()
-                                     | novelty_numbers() | teacher_accuracy_numbers() | steer_numbers())
+                                     | novelty_numbers() | teacher_accuracy_numbers() | steer_numbers()
+                                     | rehearsal_numbers())
+    if (t := rehearsal_tex()) is not None:
+        out["table_rehearsal.tex"], out["table_rehearsal_lengths.tex"] = t, rehearsal_lengths_tex()
     if (t := steer_tex()) is not None:
         out["table_steer.tex"], out["table_steer_lengths.tex"] = t, steer_lengths_tex()
     out["table_novelty_gain.tex"] = novelty_gain_tex()
@@ -2419,6 +2639,7 @@ def main() -> None:
                         ("baseline.md", baseline_md), ("filter_gap.md", filter_gap_md),
                         ("check3_addition.md", check3_md), ("control_answers.md", control_md),
                         ("teacher_accuracy.md", teacher_accuracy_md), ("steer.md", steer_md),
+                        ("steer_rehearsal.md", steer_rehearsal_md),
                         ("runs.md", runs_md)):
         text = build()
         if text is None:  # an analysis whose results are not fetched yet

@@ -1347,6 +1347,241 @@ Label-free checks (P8), before the round's training:
 | 1 | 19 | 53.4 | 53.2 | 100.0 | 53.4 | 89.8 |
 | 1 | 20 | 56.5 | – | 100.0 | 56.5 | – |
 
+## si-agreement-schedule-seed0
+
+- Teacher: **the agreement rule** (`agreement`); starting run `start-seed0-authors` (seed 0)
+- Rounds: 4 of 4 finished; 10,000 kept per length, 5,000 replay per easy length, 3,000 updates per round
+- Device: NVIDIA A10
+
+Test accuracy (%) after each round (round 0 = the starting model); carry = across cut 1:
+
+| round | easy (3–7) | 8: no carry / carry | 9: no carry / carry | 10: no carry / carry | 11: no carry / carry | 12: no carry / carry | 13: no carry / carry | 14: no carry / carry | 15: no carry / carry |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 0 | 99.9 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 |
+| 1 | 99.8 | 99.9 / 93.6 | 94.4 / 92.8 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 |
+| 2 | 99.8 | 99.9 / 98.7 | 99.1 / 98.2 | 99.8 / 97.6 | 98.6 / 94.6 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 |
+| 3 | 99.8 | 99.8 / 98.7 | 99.1 / 98.7 | 99.9 / 98.4 | 98.6 / 98.1 | 99.7 / 97.3 | 99.1 / 97.6 | 88.0 / 84.5 | 0.0 / 0.0 |
+| 4 | 99.8 | 99.9 / 98.7 | 99.2 / 98.7 | 99.9 / 98.8 | 99.7 / 98.5 | 99.8 / 98.3 | 99.7 / 98.3 | 98.8 / 97.4 | 99.4 / 97.6 |
+
+Training answers built by the teacher ("right" is an audit; the teacher never sees it):
+
+| round | digits | drawn | kept | kept % | right % | shortfall |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 8 | 29,418 | 10,000 | 34.0 | 100.0 | 0 |
+| 1 | 9 | 29,077 | 10,000 | 34.4 | 99.9 | 0 |
+| 2 | 10 | 28,911 | 10,000 | 34.6 | 99.9 | 0 |
+| 2 | 11 | 29,294 | 10,000 | 34.1 | 99.9 | 0 |
+| 3 | 12 | 29,487 | 10,000 | 33.9 | 99.8 | 0 |
+| 3 | 13 | 28,042 | 10,000 | 35.7 | 99.9 | 0 |
+| 4 | 14 | 39,521 | 10,000 | 25.3 | 99.9 | 0 |
+| 4 | 15 | 58,284 | 10,000 | 17.2 | 99.9 | 0 |
+
+Easy replay answered by the current model:
+
+| round | problems | readable | right % |
+| --- | --- | --- | --- |
+| 1 | 25,000 | 25,000 | 99.9 |
+| 2 | 25,000 | 25,000 | 99.8 |
+| 3 | 25,000 | 25,000 | 99.8 |
+| 4 | 25,000 | 25,000 | 99.8 |
+
+Cost per round (seconds; tokens = characters the model generated for building and checks):
+
+| round | examples | build s | checks s | train s | generated tokens |
+| --- | --- | --- | --- | --- | --- |
+| 1 | 45,000 | 88 | 0 | 154 | 2,318,794 |
+| 2 | 65,000 | 108 | 0 | 174 | 2,687,181 |
+| 3 | 85,000 | 165 | 0 | 191 | 4,074,940 |
+| 4 | 105,000 | 387 | 0 | 210 | 9,816,635 |
+
+## si-agreement-schedule-seed1
+
+- Teacher: **the agreement rule** (`agreement`); starting run `start-seed1-authors` (seed 1)
+- Rounds: 4 of 4 finished; 10,000 kept per length, 5,000 replay per easy length, 3,000 updates per round
+- Device: NVIDIA A10
+
+Test accuracy (%) after each round (round 0 = the starting model); carry = across cut 1:
+
+| round | easy (3–7) | 8: no carry / carry | 9: no carry / carry | 10: no carry / carry | 11: no carry / carry | 12: no carry / carry | 13: no carry / carry | 14: no carry / carry | 15: no carry / carry |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 0 | 99.9 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 |
+| 1 | 99.8 | 99.9 / 96.1 | 97.0 / 95.2 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 |
+| 2 | 99.8 | 99.9 / 95.9 | 97.6 / 96.0 | 100.0 / 95.3 | 99.3 / 94.1 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 |
+| 3 | 99.7 | 99.8 / 97.8 | 98.9 / 97.7 | 100.0 / 98.6 | 99.7 / 97.7 | 99.9 / 97.7 | 99.6 / 98.0 | 1.4 / 1.6 | 0.0 / 0.0 |
+| 4 | 99.7 | 99.9 / 98.7 | 99.4 / 98.6 | 100.0 / 99.0 | 99.9 / 98.6 | 99.8 / 99.0 | 99.6 / 98.6 | 99.1 / 98.2 | 99.9 / 98.6 |
+
+Training answers built by the teacher ("right" is an audit; the teacher never sees it):
+
+| round | digits | drawn | kept | kept % | right % | shortfall |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 8 | 29,178 | 10,000 | 34.3 | 100.0 | 0 |
+| 1 | 9 | 29,136 | 10,000 | 34.3 | 100.0 | 0 |
+| 2 | 10 | 28,940 | 10,000 | 34.6 | 99.9 | 0 |
+| 2 | 11 | 29,138 | 10,000 | 34.3 | 99.8 | 0 |
+| 3 | 12 | 29,264 | 10,000 | 34.2 | 99.9 | 0 |
+| 3 | 13 | 28,245 | 10,000 | 35.4 | 99.8 | 0 |
+| 4 | 14 | 39,201 | 10,000 | 25.5 | 99.9 | 0 |
+| 4 | 15 | 59,506 | 10,000 | 16.8 | 99.9 | 0 |
+
+Easy replay answered by the current model:
+
+| round | problems | readable | right % |
+| --- | --- | --- | --- |
+| 1 | 25,000 | 25,000 | 99.9 |
+| 2 | 25,000 | 25,000 | 99.9 |
+| 3 | 25,000 | 25,000 | 99.8 |
+| 4 | 25,000 | 25,000 | 99.8 |
+
+Cost per round (seconds; tokens = characters the model generated for building and checks):
+
+| round | examples | build s | checks s | train s | generated tokens |
+| --- | --- | --- | --- | --- | --- |
+| 1 | 45,000 | 88 | 0 | 154 | 2,313,251 |
+| 2 | 65,000 | 108 | 0 | 174 | 2,669,205 |
+| 3 | 85,000 | 167 | 0 | 191 | 4,093,137 |
+| 4 | 105,000 | 388 | 0 | 211 | 9,817,912 |
+
+## si-agreement-schedule-seed2
+
+- Teacher: **the agreement rule** (`agreement`); starting run `start-seed2-authors` (seed 2)
+- Rounds: 4 of 4 finished; 10,000 kept per length, 5,000 replay per easy length, 3,000 updates per round
+- Device: NVIDIA A10G
+
+Test accuracy (%) after each round (round 0 = the starting model); carry = across cut 1:
+
+| round | easy (3–7) | 8: no carry / carry | 9: no carry / carry | 10: no carry / carry | 11: no carry / carry | 12: no carry / carry | 13: no carry / carry | 14: no carry / carry | 15: no carry / carry |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 0 | 100.0 | 2.2 / 2.7 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 |
+| 1 | 100.0 | 99.9 / 100.0 | 100.0 / 99.9 | 6.0 / 9.6 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 |
+| 2 | 100.0 | 100.0 / 99.9 | 100.0 / 100.0 | 100.0 / 99.8 | 100.0 / 99.9 | 57.1 / 54.6 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 |
+| 3 | 100.0 | 100.0 / 99.9 | 99.9 / 100.0 | 100.0 / 99.9 | 100.0 / 99.9 | 100.0 / 99.9 | 100.0 / 99.7 | 94.5 / 96.2 | 0.5 / 0.3 |
+| 4 | 100.0 | 100.0 / 99.8 | 100.0 / 99.9 | 100.0 / 99.8 | 100.0 / 99.8 | 100.0 / 99.9 | 99.9 / 99.6 | 100.0 / 99.7 | 100.0 / 100.0 |
+
+Training answers built by the teacher ("right" is an audit; the teacher never sees it):
+
+| round | digits | drawn | kept | kept % | right % | shortfall |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 8 | 28,738 | 10,000 | 34.8 | 100.0 | 0 |
+| 1 | 9 | 29,079 | 10,000 | 34.4 | 100.0 | 0 |
+| 2 | 10 | 28,984 | 10,000 | 34.5 | 100.0 | 0 |
+| 2 | 11 | 28,932 | 10,000 | 34.6 | 100.0 | 0 |
+| 3 | 12 | 28,831 | 10,000 | 34.7 | 100.0 | 0 |
+| 3 | 13 | 28,210 | 10,000 | 35.4 | 100.0 | 0 |
+| 4 | 14 | 39,045 | 10,000 | 25.6 | 100.0 | 0 |
+| 4 | 15 | 58,676 | 10,000 | 17.0 | 100.0 | 0 |
+
+Easy replay answered by the current model:
+
+| round | problems | readable | right % |
+| --- | --- | --- | --- |
+| 1 | 25,000 | 25,000 | 100.0 |
+| 2 | 25,000 | 25,000 | 100.0 |
+| 3 | 25,000 | 25,000 | 100.0 |
+| 4 | 25,000 | 25,000 | 100.0 |
+
+Cost per round (seconds; tokens = characters the model generated for building and checks):
+
+| round | examples | build s | checks s | train s | generated tokens |
+| --- | --- | --- | --- | --- | --- |
+| 1 | 45,000 | 92 | 0 | 164 | 2,281,846 |
+| 2 | 65,000 | 112 | 0 | 184 | 2,655,345 |
+| 3 | 85,000 | 173 | 0 | 206 | 4,055,723 |
+| 4 | 105,000 | 406 | 0 | 224 | 9,817,679 |
+
+## si-agreement-schedule-seed3
+
+- Teacher: **the agreement rule** (`agreement`); starting run `start-seed3-authors` (seed 3)
+- Rounds: 4 of 4 finished; 10,000 kept per length, 5,000 replay per easy length, 3,000 updates per round
+- Device: NVIDIA A10G
+
+Test accuracy (%) after each round (round 0 = the starting model); carry = across cut 1:
+
+| round | easy (3–7) | 8: no carry / carry | 9: no carry / carry | 10: no carry / carry | 11: no carry / carry | 12: no carry / carry | 13: no carry / carry | 14: no carry / carry | 15: no carry / carry |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 0 | 100.0 | 9.2 / 8.1 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 |
+| 1 | 100.0 | 100.0 / 99.7 | 100.0 / 99.7 | 6.1 / 7.3 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 |
+| 2 | 100.0 | 100.0 / 99.9 | 100.0 / 99.6 | 100.0 / 99.8 | 100.0 / 99.6 | 82.6 / 81.8 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 |
+| 3 | 100.0 | 100.0 / 99.9 | 100.0 / 100.0 | 100.0 / 99.8 | 100.0 / 100.0 | 100.0 / 100.0 | 100.0 / 100.0 | 95.7 / 94.2 | 3.0 / 3.6 |
+| 4 | 100.0 | 100.0 / 99.7 | 100.0 / 100.0 | 100.0 / 99.8 | 100.0 / 100.0 | 100.0 / 99.9 | 100.0 / 100.0 | 100.0 / 100.0 | 100.0 / 100.0 |
+
+Training answers built by the teacher ("right" is an audit; the teacher never sees it):
+
+| round | digits | drawn | kept | kept % | right % | shortfall |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 8 | 28,611 | 10,000 | 35.0 | 100.0 | 0 |
+| 1 | 9 | 28,712 | 10,000 | 34.8 | 100.0 | 0 |
+| 2 | 10 | 29,099 | 10,000 | 34.4 | 100.0 | 0 |
+| 2 | 11 | 28,862 | 10,000 | 34.6 | 100.0 | 0 |
+| 3 | 12 | 28,861 | 10,000 | 34.6 | 100.0 | 0 |
+| 3 | 13 | 28,098 | 10,000 | 35.6 | 100.0 | 0 |
+| 4 | 14 | 39,402 | 10,000 | 25.4 | 100.0 | 0 |
+| 4 | 15 | 58,256 | 10,000 | 17.2 | 100.0 | 0 |
+
+Easy replay answered by the current model:
+
+| round | problems | readable | right % |
+| --- | --- | --- | --- |
+| 1 | 25,000 | 25,000 | 100.0 |
+| 2 | 25,000 | 25,000 | 100.0 |
+| 3 | 25,000 | 25,000 | 100.0 |
+| 4 | 25,000 | 25,000 | 100.0 |
+
+Cost per round (seconds; tokens = characters the model generated for building and checks):
+
+| round | examples | build s | checks s | train s | generated tokens |
+| --- | --- | --- | --- | --- | --- |
+| 1 | 45,000 | 91 | 0 | 164 | 2,267,034 |
+| 2 | 65,000 | 112 | 0 | 183 | 2,658,160 |
+| 3 | 85,000 | 172 | 0 | 204 | 4,076,019 |
+| 4 | 105,000 | 402 | 0 | 223 | 9,816,760 |
+
+## si-agreement-schedule-seed4
+
+- Teacher: **the agreement rule** (`agreement`); starting run `start-seed4-authors` (seed 4)
+- Rounds: 4 of 4 finished; 10,000 kept per length, 5,000 replay per easy length, 3,000 updates per round
+- Device: NVIDIA A10
+
+Test accuracy (%) after each round (round 0 = the starting model); carry = across cut 1:
+
+| round | easy (3–7) | 8: no carry / carry | 9: no carry / carry | 10: no carry / carry | 11: no carry / carry | 12: no carry / carry | 13: no carry / carry | 14: no carry / carry | 15: no carry / carry |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 0 | 99.8 | 28.2 / 29.9 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 |
+| 1 | 99.7 | 99.9 / 98.0 | 99.1 / 96.6 | 97.0 / 94.1 | 0.1 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 |
+| 2 | 99.9 | 99.9 / 98.9 | 99.3 / 97.9 | 99.4 / 97.2 | 98.5 / 97.1 | 86.9 / 88.4 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 |
+| 3 | 99.8 | 99.8 / 98.7 | 99.4 / 98.5 | 99.7 / 97.8 | 99.5 / 98.3 | 99.4 / 97.3 | 98.5 / 97.7 | 97.6 / 95.1 | 78.8 / 75.7 |
+| 4 | 99.8 | 99.9 / 98.9 | 99.3 / 98.5 | 99.7 / 98.5 | 99.3 / 98.5 | 99.3 / 97.4 | 98.9 / 97.8 | 97.4 / 96.1 | 99.2 / 97.0 |
+
+Training answers built by the teacher ("right" is an audit; the teacher never sees it):
+
+| round | digits | drawn | kept | kept % | right % | shortfall |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 8 | 29,371 | 10,000 | 34.0 | 100.0 | 0 |
+| 1 | 9 | 29,075 | 10,000 | 34.4 | 100.0 | 0 |
+| 2 | 10 | 28,897 | 10,000 | 34.6 | 99.9 | 0 |
+| 2 | 11 | 29,116 | 10,000 | 34.3 | 99.9 | 0 |
+| 3 | 12 | 29,116 | 10,000 | 34.3 | 99.8 | 0 |
+| 3 | 13 | 28,184 | 10,000 | 35.5 | 99.9 | 0 |
+| 4 | 14 | 39,923 | 10,000 | 25.0 | 99.8 | 0 |
+| 4 | 15 | 58,750 | 10,000 | 17.0 | 99.9 | 0 |
+
+Easy replay answered by the current model:
+
+| round | problems | readable | right % |
+| --- | --- | --- | --- |
+| 1 | 25,000 | 25,000 | 99.8 |
+| 2 | 25,000 | 25,000 | 99.8 |
+| 3 | 25,000 | 25,000 | 99.8 |
+| 4 | 25,000 | 25,000 | 99.8 |
+
+Cost per round (seconds; tokens = characters the model generated for building and checks):
+
+| round | examples | build s | checks s | train s | generated tokens |
+| --- | --- | --- | --- | --- | --- |
+| 1 | 45,000 | 88 | 0 | 154 | 2,312,595 |
+| 2 | 65,000 | 108 | 0 | 174 | 2,661,162 |
+| 3 | 85,000 | 166 | 0 | 191 | 4,063,819 |
+| 4 | 105,000 | 388 | 0 | 210 | 9,816,465 |
+
 ## si-agreement-seed0-5cut
 
 - Teacher: **the agreement rule** (`agreement`); starting run `si-agreement-seed0-authors` (seed 0)
@@ -2183,6 +2418,150 @@ Cost per round (seconds; tokens = characters the model generated for building an
 | 4 | 35,000 | 244 | 95 | 211 | 8,227,076 |
 | 5 | 65,000 | 271 | 95 | 193 | 8,765,978 |
 | 6 | 35,000 | 243 | 95 | 211 | 8,227,969 |
+
+## si-agreement-steer3r-seed0
+
+- Teacher: **the agreement rule** (`agreement`); starting run `start-seed0-authors` (seed 0)
+- Rounds: 4 of 4 finished; 10,000 kept per length, 5,000 replay per easy length, 3,000 updates per round
+- Device: NVIDIA A10G
+
+Test accuracy (%) after each round (round 0 = the starting model); carry = across cut 1:
+
+| round | easy (3–7) | 8: no carry / carry | 9: no carry / carry | 10: no carry / carry | 11: no carry / carry | 12: no carry / carry | 13: no carry / carry | 14: no carry / carry | 15: no carry / carry |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 0 | 99.9 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 |
+| 1 | 99.8 | 99.9 / 97.0 | 94.9 / 93.4 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 |
+| 2 | 99.8 | 100.0 / 98.6 | 97.8 / 97.8 | 99.8 / 89.3 | 98.5 / 86.9 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 |
+| 3 | 99.8 | 100.0 / 98.7 | 99.2 / 98.6 | 99.9 / 98.7 | 98.9 / 98.2 | 99.7 / 97.6 | 99.2 / 97.5 | 50.5 / 46.0 | 0.0 / 0.0 |
+| 4 | 99.7 | 99.9 / 98.7 | 99.2 / 98.6 | 100.0 / 98.8 | 99.6 / 98.7 | 99.9 / 98.3 | 99.3 / 98.4 | 98.5 / 97.6 | 99.6 / 96.8 |
+
+Training answers built by the teacher ("right" is an audit; the teacher never sees it):
+
+| round | digits | drawn | kept | kept % | right % | shortfall |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 8 | 29,418 | 10,000 | 34.0 | 100.0 | 0 |
+| 1 | 9 | 29,077 | 10,000 | 34.4 | 99.9 | 0 |
+| 2 | 10 | 28,911 | 10,000 | 34.6 | 99.9 | 0 |
+| 2 | 11 | 29,271 | 10,000 | 34.2 | 99.9 | 0 |
+| 3 | 12 | 29,438 | 10,000 | 34.0 | 99.8 | 0 |
+| 3 | 13 | 28,025 | 10,000 | 35.7 | 99.9 | 0 |
+| 4 | 14 | 39,545 | 10,000 | 25.3 | 99.9 | 0 |
+| 4 | 15 | 58,304 | 10,000 | 17.2 | 99.9 | 0 |
+
+Easy replay answered by the current model:
+
+| round | problems | readable | right % |
+| --- | --- | --- | --- |
+| 1 | 25,000 | 25,000 | 99.9 |
+| 2 | 25,000 | 25,000 | 99.9 |
+| 3 | 25,000 | 25,000 | 99.8 |
+| 4 | 25,000 | 25,000 | 99.8 |
+
+Label-free checks (P8) on 2,000 fresh problems per length, before the round's training (runs before 13 November 2026: new lengths only, no 2b):
+
+| round | digits | check 1: kept ≠ direct | 2b: confirmed | teachable | check 2: agreement rule keeps |
+| --- | --- | --- | --- | --- | --- |
+| 1 | 8 | 100.0 | 100.0 | 33.2 | 33.2 |
+| 1 | 9 | 100.0 | 100.0 | 33.2 | 33.2 |
+| 2 | 8 | 0.0 | 100.0 | 0.0 | 36.2 |
+| 2 | 9 | 0.6 | 100.0 | 0.2 | 34.9 |
+| 2 | 10 | 100.0 | 100.0 | 34.2 | 34.2 |
+| 2 | 11 | 100.0 | 100.0 | 34.2 | 34.2 |
+| 3 | 8 | 0.1 | 100.0 | 0.1 | 33.5 |
+| 3 | 9 | 0.3 | 100.0 | 0.1 | 35.0 |
+| 3 | 10 | 0.1 | 100.0 | 0.1 | 36.8 |
+| 3 | 11 | 0.6 | 100.0 | 0.2 | 32.6 |
+| 3 | 12 | 100.0 | 100.0 | 33.1 | 33.1 |
+| 3 | 13 | 100.0 | 100.0 | 36.4 | 36.4 |
+| 4 | 8 | 0.0 | 100.0 | 0.0 | 36.1 |
+| 4 | 9 | 0.1 | 100.0 | 0.1 | 36.6 |
+| 4 | 10 | 0.0 | 100.0 | 0.0 | 33.0 |
+| 4 | 11 | 0.1 | 100.0 | 0.1 | 34.4 |
+| 4 | 12 | 0.1 | 100.0 | 0.1 | 35.6 |
+| 4 | 13 | 0.6 | 100.0 | 0.2 | 35.4 |
+| 4 | 14 | 49.6 | 100.0 | 12.8 | 25.8 |
+| 4 | 15 | 100.0 | 100.0 | 16.7 | 16.7 |
+
+Cost per round (seconds; tokens = characters the model generated for building and checks):
+
+| round | examples | build s | checks s | train s | generated tokens |
+| --- | --- | --- | --- | --- | --- |
+| 1 | 45,000 | 93 | 14 | 164 | 2,634,955 |
+| 2 | 65,000 | 114 | 32 | 184 | 3,379,425 |
+| 3 | 85,000 | 173 | 59 | 204 | 5,348,171 |
+| 4 | 105,000 | 406 | 98 | 224 | 11,927,649 |
+
+## si-agreement-steer3r-seed1
+
+- Teacher: **the agreement rule** (`agreement`); starting run `start-seed1-authors` (seed 1)
+- Rounds: 4 of 4 finished; 10,000 kept per length, 5,000 replay per easy length, 3,000 updates per round
+- Device: NVIDIA A10
+
+Test accuracy (%) after each round (round 0 = the starting model); carry = across cut 1:
+
+| round | easy (3–7) | 8: no carry / carry | 9: no carry / carry | 10: no carry / carry | 11: no carry / carry | 12: no carry / carry | 13: no carry / carry | 14: no carry / carry | 15: no carry / carry |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 0 | 99.9 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 |
+| 1 | 100.0 | 99.9 / 77.4 | 95.1 / 94.3 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 |
+| 2 | 99.9 | 99.9 / 86.9 | 96.1 / 94.7 | 99.8 / 97.7 | 99.5 / 96.8 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 | 0.0 / 0.0 |
+| 3 | 99.9 | 100.0 / 98.8 | 99.5 / 98.7 | 99.8 / 99.2 | 99.9 / 99.5 | 99.9 / 99.7 | 99.5 / 98.9 | 0.0 / 0.0 | 0.0 / 0.0 |
+| 4 | 99.9 | 100.0 / 99.6 | 100.0 / 99.5 | 99.8 / 99.5 | 99.9 / 99.5 | 99.8 / 99.5 | 99.6 / 99.1 | 99.4 / 98.7 | 99.9 / 99.4 |
+
+Training answers built by the teacher ("right" is an audit; the teacher never sees it):
+
+| round | digits | drawn | kept | kept % | right % | shortfall |
+| --- | --- | --- | --- | --- | --- | --- |
+| 1 | 8 | 29,178 | 10,000 | 34.3 | 100.0 | 0 |
+| 1 | 9 | 29,136 | 10,000 | 34.3 | 100.0 | 0 |
+| 2 | 10 | 28,939 | 10,000 | 34.6 | 99.9 | 0 |
+| 2 | 11 | 29,079 | 10,000 | 34.4 | 99.9 | 0 |
+| 3 | 12 | 29,208 | 10,000 | 34.2 | 99.8 | 0 |
+| 3 | 13 | 28,123 | 10,000 | 35.6 | 99.8 | 0 |
+| 4 | 14 | 39,057 | 10,000 | 25.6 | 99.9 | 0 |
+| 4 | 15 | 59,350 | 10,000 | 16.8 | 99.9 | 0 |
+
+Easy replay answered by the current model:
+
+| round | problems | readable | right % |
+| --- | --- | --- | --- |
+| 1 | 25,000 | 25,000 | 99.9 |
+| 2 | 25,000 | 25,000 | 99.9 |
+| 3 | 25,000 | 25,000 | 99.9 |
+| 4 | 25,000 | 25,000 | 99.9 |
+
+Label-free checks (P8) on 2,000 fresh problems per length, before the round's training (runs before 13 November 2026: new lengths only, no 2b):
+
+| round | digits | check 1: kept ≠ direct | 2b: confirmed | teachable | check 2: agreement rule keeps |
+| --- | --- | --- | --- | --- | --- |
+| 1 | 8 | 100.0 | 100.0 | 34.7 | 34.7 |
+| 1 | 9 | 100.0 | 100.0 | 35.4 | 35.4 |
+| 2 | 8 | 0.0 | 100.0 | 0.0 | 33.6 |
+| 2 | 9 | 0.4 | 100.0 | 0.1 | 34.4 |
+| 2 | 10 | 100.0 | 100.0 | 34.4 | 34.4 |
+| 2 | 11 | 100.0 | 100.0 | 35.9 | 35.9 |
+| 3 | 8 | 0.2 | 100.0 | 0.1 | 33.3 |
+| 3 | 9 | 0.0 | 100.0 | 0.0 | 34.6 |
+| 3 | 10 | 0.0 | 100.0 | 0.0 | 36.0 |
+| 3 | 11 | 0.3 | 100.0 | 0.1 | 36.6 |
+| 3 | 12 | 100.0 | 100.0 | 33.5 | 33.5 |
+| 3 | 13 | 100.0 | 100.0 | 35.6 | 35.6 |
+| 4 | 8 | 0.0 | 100.0 | 0.0 | 35.0 |
+| 4 | 9 | 0.0 | 100.0 | 0.0 | 35.0 |
+| 4 | 10 | 0.0 | 100.0 | 0.0 | 35.4 |
+| 4 | 11 | 0.0 | 100.0 | 0.0 | 32.8 |
+| 4 | 12 | 0.1 | 100.0 | 0.1 | 33.8 |
+| 4 | 13 | 0.1 | 100.0 | 0.1 | 35.3 |
+| 4 | 14 | 100.0 | 100.0 | 23.4 | 23.4 |
+| 4 | 15 | 100.0 | 100.0 | 16.9 | 16.9 |
+
+Cost per round (seconds; tokens = characters the model generated for building and checks):
+
+| round | examples | build s | checks s | train s | generated tokens |
+| --- | --- | --- | --- | --- | --- |
+| 1 | 45,000 | 88 | 14 | 154 | 2,628,682 |
+| 2 | 65,000 | 108 | 31 | 175 | 3,358,746 |
+| 3 | 85,000 | 166 | 57 | 192 | 5,356,177 |
+| 4 | 105,000 | 389 | 94 | 211 | 11,925,489 |
 
 ## si-agreement-steer3r-seed2
 
