@@ -2144,8 +2144,8 @@ def steer_table_rows() -> list[list[str]]:
                      "–" if fixed else f"{sum(m['repairs'])} ({sum(m['repair_taught'])} lengths)",
                      f"{m['kept_pct']:.0f}", f"{m['build_pct']:.0f}", f"{m['all_pct']:.0f}",
                      f"{statistics.mean(m['lowest']):.1f} ({min(m['lowest']):.1f}–{max(m['lowest']):.1f})",
-                     "–" if fixed else fmt(m["worst_gap"][2], True),
-                     "–" if fixed or m["fall"] is None else fmt(m["fall"]["fall"], True)])
+                     "–" if fixed else f"{m['worst_gap'][2]:.1f}",
+                     "–" if fixed or m["fall"] is None else f"{m['fall']['fall']:.1f}"])
     return rows
 
 
