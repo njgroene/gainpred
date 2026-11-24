@@ -53,3 +53,14 @@ def test_exp2_rows_order_bold_and_zero_ranges():
     lines = text.splitlines()
     assert lines.index(r"\midrule", lines.index(r"\midrule") + 1) < next(
         i for i, l in enumerate(lines) if l.startswith("Join at the split (ours)"))
+
+
+def test_hand_typed_section5_numbers_have_macros():
+    """64.8 (control arm before the round, crossing runs of 7) and 57.3 (edges-differ starting
+    models, crossing runs of 5) were typed by hand in Section 5; they now come from the data."""
+    from gainpred.writeup import control_numbers, section5_numbers
+    assert control_numbers()["gpCtrlBeforeSevenCorrect"] == "64.8"
+    assert section5_numbers()["gpLrEdgesBeforeFive"] == "57.3"
+    text = Path("paper/generated/numbers.tex").read_text()
+    assert r"\newcommand{\gpCtrlBeforeSevenCorrect}{64.8}  % after" in text
+    assert r"\newcommand{\gpLrEdgesBeforeFive}{57.3}" + "\n" in text

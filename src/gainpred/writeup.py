@@ -1308,9 +1308,9 @@ def section4_numbers() -> dict[str, str]:
 
 # Which numbers were computed after the evaluation runs (said in numbers.tex, and in the text).
 AFTER_EVALUATION = ("gpCorrectNoBasics", "gpVariant", "gpNoveltyMargin", "gpConfirmedMargin", "gpConfirmedHarmCases",
-                    "gpConfirmedPaysCases", "gpRounds", "gpCtrlAfterSeven", "gpWithheldSeven", "gpEdgesFive",
+                    "gpConfirmedPaysCases", "gpRounds", "gpCtrlAfterSeven", "gpCtrlBeforeSeven", "gpWithheldSeven", "gpEdgesFive",
                     "gpKeptNoCarry", "gpCarryAfter", "gpNaturalCarry", "gpNovGain", "gpTaNoCarry", "gpTaAgreement",
-                    "gpTaNoSelect", "gpTaWeak", "gpTaFull", "gpTaP")
+                    "gpTaNoSelect", "gpTaWeak", "gpTaFull", "gpTaP", "gpSteer")
 
 
 def numbers_tex(nums: dict[str, str]) -> str:
@@ -1624,6 +1624,10 @@ def section5_numbers() -> dict[str, str]:
         evs = [evals(run.format(s=s), "study")[rnd] for s in CONFIRMING]
         nums[f"gpLr{name}All"] = f"{statistics.mean(100 * e['all'] for e in evs):.1f}"
         nums[f"gpLr{name}Long"] = f"{statistics.mean(statistics.mean(joined(e, k) for k in (6, 7, 8)) for e in evs):.1f}"
+    # The edges-differ rule's starting models (round 0 of its runs), crossing runs of 5 (section 5's
+    # "fell from ... to \gpEdgesFiveCorrect").
+    nums["gpLrEdgesBeforeFive"] = (
+        f"{statistics.mean(joined(evals(f'runs-edges_differ-seed{s}-u30000', 'study')[0], 5) for s in CONFIRMING):.1f}")
     # Filter gap (defined after the evaluation runs): kept share and the carry group after.
     for arm, name in FILTER_ARMS:
         rows = filter_gap_rows(arm, CONFIRMING)
@@ -1773,6 +1777,7 @@ def control_numbers() -> dict[str, str]:
         return {}
     rows = load_rows()
     out = {}
+    out["gpCtrlBeforeSevenCorrect"] = f"{control_pooled(rows, 'a', 7, EVALUATION_SEEDS, 'correct')[0]:.1f}"
     for role, n, name in (("b", 7, "CtrlAfterSeven"), ("c", 7, "WithheldSeven"), ("d", 5, "EdgesFive")):
         for key, suffix in (("correct", "Correct"), ("right symbol, length 6", "LengthSix"),
                             ("pick the longer", "PickLonger")):
@@ -1917,12 +1922,15 @@ def novelty_gain_tex() -> str:
 
 def novelty_gain_figure(plt) -> None:
     cases = novelty_cases()
-    fig, ax = plt.subplots(figsize=(6.4, 4.2))
+    fig, ax = plt.subplots(figsize=(6.4, 5.6))
     xs = [0, 100]
-    ax.fill_between(xs, [0, 100], [105, 105], color="#f1f0ec", zorder=0, lw=0)
-    ax.fill([0, 25, 0], [0, -25, -25], color="#f1f0ec", zorder=0, lw=0)  # change < -novelty, inside the axes
+    # The axes cover every case: the y-axis is symmetric, so both bound lines run the full width.
+    lim = max(105.0, max(abs(c["change"]) for c in cases) + 5)
+    ax.fill_between(xs, [0, 100], [lim, lim], color="#f1f0ec", zorder=0, lw=0)
+    ax.fill_between(xs, [-lim, -lim], [0, -100], color="#f1f0ec", zorder=0, lw=0)
     ax.plot(xs, xs, color="#52514e", lw=1, ls="--", zorder=1)
     ax.plot(xs, [0, -100], color="#52514e", lw=1, ls="--", zorder=1)
+    ax.axhline(0, color="#c3c2be", lw=0.6, zorder=1)
     for k in KIND_ORDER:
         colour, marker = KIND_STYLE[k]
         g = [c for c in cases if c["kind"] == k]
@@ -1935,9 +1943,9 @@ def novelty_gain_figure(plt) -> None:
         ax.annotate(f"No-carry rule, starting model {c['seed']},\nround {c['round']}, {c['digits']} digits",
                     (c["novelty"], c["change"]), xytext=(c["novelty"] + 6, c["change"] - 4), fontsize=7,
                     va="top", arrowprops={"arrowstyle": "-", "color": "#52514e", "lw": 0.6})
-    ax.set_xlim(-2, 102); ax.set_ylim(-25, 105)
+    ax.set_xlim(-2, 102); ax.set_ylim(-lim, lim)
     ax.set_xlabel("Novelty (%)"); ax.set_ylabel("Change in accuracy (points)")
-    ax.legend(frameon=False, fontsize=7, loc="upper left")
+    ax.legend(frameon=False, fontsize=7, loc="lower left")
     fig.tight_layout(); fig.savefig(OUT / "figures" / "novelty_gain.png", dpi=200)
     fig.savefig(PAPER / "figure_novelty_gain.pdf"); plt.close(fig)
 
@@ -2091,6 +2099,185 @@ TEACHER_ACCURACY_CAPTION = (
     "accuracy = confirmed share. A point lies below the line by at most its share of wrong but confirmed answers.")
 
 
+# ---------------------------------------------------------------- amendment 25: steered rounds
+#
+# Defined after all experiments; new runs (gainpred.steer reads them). The paper's words: a length
+# is taught or skipped; novelty (check 1); starting model (starting point).
+
+def steer_ready() -> bool:
+    from gainpred import steer
+    return {"fixed", "steer3", "frozen"} <= set(steer.arms_present())
+
+
+def steer_arm_summary(arm: str) -> dict:
+    from gainpred import steer as st
+    fixed_kept = st.kept_total("fixed")
+    secs = {s: st.seconds(arm, s) for s in st.SEEDS}
+    fsecs = {s: st.seconds("fixed", s) for s in st.SEEDS}
+    lowest = [min(st.final(st.load(arm, s))[d] for d in st.HARD) for s in st.SEEDS]
+    hard_gap = {s: st.gaps(arm, s, st.HARD) for s in st.SEEDS}
+    easy_gap = {s: st.gaps(arm, s, st.EASY) for s in st.SEEDS}
+    worst = max(((s, d, g) for s in st.SEEDS for d, g in hard_gap[s].items()), key=lambda x: x[2])
+    fall = st.worst_fall(arm) if arm != "fixed" else None
+    return {
+        "taught": [st.taught(arm, s) if arm != "fixed" else st.LENGTH_ROUNDS for s in st.SEEDS],
+        "repair_taught": [st.taught(arm, s, repairs=True) if arm != "fixed" else 0 for s in st.SEEDS],
+        "repairs": [st.repair_rounds(arm, s) if arm != "fixed" else 0 for s in st.SEEDS],
+        "kept_pct": 100 * st.kept_total(arm) / fixed_kept,
+        "build_pct": 100 * sum(x["build"] for x in secs.values()) / sum(x["build"] for x in fsecs.values()),
+        "all_pct": 100 * sum(sum(x.values()) for x in secs.values()) / sum(sum(x.values()) for x in fsecs.values()),
+        "lowest": lowest, "worst_gap": worst, "worst_easy": max(max(g.values()) for g in easy_gap.values()),
+        "fall": fall}
+
+
+def lo_hi_int(xs: list[int]) -> str:
+    return str(xs[0]) if min(xs) == max(xs) else f"{min(xs)}–{max(xs)}"
+
+
+def steer_table_rows() -> list[list[str]]:
+    from gainpred import steer as st
+    rows = []
+    for arm in [a for a in ("fixed", "steer3", "frozen", "rehearse") if a in st.arms_present()]:
+        m = steer_arm_summary(arm)
+        fixed = arm == "fixed"
+        rows.append([st.ARM_LABELS[arm], lo_hi_int(m["taught"]),
+                     "–" if fixed else f"{sum(m['repairs'])} ({sum(m['repair_taught'])} lengths)",
+                     f"{m['kept_pct']:.0f}", f"{m['build_pct']:.0f}", f"{m['all_pct']:.0f}",
+                     f"{statistics.mean(m['lowest']):.1f} ({min(m['lowest']):.1f}–{max(m['lowest']):.1f})",
+                     "–" if fixed else fmt(m["worst_gap"][2], True),
+                     "–" if fixed or m["fall"] is None else fmt(m["fall"]["fall"], True)])
+    return rows
+
+
+STEER_HEADER = ["Schedule", "Lengths taught (of 20)", "Repair rounds", "Answers built %", "Build time %",
+                "All timed %", "Lowest final accuracy", "Largest shortfall", "Largest fall when skipped"]
+
+
+def steer_tex() -> str | None:
+    if not steer_ready():
+        return None
+    return tex_table(
+        "steer", "Letting the checks decide which lengths to teach (steered rounds), agreement rule, evaluation "
+        "runs; defined after all experiments, predictions recorded before the runs. Lengths taught: of the 20 "
+        "length-rounds per starting model in rounds 1-4, lowest to highest over starting models; repair rounds "
+        "after round 4 (lengths taught in them) over the three starting models. Answers built and time: % of the "
+        "fixed schedule, pooled. Lowest final accuracy over lengths 8-15 (%): mean (range) over starting models. "
+        "Largest shortfall: points below the fixed schedule after its round 4, at any length 8-15. Largest fall "
+        "when skipped: accuracy before minus after a round in which the length was skipped (points).",
+        STEER_HEADER, steer_table_rows(), fit=True)
+
+
+def steer_lengths_tex() -> str | None:
+    from gainpred import steer as st
+    if not steer_ready():
+        return None
+    arms = [a for a in ("fixed", "steer3", "frozen", "rehearse") if a in st.arms_present()]
+    finals = {a: [st.final(st.load(a, s)) if a != "fixed" else st.accuracy_by_round(st.load(a, s))[4]
+                  for s in st.SEEDS] for a in arms}
+    rows = [[str(d)] + [f"{statistics.mean(f[d] for f in finals[a]):.1f} "
+                        f"({min(f[d] for f in finals[a]):.1f}–{max(f[d] for f in finals[a]):.1f})" for a in arms]
+            for d in st.HARD]
+    return tex_table(
+        "steer-lengths", "Final accuracy at each length (%), agreement rule, evaluation runs: mean (range) over "
+        "the three starting models; the fixed schedule after round 4, the steered schedules after their last "
+        "round (repair rounds included). Defined after all experiments.",
+        ["Digits"] + [st.ARM_LABELS[a] for a in arms], rows, fit=True)
+
+
+def steer_numbers() -> dict[str, str]:
+    from gainpred import steer as st
+    if not steer_ready():
+        return {}
+    b, c = steer_arm_summary("steer3"), steer_arm_summary("frozen")
+    s, d, g = b["worst_gap"]
+    out = {"gpSteerLevel": "3", "gpSteerLengthRounds": str(st.LENGTH_ROUNDS * len(st.SEEDS)),
+           "gpSteerTaught": str(sum(b["taught"])), "gpSteerRepairRounds": str(sum(b["repairs"])),
+           "gpSteerKeptPct": f"{b['kept_pct']:.0f}", "gpSteerBuildSecondsPct": f"{b['build_pct']:.0f}",
+           "gpSteerSecondsPct": f"{b['all_pct']:.0f}",
+           "gpSteerWorstGap": f"{g:.1f}", "gpSteerWorstGapDigits": str(d), "gpSteerWorstGapModel": str(s),
+           "gpSteerWorstEasyGap": f"{b['worst_easy']:.1f}"}
+    f = b["fall"]
+    out |= {"gpSteerWorstFall": f"{f['fall']:.1f}" if f else "--",
+            "gpSteerWorstFallDigits": str(f["digits"]) if f else "--",
+            "gpSteerWorstFallRound": str(f["round"]) if f else "--"}
+    out |= {"gpSteerSOne": "held" if st.s1()["pooled"]["held"] else "failed",
+            "gpSteerSTwo": "held" if st.s2()["held"] else "failed"}
+    out |= {"gpSteerFrozenTaught": str(sum(c["taught"])), "gpSteerFrozenKeptPct": f"{c['kept_pct']:.0f}",
+            "gpSteerFrozenWorstGap": f"{c['worst_gap'][2]:.1f}", "gpSteerFrozenWorstGapDigits": str(c["worst_gap"][1])}
+    rehearsed = "rehearse" in st.arms_present()
+    out["gpSteerRehearsalRun"] = "yes" if rehearsed else "no"
+    if rehearsed:
+        r = steer_arm_summary("rehearse")
+        out |= {"gpSteerRehearseKeptPct": f"{r['kept_pct']:.0f}", "gpSteerRehearseWorstGap": f"{r['worst_gap'][2]:.1f}",
+                "gpSteerRehearseWorstFall": f"{r['fall']['fall']:.1f}" if r["fall"] else "--"}
+    return out
+
+
+def steer_md() -> str | None:
+    from gainpred import steer as st
+    if not steer_ready():
+        return None
+    lines = ["# Steered rounds (amendment 25)", "",
+             "Generated by `uv run python -m gainpred.writeup`; do not edit by hand. Defined after all experiments; "
+             "predictions recorded before any steered run was launched. Agreement rule, evaluation runs (starting "
+             "models 2-4). Per-length rows: `results/steer.csv`.", "", "## Summary", ""]
+    lines += table(STEER_HEADER, steer_table_rows())
+    lines += ["", "## Identity check (round 1 build log against the fixed schedule)", ""]
+    for arm in ("steer3", "frozen", "rehearse"):
+        if arm not in st.arms_present():
+            continue
+        for s in st.SEEDS:
+            ok, diffs = st.identity(arm, s)
+            lines.append(f"- `{st.run_name(arm, s)}`: " + ("passed" if ok else "not applicable (a length was skipped)"
+                                                            if ok is None else "FAILED: " + "; ".join(diffs)))
+            lines += [f"  - round-1 check differs: {x}" for x in st.check_differences(arm, s)]
+    p1, p2 = st.s1(), st.s2()
+    lines += ["", "## Predictions", "",
+              "S1: for each starting model, after the last round of the main steered arm, accuracy at every length "
+              "8-15 at most 3 points below the fixed schedule's after round 4, and at every easy length 3-7 at most "
+              "3 points below. S2: summed over the three starting models, the main steered arm builds at most half "
+              "as many training answers as the fixed schedule.", ""]
+    lines += table(["Starting model", "S1", "Largest shortfall 8-15 (digits)", "Largest shortfall 3-7 (digits)",
+                    "Answers built (steered / fixed)"],
+                   [[str(s), "held" if p1[s]["held"] else "failed",
+                     f"{p1[s]['worst_hard']:+.1f} ({p1[s]['worst_hard_digits']})",
+                     f"{p1[s]['worst_easy']:+.1f} ({p1[s]['worst_easy_digits']})",
+                     f"{p2['per_seed'][s][0]:,} / {p2['per_seed'][s][1]:,}"] for s in st.SEEDS] +
+                   [["pooled", "held" if p1["pooled"]["held"] else "failed", f"{p1['pooled']['worst_hard']:+.1f}",
+                     f"{p1['pooled']['worst_easy']:+.1f}", f"{p2['kept']:,} / {p2['fixed']:,}"]])
+    lines += ["", f"S2: {'held' if p2['held'] else 'failed'} ({100 * p2['share']:.1f}% of the fixed schedule's "
+              "answers).", "", "## Trigger for the rehearsal arm", ""]
+    trig = st.trigger()
+    lines += ["Fired: " + ("yes. " + "; ".join(f"starting model {r['seed']}, round {r['round']}, {r['digits']} digits: "
+                                               f"{r['before']:.1f} -> {r['after']:.1f}" for r in trig) if trig else
+                           "no (no skipped length fell more than 3 points in a round in which it was skipped)."), ""]
+    for arm in ("steer3", "frozen", "rehearse"):
+        if arm not in st.arms_present():
+            continue
+        lines += [f"## {st.ARM_LABELS[arm]}: decisions", ""]
+        rows = []
+        for s in st.SEEDS:
+            for r in st.round_rows(arm, s):
+                rows.append([str(s), str(r["round"]) + (" (repair)" if r["repair"] else ""), str(r["digits"]),
+                             r["decision"] + (f" ({r['verdict']})" if r["verdict"] else ""),
+                             pct(r["novelty"]),
+                             pct(r["confirmed"]), f"{r['before']:.1f}", f"{r['after']:.1f}",
+                             "–" if r["fixed_after"] is None else f"{r['fixed_after']:.1f}", f"{r['kept']:,}"])
+        lines += table(["Starting model", "Round", "Digits", "Decision", "Novelty %", "Confirmed %", "Before",
+                        "After", "Fixed after", "Kept"], rows)
+        lines += [""]
+    lines += ["## Time (seconds, summed over the three starting models)", ""]
+    trows = []
+    for arm in [a for a in ("fixed", "steer3", "frozen", "rehearse") if a in st.arms_present()]:
+        t = {k: sum(st.seconds(arm, s)[k] for s in st.SEEDS) for k in ("checks", "build", "replay", "train")}
+        trows.append([st.ARM_LABELS[arm]] + [f"{t[k]:.0f}" for k in ("checks", "build", "replay", "train")] +
+                     [f"{sum(t.values()):.0f}"])
+    lines += table(["Schedule", "Checks", "Build", "Replay", "Train", "All timed"], trows)
+    lines += ["", "Evaluations are not timed in either schedule. The steered schedules' checks include the closing "
+              "checks.", ""]
+    return "\n".join(lines)
+
+
 def paper_files() -> dict[str, str]:
     """Main-text tables and figure wrappers. Confirming runs are the evidence throughout."""
     from gainpred import p9b
@@ -2105,7 +2292,9 @@ def paper_files() -> dict[str, str]:
 
     out["table_p9b_cases.tex"] = cases_tex(conf)
     out["numbers.tex"] = numbers_tex(section4_numbers() | section5_numbers() | control_numbers()
-                                     | novelty_numbers() | teacher_accuracy_numbers())
+                                     | novelty_numbers() | teacher_accuracy_numbers() | steer_numbers())
+    if (t := steer_tex()) is not None:
+        out["table_steer.tex"], out["table_steer_lengths.tex"] = t, steer_lengths_tex()
     out["table_novelty_gain.tex"] = novelty_gain_tex()
     out["figure_novelty_gain.tex"] = tex_figure("novelty-gain", "figure_novelty_gain.pdf", NOVELTY_GAIN_CAPTION)
     if (ta := teacher_accuracy_tex()) is not None:
@@ -2223,7 +2412,7 @@ def main() -> None:
     for name, build in (("exp1.md", exp1), ("exp2.md", exp2), ("exp3.md", exp3), ("cost.md", cost_md),
                         ("baseline.md", baseline_md), ("filter_gap.md", filter_gap_md),
                         ("check3_addition.md", check3_md), ("control_answers.md", control_md),
-                        ("teacher_accuracy.md", teacher_accuracy_md),
+                        ("teacher_accuracy.md", teacher_accuracy_md), ("steer.md", steer_md),
                         ("runs.md", runs_md)):
         text = build()
         if text is None:  # an analysis whose results are not fetched yet
