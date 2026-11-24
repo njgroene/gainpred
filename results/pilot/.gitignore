@@ -1,0 +1,3 @@
+# Per-problem logs and model files stay on the Modal volume (owner's answer 14).
+*.gz
+*.pt

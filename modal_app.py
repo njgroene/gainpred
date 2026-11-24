@@ -341,3 +341,143 @@ def teacher_accuracy(run: str, of: str, only: list[list[int]]) -> None:
                only=[tuple(c) for c in only])
     finally:
         volume.commit()
+
+
+# ----------------------------------------------------------------------------
+# Pilot: building on self-taught pieces (gainpred.floors). Everything under /vol/runs/pilot/.
+# Launched with ``uv run python -m gainpred.floors spawn <function> <run> --kwargs '{...}'``.
+# ----------------------------------------------------------------------------
+
+PILOT_DIR = VOLUME_PATH / "runs" / "pilot"
+SOLID = {"seed2": "si-nocarry-seed2-authors", "seed3": "si-nocarry-seed3-authors"}
+
+
+def _pilot_call(run: str, body) -> None:
+    """Run ``body``, then record the call's wall-clock seconds in /vol/runs/pilot/<run>/call.json."""
+    import time
+
+    started = time.time()
+    try:
+        body()
+    finally:
+        out = PILOT_DIR / run
+        out.mkdir(parents=True, exist_ok=True)
+        (out / "call.json").write_text(json.dumps({"wall_seconds": time.time() - started}) + "\n")
+        volume.commit()
+
+
+@app.function(image=image, volumes={str(VOLUME_PATH): volume}, timeout=15 * 60)
+def pilot_data() -> dict:
+    """The 16-39 digit test set on the volume (generated once from its seed); returns the manifest."""
+    from gainpred.floors import write_floor_data
+
+    out_dir = VOLUME_PATH / "data" / "floors"
+    if (out_dir / "manifest.json").exists():
+        return json.loads((out_dir / "manifest.json").read_text())
+    manifest = write_floor_data(out_dir)
+    volume.commit()
+    return manifest
+
+
+def _solid_checkpoint(model: str) -> Path:
+    from gainpred.floors import last_checkpoint
+
+    return last_checkpoint(VOLUME_PATH / "runs" / SOLID[model] / "round_4")
+
+
+@app.function(image=image, gpu=GPU, volumes={str(VOLUME_PATH): volume}, timeout=60 * 60)
+def pilot_timing(run: str, model: str = "seed2") -> dict:
+    """Time training and building at 23, 31 and 39 digits with the solid model (nothing saved but timings)."""
+    volume.reload()
+    import torch
+
+    from gainpred.floors import measure_timing
+
+    result = {}
+
+    def body():
+        out = PILOT_DIR / run
+        out.mkdir(parents=True, exist_ok=True)
+        result.update(measure_timing(_solid_checkpoint(model), torch.device("cuda"), out))
+
+    _pilot_call(run, body)
+    return result
+
+
+@app.function(image=image, gpu=GPU, volumes={str(VOLUME_PATH): volume}, timeout=2 * 60 * 60)
+def pilot_rehearsal(run: str, model: str = "seed2") -> dict:
+    """The floor-1 rehearsal set, built once by the solid model (``run`` names the call's folder)."""
+    volume.reload()
+    import torch
+
+    from gainpred.floors import ModelSolver, build_rehearsal
+
+    pilot_data.local()
+    result = {}
+
+    def body():
+        result.update(build_rehearsal(PILOT_DIR, model, _solid_checkpoint(model), VOLUME_PATH / "data" / "addition",
+                                      VOLUME_PATH / "data" / "floors", torch.device("cuda"),
+                                      make_solver=lambda m: ModelSolver(m, torch.device("cuda"), 4_096, seed=0)))
+
+    _pilot_call(run, body)
+    return result
+
+
+@app.function(image=image, gpu=GPU, volumes={str(VOLUME_PATH): volume}, timeout=20 * 60 * 60)
+def pilot_floor(run: str, cfg: dict, floor: int, first_round: int, last_round: int, start: str = "",
+                base_run: str = "", seen: bool = False) -> None:
+    """Rounds of one floor for one condition and repeat. ``start``: on the first round of a floor,
+    "solid" (the solid floor-1 model), "pilot:<run>" (round 4 of an under-trained floor-1 run) or
+    "floor:<run>" (round 4 of the floor below in that pilot run)."""
+    volume.reload()
+    import torch
+
+    from gainpred.floors import PilotConfig, last_checkpoint, run_floor
+
+    config = PilotConfig(**cfg)
+    if start == "solid":
+        checkpoint = _solid_checkpoint(config.model)
+    elif start.startswith("pilot:"):
+        checkpoint = last_checkpoint(PILOT_DIR / start.removeprefix("pilot:") / "round_4")
+    elif start.startswith("floor:"):
+        checkpoint = last_checkpoint(PILOT_DIR / start.removeprefix("floor:") / f"floor{floor - 1}" / "round_4")
+    else:
+        checkpoint = Path("/nonexistent")  # continuing: run_floor uses the run's own last round
+    print(f"GPU: {torch.cuda.get_device_name()}  torch {torch.__version__}  start {checkpoint}")
+    try:
+        run_floor(config, run, floor, first_round, last_round, checkpoint, PILOT_DIR, VOLUME_PATH / "data" / "addition",
+                  VOLUME_PATH / "data" / "floors", torch.device("cuda"), base_run=base_run or None, seen=seen,
+                  after_round=volume.commit)
+    finally:
+        volume.commit()
+
+
+@app.function(image=image, gpu=GPU, volumes={str(VOLUME_PATH): volume}, timeout=6 * 60 * 60)
+def pilot_undertrained(run: str, steps: int, model: str = "seed2") -> None:
+    """Test 2, version B: floor 1 taught again exactly as ``si-nocarry-seed<k>-authors`` (no-carry
+    rule, 3-7 digit pieces, same starting model, seeds and settings) but with ``steps`` updates per
+    round and the final decay shortened in proportion (1,000 x steps / 3,000)."""
+    volume.reload()
+    import shutil
+
+    import torch
+
+    from gainpred.rounds import RoundConfig, self_improve, start_seed
+
+    solid = json.loads((VOLUME_PATH / "runs" / SOLID[model] / "config.json").read_text())
+    start_run = solid["start_run"]
+    copy = f"{run}-start"  # the starting model, copied into the pilot folder (rounds look there)
+    (PILOT_DIR / copy / "checkpoints").mkdir(parents=True, exist_ok=True)
+    shutil.copy(VOLUME_PATH / "runs" / start_run / "config.json", PILOT_DIR / copy / "config.json")
+    src = VOLUME_PATH / "runs" / solid["start_checkpoint"]
+    shutil.copy(src, PILOT_DIR / copy / "checkpoints" / src.name)
+    cfg = RoundConfig(teacher="no_carry", rounds=4, seed=start_seed(PILOT_DIR, copy), steps=steps,
+                      decay_steps=round(1_000 * steps / 3_000), solver_batch_size=solid["rounds"]["solver_batch_size"])
+    print(f"GPU: {torch.cuda.get_device_name()}  {cfg}")
+
+    def body():
+        self_improve(cfg, run, copy, data_dir=VOLUME_PATH / "data" / "addition", device=torch.device("cuda"),
+                     runs_dir=PILOT_DIR)
+
+    _pilot_call(run, body)
