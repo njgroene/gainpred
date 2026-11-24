@@ -48,6 +48,8 @@ round* (maximum 15 digits) is needed; at most ``repair_rounds`` of them. Rules:
 * ``frozen`` -- teach only if the frozen P9b verdict is "pays off";
 * ``novelty_rehearse`` -- as ``novelty``, and a skipped length that was taught before
   re-uses the answers kept the last time (stored, not rebuilt).
+* ``schedule`` (amendment 26, arm g) -- no checks at all: each round builds its two newest
+  lengths and rehearses the stored answers of every earlier length; no closing check.
 
 Every decision is logged (``steer`` events; ``closing_checks``, ``rehearse``,
 ``round_skipped`` and ``closing_done``). Seeds and candidate streams are those of the fixed
@@ -132,7 +134,7 @@ class RoundConfig:
     often enough to matter."""
     steer: str | None = None
     """Steered rounds (amendment 25): None (the fixed schedule), "novelty" (arm b), "frozen"
-    (arm c) or "novelty_rehearse" (arm d). See ``steer_decision``."""
+    (arm c) or "novelty_rehearse" (arm d); "schedule" (amendment 26, arm g). See ``steer_decision``."""
     steer_level: float = 0.03
     """Arms b and d: a length is taught if check 1 (novelty) is at least this."""
     repair_rounds: int = 2
@@ -258,7 +260,8 @@ def start_seed(runs_dir: Path, start_run: str, start_round: int | None = None) -
     return config["train"]["seed"] if start_round is None else config["rounds"]["seed"]
 
 
-STEER_MODES = ("novelty", "frozen", "novelty_rehearse")
+STEER_MODES = ("novelty", "frozen", "novelty_rehearse", "schedule")
+REHEARSING = ("novelty_rehearse", "schedule")  # modes that train on stored answers of lengths not rebuilt
 
 
 def steer_decision(mode: str, check_1: float | None, kept_share: float | None, check_2b: float | None,
@@ -431,7 +434,7 @@ def self_improve(cfg: RoundConfig, run_name: str, start_run: str, data_dir: Path
             stored[digits] = (round_, kept)
             examples += kept
         examples += replay_examples(round_, solver, watch)
-        if cfg.steer == "novelty_rehearse":
+        if cfg.steer in REHEARSING:
             for digits in range(min(HARD_DIGITS), max_digits + 1):
                 if digits not in taught and digits in stored:
                     from_round, kept = stored[digits]
@@ -458,6 +461,15 @@ def self_improve(cfg: RoundConfig, run_name: str, start_run: str, data_dir: Path
                 checks(round_, digits, solver, watch)
             train_and_evaluate(round_, examples, max_digits, solver, watch)
             continue
+        if cfg.steer == "schedule":
+            # Schedule only (amendment 26, arm g): no checks; build the round's two newest lengths,
+            # rehearse the stored answers of every earlier length.
+            taught = [max_digits - 1, max_digits]
+            for digits in lengths:
+                log({"event": "steer", "round": round_, "digits": digits,
+                     "decision": "build" if digits in taught else "rehearse"})
+            steered_round(round_, max_digits, taught, solver, watch)
+            continue
         # Steered (amendment 25): checks first, then build only the lengths the rule teaches.
         taught = []
         for digits in lengths:
@@ -467,7 +479,7 @@ def self_improve(cfg: RoundConfig, run_name: str, start_run: str, data_dir: Path
                 taught.append(digits)
         steered_round(round_, max_digits, taught, solver, watch)
 
-    if cfg.steer is not None:
+    if cfg.steer is not None and cfg.steer != "schedule":
         # Closing check and repair: checks at 8-15 on the model after the last scheduled round; a
         # repair round (maximum length 15) teaches exactly the lengths the rule would teach; the
         # closing check is repeated after each repair round; at most ``repair_rounds`` of them.

@@ -144,3 +144,24 @@ def test_rehearsal_adds_stored_answers_of_skipped_lengths_only(setup):
 def test_novelty_mode_does_not_rehearse(setup):
     _, ev = run(setup, "norehearse", 2, lambda r: {1: {9}, 2: {8}}.get(r, set()))
     assert not [e for e in ev if e["event"] == "rehearse"]
+
+
+# ---------------------------------------------------------------- schedule only (amendment 26, arm g)
+
+@pytest.mark.slow
+def test_schedule_builds_the_two_newest_lengths_and_rehearses_the_rest(setup):
+    root = setup[0]
+    # The solver would make every length look new; the schedule ignores that: no checks at all.
+    _, ev = run(setup, "schedule", 2, lambda r: set(range(8, 16)), steer="schedule")
+    assert [(e["round"], e["digits"]) for e in ev if e["event"] == "build"] == [(1, 8), (1, 9), (2, 10), (2, 11)]
+    assert not [e for e in ev if e["event"] in ("checks", "closing_checks", "closing_done")]
+    steer = [(e["round"], e["digits"], e["decision"]) for e in ev if e["event"] == "steer"]
+    assert steer == [(1, 8, "build"), (1, 9, "build"), (2, 8, "rehearse"), (2, 9, "rehearse"), (2, 10, "build"),
+                     (2, 11, "build")]
+    rehearse = [(e["round"], e["digits"], e["examples"], e["from_round"]) for e in ev if e["event"] == "rehearse"]
+    assert rehearse == [(2, 8, 20, 1), (2, 9, 20, 1)]
+    replay = [e for e in ev if e["event"] == "replay"][1]
+    examples = json.loads((root / "runs" / "schedule" / "round_2" / "config.json").read_text())["examples"]
+    assert examples == 20 + 20 + 20 + 20 + replay["readable"]
+    done = [e for e in ev if e["event"] == "round_done"]
+    assert all("checks" not in e["seconds"] or e["seconds"]["checks"] == 0 for e in done)

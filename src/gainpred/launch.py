@@ -146,7 +146,7 @@ def main() -> None:
     r.add_argument("--rounds", type=int, default=4)
     r.add_argument("--start-round", type=int, default=0)
     r.add_argument("--build-seconds", type=float, default=0.0)
-    r.add_argument("--steer", choices=["novelty", "frozen", "novelty_rehearse"], default=None,
+    r.add_argument("--steer", choices=["novelty", "frozen", "novelty_rehearse", "schedule"], default=None,
                    help="steered rounds (amendment 25)")
     r.add_argument("--steer-level", type=float, default=0.03)
     rm = sub.add_parser("runs-main", help="longest-run starting training")

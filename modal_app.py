@@ -148,7 +148,7 @@ def main(
 def self_improve(run: str, start: str, teacher: str, rounds: int, start_round: int, build_seconds: float,
                  steer: str | None = None, steer_level: float = 0.03) -> None:
     """P3 self-improvement rounds on one GPU. Output goes to /vol/runs/<run>/.
-    ``steer``: steered rounds (amendment 25; None = the fixed schedule)."""
+    ``steer``: steered rounds (amendments 25-26; None = the fixed schedule)."""
     # A warm (reused) container keeps the volume as it was when the container started;
     # reload so runs that finished since then (our starting point) are visible.
     volume.reload()
