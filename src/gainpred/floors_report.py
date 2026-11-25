@@ -149,6 +149,9 @@ def stage_dollars(stages: dict[str, list[str]]) -> list[str]:
 # Run names used by the pilot. A condition is (version of floor 1, teacher); "r<k>" is the repeat.
 REPEATS = (0, 1, 2)
 SOLID_AGR = [f"solid-agr-r{r}" for r in REPEATS]
+# Repeat 1's floor-4 call was restarted by Modal after its round 2 and refused to overwrite its
+# round 1; it was relaunched once as solid-agr-r1-again (same repeat, same streams, same start).
+FLOOR4_AGR = ["solid-agr-r0", "solid-agr-r1-again", "solid-agr-r2"]
 SOLID_KEY = ["solid-key-r0", "solid-key-r1"]  # owner's change A: the answer key has two repeats
 CONDITIONS = {  # condition -> runs (floor 2)
     "solid / agreement": SOLID_AGR,
@@ -303,6 +306,11 @@ def undertrained_section() -> list[str]:
         a = accuracy(events(run), None, 4)
         means[steps] = floor_mean(a, FLOORS[1])
         out.append(f"| {steps:,} | `{run}` | " + " | ".join(fmt(a.get(d)) for d in FLOORS[1]) + f" | {fmt(means[steps])} |")
+    out += ["", "Mean over 8-15 after each round (the study's run with 3,000 updates per round is the solid floor 1):",
+            "", "| Updates per round | Round 0 | Round 1 | Round 2 | Round 3 | Round 4 |", "| --- | --- | --- | --- | --- | --- |"]
+    for steps, run in runs.items():
+        evs = events(run)
+        out.append(f"| {steps:,} | " + " | ".join(fmt(floor_mean(accuracy(evs, None, k), FLOORS[1])) for k in range(5)) + " |")
     choice = undertrained_choice()
     out += ["", f"* Choice (mean closest to 85%): **{choice['choice'] or 'none'}**. "
             f"Every length below 20% or above 98% in all three runs: **{'yes' if choice['all_extreme'] else 'no'}**"
@@ -386,14 +394,14 @@ def stage_a_gate() -> tuple[bool | None, list[str]]:
 
 
 def floor_section(title: str, runs: list[str], floor: int, gate: str | None) -> list[str]:
-    runs = present(runs)
+    planned, runs = runs, present(runs)  # the rule counts planned repeats (2 of 3), not finished ones
     if not runs:
         return [f"## {title}", "", "Not run.", ""]
     out = [f"## {title}", ""]
     if gate:
-        v = verdict(runs, floor)
+        v = verdict(planned, floor)
         out += [f"**{gate}: {'passed' if v['learned'] else 'not passed'}** (floor {floor} {v['verdict']}).", ""]
-    out += verdict_lines(runs, floor) + ["", f"### Accuracy per length and repeat (percent)", ""]
+    out += verdict_lines(planned, floor) + ["", f"### Accuracy per length and repeat (percent)", ""]
     out += block_tables(runs, floor, 4)
     if floor >= 3:
         out += [f"### Floor {floor - 1} before floor {floor}'s first round (logged only, no gate)", "",
@@ -417,14 +425,14 @@ def write_report(path: Path = PILOT_RESULTS / "report.md", notes: Path = PILOT_R
     out += floor_section("Stage B: answer key, floor 2, rounds 3-4 continued (control)", SOLID_KEY, 2, None)
     out += floor_section("Stage B2: agreement rule, floor 3", SOLID_AGR, 3, "Gate B2")
     out += floor_section("Answer-key control, floor 3", KEY_CONTROL[3], 3, None)
-    out += floor_section("Stage B3: agreement rule, floor 4", SOLID_AGR, 4, "Gate B3")
+    out += floor_section("Stage B3: agreement rule, floor 4", FLOOR4_AGR, 4, "Gate B3")
     out += floor_section("Answer-key control, floor 4", KEY_CONTROL[4], 4, None)
     out += ["## Stage C (iii): under-trained floor 1", ""] + undertrained_section()
     for cond, runs in CONDITIONS.items():
         if cond not in ("solid / agreement", "solid / answer key"):
             out += floor_section(f"Stage C: {cond}, floor 2", runs, 2, None)
     out += ["## Seen coming", ""] + seen_section()
-    all_runs = present(SOLID_KEY + SOLID_AGR + KEY_CONTROL[3] + KEY_CONTROL[4]
+    all_runs = present(SOLID_KEY + SOLID_AGR + ["solid-agr-r1-again"] + KEY_CONTROL[3] + KEY_CONTROL[4]
                        + [r for c, rs in CONDITIONS.items() for r in rs if c not in ("solid / agreement",
                                                                                      "solid / answer key")])
     out += ["## Examples and updates per round", ""] + rounds_table(all_runs) + [""]
@@ -434,7 +442,8 @@ def write_report(path: Path = PILOT_RESULTS / "report.md", notes: Path = PILOT_R
         "A (answer key, floor 2 rounds 1-2)": [(r, "floor 2 rounds 1-2") for r in SOLID_KEY],
         "B (agreement floor 2; answer key rounds 3-4)": [(r, "floor 2") for r in SOLID_AGR] + [(r, "floor 2 rounds 3-4") for r in SOLID_KEY],
         "B2 (agreement floor 3)": [(r, "floor 3") for r in SOLID_AGR] + [(r, None) for r in present(KEY_CONTROL[3])],
-        "B3 (agreement floor 4)": [(r, "floor 4") for r in SOLID_AGR] + [(r, None) for r in present(KEY_CONTROL[4])],
+        "B3 (agreement floor 4; repeat 1 crashed and relaunched)": [(r, "floor 4") for r in SOLID_AGR]
+        + [(r, None) for r in present(["solid-agr-r1-again"] + KEY_CONTROL[4])],
         "C": [(r, None) for r in present(c_runs + list(UNDERTRAINED.values()))],
     }
     out += ["## Dollars (logged GPU wall seconds x $1.10/h)", ""] + dollars_section(stages) + [""]

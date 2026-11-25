@@ -6,7 +6,28 @@ logs fetched into `results/pilot/runs/` (`uv run python -m gainpred.floors fetch
 
 ## Status
 
-STATUS_PLACEHOLDER
+The pilot ran to its end on 25 November 2026. Every stage the gates allowed was run, and the
+cap did not stop anything. **Pilot spending: $28.39 of logged GPU dollars (cap $30).**
+
+| Stage | What | Gate | Result |
+| --- | --- | --- | --- |
+| A | Answer key, floor 2, rounds 1-2 (repeats 0, 1) | >= 90% at 16-19 in both repeats | **passed** (100.0% at 16-19 in both) |
+| B | Agreement rule, floor 2 (3 repeats); answer key rounds 3-4 | floor 2 learned | **passed**: learned in 3 of 3 (lowest 99.9%); answer key learned in 2 of 2 |
+| B2 | Agreement rule, floor 3 | floor 3 learned | **passed**: learned in 3 of 3 (lowest 99.9%); no answer-key control needed |
+| B3 | Agreement rule, floor 4 | floor 4 learned | **passed**: learned in 3 of 3 (lowest 99.9%; repeat 1 crashed once and was relaunched); no answer-key control needed |
+| C (i) | Solid floor 1, no-carry rule, floor 2 | none | learned in 3 of 3 (lowest 99.8%) |
+| C (ii) | Corrupted pieces (15%), agreement rule and no-carry rule, floor 2 | none | both **learned** in 3 of 3 (lowest 99.9% and 99.8%) |
+| C (iii) | Under-trained floor 1: 500, 1,000, 1,500 updates per round | 85% choice | every run at >= 99.7% at every length 8-15 after round 4: **all three are "below 20% or above 98%" at every length, so version B was not run (a finding)** |
+| C (iv), (v) | Under-trained floor 1 on floor 2 | | **not run**, by the rule above (not by the cap) |
+
+Floor 1 eroded in no condition and on no floor: the largest drop at any shorter length, in any
+repeat, was 0.1 points. **No condition failed floor 2**, so "seen coming" has no failing condition
+to predict; both numbers are reported for every condition that computed them. With corrupted pieces
+the confirmed share at 16 and 17 digits fell from 63-66% (solid) to 42-47%, below every solid
+repeat (the strict comparison holds), and yet floor 2 was learned with both teachers. Floor-1
+novelty was 0.00% at every length in every repeat of both versions.
+
+All runs were launched from commits 08bfe6d and 3e25df1 (recorded per call in `launches.jsonl`).
 
 ## Decisions I took
 
@@ -40,7 +61,51 @@ threshold, split or number was changed.
 9. **Under-trained choice**: "average accuracy over those eight lengths" is the mean over 8-15 of the
    mean of the carry and no-carry groups, with 13-15 from the five-cut set (answer 12). A tie would go to
    fewer updates.
+10. **Stage C was launched as (i), (ii) and (iii) together** once gate B3 had passed, because
+    none of them depends on another; the cap check covered all of them at once ($16.54 spent + $2.78
+    relaunch + $9.52 estimated = $28.84). (iv) and (v) depend on (iii) and were then not run because
+    of the 20% / 98% rule.
+11. **Crash relaunch**: `solid-agr-r1`'s floor-4 call was restarted by Modal partway through its
+    round 3 (most likely a preempted container); the restart began again at round 1 and the
+    no-overwrite guard stopped it. It was relaunched once, under the new name `solid-agr-r1-again`:
+    repeat 1 (so the same streams), starting from `solid-agr-r1`'s floor-3 round-4 model, with that
+    run's stored floor-2 and floor-3 answers (byte-identical, checked by sha256). The partial floor-4
+    rounds of `solid-agr-r1` are kept and are not used; their seconds count in B3's dollars. Its
+    examples and updates per round equal repeat 0's exactly.
+12. **"Learned" with a crashed repeat** counts the planned repeats (2 of 3), not the repeats that
+    finished; in the end all three finished.
+13. **Corrupted condition, two numbers**: the confirmed share is computed with the corruption applied
+    (answer 5). Floor-1 novelty uses pieces of 3-7 digits, which the corruption never touches
+    (only self-taught pieces of 8+ digits are replaced), so it measures the same model as the solid
+    condition.
 
 ## Anything that looked wrong
 
-ANOMALIES_PLACEHOLDER
+1. **The under-trained floor 1 was not weak.** With 500 updates per round (a sixth of the study's
+   3,000) floor 1 reached 99.9% on average after round 4, as did 1,000 and 1,500. Their means after
+   round 3 were 85.5-88.9% (they had not yet been taught 14 and 15 digits), but the spec measures
+   after round 4, so no setting was near 85% and version B was not run. Weakening floor 1 this way
+   needs far fewer updates, or stopping earlier; that is a change to the spec, which I did not make.
+2. **Trusting corrupted pieces did not break floor 2.** With the no-carry rule and corrupted pieces,
+   about 15% of self-taught piece answers were replaced (realised rate 0.150; no unreadable answer was
+   ever selected), so 85% of kept answers were right at 16-17 digits (one self-taught piece) and
+   72% at 18-23 (two). The model still reached >= 99.8% at every length 16-23 in all three
+   repeats. The errors are random and independent, so they do not teach a consistent wrong rule;
+   the spec itself expected the agreement rule to catch them "almost by construction", and it did
+   (99.9% of its kept answers right, at a keep rate of about 20% instead of 34%).
+3. **Floor-1 novelty was 0.00% before floor 2 in every repeat, and at most 0.26% at any length in any
+   round's checks on any floor**, so as a check it carried almost no information in this pilot:
+   floor 1 never weakened. At 15 digits the trusted-piece teacher keeps only about 290 of 2,000
+   problems (the no-carry rule with pieces of at most 7 digits), as in the study.
+4. **One crash** (`solid-agr-r1`, floor 4; see decision 11). Modal restarts a lost container from
+   the start of the call, and the no-overwrite guard then refuses; a call that loses its container
+   after a round cannot resume by itself. Nothing was overwritten.
+5. **Before-floor accuracy at the new floor is not measured**: the test before a floor's first round
+   covers lengths up to the top of the floor below, as specified. The round-1 checks log how often
+   the model's own direct answer was right at the first two new lengths (`audit_direct_right`).
+6. **The answer-key control was never needed** on floors 3 and 4, and the stage-B answer key
+   (2 repeats) learned floor 2 like the agreement rule, so the pilot has no case where the training
+   budget was the limit.
+7. The rehearsal set has 6 wrong answers of 80,000 (not filtered, as agreed).
+8. The cost model was accurate to within about 5% on floors 3 and 4 (floor 4: estimated 9,101 s,
+   logged 8,981-9,466 s) and 7% high on floor 2.
