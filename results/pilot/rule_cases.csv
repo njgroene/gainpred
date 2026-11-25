@@ -1,0 +1,145 @@
+condition,run,repeat,floor,round,digits,kept_share,novelty,confirmed_share,basics,verdict,before,after,best,outcome,gain,match
+solid / agreement,solid-agr-r0,0,2,1,16,0.3525,0.00425531914893617,1.0,True,does nothing,99.3,100.0,100.0,did nothing,0.7000000000000028,True
+solid / agreement,solid-agr-r0,0,2,1,17,0.351,0.7735042735042735,1.0,True,pays off,21.25,99.95,100.0,paid off,78.7,True
+solid / agreement,solid-agr-r0,0,2,2,18,0.341,0.010263929618768328,1.0,True,does nothing,99.4,100.0,100.0,did nothing,0.5999999999999943,True
+solid / agreement,solid-agr-r0,0,2,2,19,0.352,0.6193181818181818,1.0,True,pays off,37.9,99.95,100.0,paid off,62.050000000000004,True
+solid / agreement,solid-agr-r0,0,2,3,20,0.3385,0.0029542097488921715,1.0,True,does nothing,99.8,100.0,100.0,did nothing,0.20000000000000284,True
+solid / agreement,solid-agr-r0,0,2,3,21,0.3605,0.14008321775312066,1.0,True,does nothing,87.85,99.95,99.95,unclassified,12.100000000000009,
+solid / agreement,solid-agr-r0,0,2,4,22,0.3375,0.0,1.0,True,does nothing,99.95,100.0,100.0,did nothing,0.04999999999999716,True
+solid / agreement,solid-agr-r0,0,2,4,23,0.345,0.2217391304347826,1.0,True,does nothing,76.75,100.0,100.0,unclassified,23.25,
+solid / agreement,solid-agr-r0,0,3,1,24,0.3415,0.0,1.0,True,does nothing,100.0,100.0,100.0,did nothing,0.0,True
+solid / agreement,solid-agr-r0,0,3,1,25,0.3385,0.0310192023633678,1.0,True,does nothing,96.15,100.0,100.0,unclassified,3.8499999999999943,
+solid / agreement,solid-agr-r0,0,3,2,26,0.3265,0.0015313935681470138,1.0,True,does nothing,99.95,100.0,100.0,did nothing,0.04999999999999716,True
+solid / agreement,solid-agr-r0,0,3,2,27,0.3265,0.030627871362940276,1.0,True,does nothing,97.6,99.95,99.95,did nothing,2.3500000000000085,True
+solid / agreement,solid-agr-r0,0,3,3,28,0.338,0.0,1.0,True,does nothing,99.95,99.95,99.95,did nothing,0.0,True
+solid / agreement,solid-agr-r0,0,3,3,29,0.337,0.02373887240356083,1.0,True,does nothing,96.39999999999999,100.0,100.0,unclassified,3.6000000000000085,
+solid / agreement,solid-agr-r0,0,3,4,30,0.3485,0.0,1.0,True,does nothing,100.0,100.0,100.0,did nothing,0.0,True
+solid / agreement,solid-agr-r0,0,3,4,31,0.347,0.0,1.0,True,does nothing,99.9,100.0,100.0,did nothing,0.09999999999999432,True
+solid / agreement,solid-agr-r0,0,4,1,32,0.3785,0.0,1.0,True,does nothing,99.95,100.0,100.0,did nothing,0.04999999999999716,True
+solid / agreement,solid-agr-r0,0,4,1,33,0.348,0.004310344827586207,1.0,True,does nothing,99.45,99.95,99.95,did nothing,0.5,True
+solid / agreement,solid-agr-r0,0,4,2,34,0.352,0.0,1.0,True,does nothing,100.0,100.0,100.0,did nothing,0.0,True
+solid / agreement,solid-agr-r0,0,4,2,35,0.3445,0.002902757619738752,1.0,True,does nothing,99.35000000000001,100.0,100.0,did nothing,0.6499999999999915,True
+solid / agreement,solid-agr-r0,0,4,3,36,0.352,0.0,1.0,True,does nothing,100.0,100.0,100.0,did nothing,0.0,True
+solid / agreement,solid-agr-r0,0,4,3,37,0.3255,0.0015360983102918587,1.0,True,does nothing,99.95,100.0,100.0,did nothing,0.04999999999999716,True
+solid / agreement,solid-agr-r0,0,4,4,38,0.354,0.0,1.0,True,does nothing,100.0,100.0,100.0,did nothing,0.0,True
+solid / agreement,solid-agr-r0,0,4,4,39,0.345,0.11594202898550725,1.0,True,does nothing,88.4,100.0,100.0,unclassified,11.599999999999994,
+solid / agreement,solid-agr-r1,1,2,1,16,0.3405,0.00881057268722467,1.0,True,does nothing,98.8,100.0,100.0,did nothing,1.2000000000000028,True
+solid / agreement,solid-agr-r1,1,2,1,17,0.336,0.7767857142857143,1.0,True,pays off,21.9,100.0,100.0,paid off,78.1,True
+solid / agreement,solid-agr-r1,1,2,2,18,0.364,0.005494505494505495,1.0,True,does nothing,99.5,100.0,100.0,did nothing,0.5,True
+solid / agreement,solid-agr-r1,1,2,2,19,0.3355,0.8956780923994039,1.0,True,pays off,9.65,100.0,100.0,paid off,90.35,True
+solid / agreement,solid-agr-r1,1,2,3,20,0.3375,0.03259259259259259,1.0,True,does nothing,97.3,99.95,100.0,did nothing,2.6500000000000057,True
+solid / agreement,solid-agr-r1,1,2,3,21,0.338,0.992603550295858,1.0,True,pays off,1.0,100.0,100.0,paid off,99.0,True
+solid / agreement,solid-agr-r1,1,2,4,22,0.342,0.0014619883040935672,1.0,True,does nothing,99.85000000000001,100.0,100.0,did nothing,0.14999999999999147,True
+solid / agreement,solid-agr-r1,1,2,4,23,0.363,0.209366391184573,1.0,True,does nothing,79.14999999999999,100.0,100.0,unclassified,20.85000000000001,
+solid / agreement,solid-agr-r1,1,3,1,24,0.3205,0.0015600624024961,1.0,True,does nothing,99.9,100.0,100.0,did nothing,0.09999999999999432,True
+solid / agreement,solid-agr-r1,1,3,1,25,0.357,0.0028011204481792717,1.0,True,does nothing,99.45,99.9,99.9,did nothing,0.45000000000000284,True
+solid / agreement,solid-agr-r1,1,3,2,26,0.3475,0.0,1.0,True,does nothing,99.9,99.95,99.95,did nothing,0.04999999999999716,True
+solid / agreement,solid-agr-r1,1,3,2,27,0.3335,0.010494752623688156,1.0,True,does nothing,98.85000000000001,100.0,100.0,did nothing,1.1499999999999915,True
+solid / agreement,solid-agr-r1,1,3,3,28,0.3375,0.0014814814814814814,1.0,True,does nothing,99.8,99.9,99.9,did nothing,0.10000000000000853,True
+solid / agreement,solid-agr-r1,1,3,3,29,0.3365,0.13075780089153047,1.0,True,does nothing,85.85000000000001,99.95,99.95,unclassified,14.099999999999994,
+solid / agreement,solid-agr-r1,1,3,4,30,0.3435,0.0,1.0,True,does nothing,100.0,100.0,100.0,did nothing,0.0,True
+solid / agreement,solid-agr-r1,1,3,4,31,0.341,0.001466275659824047,1.0,True,does nothing,99.7,99.95,99.95,did nothing,0.25,True
+solid / agreement,solid-agr-r1-again,1,4,1,32,0.344,0.0,1.0,True,does nothing,99.95,100.0,100.0,did nothing,0.04999999999999716,True
+solid / agreement,solid-agr-r1-again,1,4,1,33,0.365,0.14794520547945206,1.0,True,does nothing,86.85000000000001,99.95,99.95,unclassified,13.099999999999994,
+solid / agreement,solid-agr-r1-again,1,4,2,34,0.336,0.0,1.0,True,does nothing,99.95,99.95,99.95,did nothing,0.0,True
+solid / agreement,solid-agr-r1-again,1,4,2,35,0.3505,0.0042796005706134095,1.0,True,does nothing,99.55000000000001,100.0,100.0,did nothing,0.44999999999998863,True
+solid / agreement,solid-agr-r1-again,1,4,3,36,0.347,0.0,1.0,True,does nothing,99.9,100.0,100.0,did nothing,0.09999999999999432,True
+solid / agreement,solid-agr-r1-again,1,4,3,37,0.339,0.4277286135693215,1.0,True,does nothing,55.85,100.0,100.0,unclassified,44.15,
+solid / agreement,solid-agr-r1-again,1,4,4,38,0.3495,0.0,1.0,True,does nothing,99.95,100.0,100.0,did nothing,0.04999999999999716,True
+solid / agreement,solid-agr-r1-again,1,4,4,39,0.347,0.002881844380403458,1.0,True,does nothing,99.8,100.0,100.0,did nothing,0.20000000000000284,True
+solid / agreement,solid-agr-r2,2,2,1,16,0.33,0.0030303030303030303,1.0,True,does nothing,99.4,99.95,100.0,did nothing,0.5499999999999972,True
+solid / agreement,solid-agr-r2,2,2,1,17,0.3495,0.7739628040057225,1.0,True,pays off,21.349999999999998,100.0,100.0,paid off,78.65,True
+solid / agreement,solid-agr-r2,2,2,2,18,0.3375,0.0044444444444444444,1.0,True,does nothing,99.65,99.9,100.0,did nothing,0.25,True
+solid / agreement,solid-agr-r2,2,2,2,19,0.3365,0.3031203566121842,1.0,True,does nothing,68.25,99.95,100.0,unclassified,31.700000000000003,
+solid / agreement,solid-agr-r2,2,2,3,20,0.35,0.0,1.0,True,does nothing,99.9,99.95,100.0,did nothing,0.04999999999999716,True
+solid / agreement,solid-agr-r2,2,2,3,21,0.357,0.27310924369747897,1.0,True,does nothing,70.89999999999999,99.9,100.0,unclassified,29.000000000000014,
+solid / agreement,solid-agr-r2,2,2,4,22,0.3315,0.010558069381598794,1.0,True,does nothing,99.05000000000001,100.0,100.0,did nothing,0.9499999999999886,True
+solid / agreement,solid-agr-r2,2,2,4,23,0.349,0.7550143266475645,1.0,True,pays off,29.95,100.0,100.0,paid off,70.05,True
+solid / agreement,solid-agr-r2,2,3,1,24,0.344,0.00436046511627907,1.0,True,does nothing,99.8,100.0,100.0,did nothing,0.20000000000000284,True
+solid / agreement,solid-agr-r2,2,3,1,25,0.3305,0.006051437216338881,1.0,True,does nothing,98.95,100.0,100.0,did nothing,1.0499999999999972,True
+solid / agreement,solid-agr-r2,2,3,2,26,0.3445,0.001451378809869376,1.0,True,does nothing,99.9,99.95,99.95,did nothing,0.04999999999999716,True
+solid / agreement,solid-agr-r2,2,3,2,27,0.336,0.28422619047619047,1.0,True,does nothing,73.5,99.95,99.95,unclassified,26.450000000000003,
+solid / agreement,solid-agr-r2,2,3,3,28,0.3445,0.002902757619738752,1.0,True,does nothing,99.8,100.0,100.0,did nothing,0.20000000000000284,True
+solid / agreement,solid-agr-r2,2,3,3,29,0.358,0.0335195530726257,1.0,True,does nothing,96.85000000000001,99.95,99.95,unclassified,3.0999999999999943,
+solid / agreement,solid-agr-r2,2,3,4,30,0.3395,0.014727540500736377,1.0,True,does nothing,98.85000000000001,100.0,100.0,did nothing,1.1499999999999915,True
+solid / agreement,solid-agr-r2,2,3,4,31,0.3385,0.43722304283604135,1.0,True,does nothing,55.60000000000001,100.0,100.0,unclassified,44.39999999999999,
+solid / agreement,solid-agr-r2,2,4,1,32,0.3385,0.0,1.0,True,does nothing,100.0,100.0,100.0,did nothing,0.0,True
+solid / agreement,solid-agr-r2,2,4,1,33,0.348,0.0617816091954023,1.0,True,does nothing,93.5,99.95,99.95,unclassified,6.450000000000003,
+solid / agreement,solid-agr-r2,2,4,2,34,0.319,0.0,1.0,True,does nothing,100.0,99.95,99.95,did nothing,-0.04999999999999716,True
+solid / agreement,solid-agr-r2,2,4,2,35,0.3435,0.002911208151382824,1.0,True,does nothing,99.45,99.9,99.9,did nothing,0.45000000000000284,True
+solid / agreement,solid-agr-r2,2,4,3,36,0.335,0.004477611940298508,1.0,True,does nothing,99.75,100.0,100.0,did nothing,0.25,True
+solid / agreement,solid-agr-r2,2,4,3,37,0.35,0.055714285714285716,1.0,True,does nothing,94.8,99.95,99.95,unclassified,5.150000000000006,
+solid / agreement,solid-agr-r2,2,4,4,38,0.3385,0.0014771048744460858,1.0,True,does nothing,99.8,100.0,100.0,did nothing,0.20000000000000284,True
+solid / agreement,solid-agr-r2,2,4,4,39,0.337,0.19881305637982197,1.0,True,does nothing,79.85,100.0,100.0,unclassified,20.150000000000006,
+solid / no-carry,solid-nc-r0,0,2,1,16,0.4015,0.007471980074719801,0.6363636363636364,True,does nothing,99.3,99.95,100.0,did nothing,0.6500000000000057,True
+solid / no-carry,solid-nc-r0,0,2,1,17,0.3955,0.797724399494311,0.6561314791403287,True,pays off,21.25,99.9,100.0,paid off,78.65,True
+solid / no-carry,solid-nc-r0,0,2,2,18,0.3715,0.0013458950201884253,0.6460296096904441,True,does nothing,99.85000000000001,100.0,100.0,did nothing,0.14999999999999147,True
+solid / no-carry,solid-nc-r0,0,2,2,19,0.377,0.7413793103448276,0.6657824933687002,True,pays off,28.499999999999996,99.95,100.0,paid off,71.45,True
+solid / no-carry,solid-nc-r0,0,2,3,20,0.3765,0.049136786188579015,0.6321381142098274,True,does nothing,94.8,99.95,100.0,unclassified,5.150000000000006,
+solid / no-carry,solid-nc-r0,0,2,3,21,0.384,0.9544270833333334,0.6666666666666666,True,pays off,4.25,99.95,99.95,paid off,95.7,True
+solid / no-carry,solid-nc-r0,0,2,4,22,0.371,0.0013477088948787063,0.6495956873315364,True,does nothing,99.85000000000001,100.0,100.0,did nothing,0.14999999999999147,True
+solid / no-carry,solid-nc-r0,0,2,4,23,0.3825,0.36209150326797385,0.6535947712418301,True,does nothing,66.14999999999999,100.0,100.0,unclassified,33.85000000000001,
+solid / no-carry,solid-nc-r1,1,2,1,16,0.385,0.011688311688311689,0.6402597402597403,True,does nothing,98.8,100.0,100.0,did nothing,1.2000000000000028,True
+solid / no-carry,solid-nc-r1,1,2,1,17,0.3735,0.7724230254350736,0.6318607764390897,True,pays off,21.9,100.0,100.0,paid off,78.1,True
+solid / no-carry,solid-nc-r1,1,2,2,18,0.4045,0.0,0.6415327564894932,True,does nothing,100.0,100.0,100.0,did nothing,0.0,True
+solid / no-carry,solid-nc-r1,1,2,2,19,0.4,0.09375,0.6425,True,does nothing,91.05,100.0,100.0,unclassified,8.950000000000003,
+solid / no-carry,solid-nc-r1,1,2,3,20,0.3775,0.0,0.6423841059602649,True,does nothing,100.0,100.0,100.0,did nothing,0.0,True
+solid / no-carry,solid-nc-r1,1,2,3,21,0.3795,0.4874835309617918,0.61133069828722,True,does nothing,53.15,100.0,100.0,unclassified,46.85,
+solid / no-carry,solid-nc-r1,1,2,4,22,0.3815,0.001310615989515072,0.6330275229357798,True,does nothing,99.95,100.0,100.0,did nothing,0.04999999999999716,True
+solid / no-carry,solid-nc-r1,1,2,4,23,0.3895,0.45314505776636715,0.6636713735558408,True,does nothing,52.449999999999996,100.0,100.0,unclassified,47.550000000000004,
+solid / no-carry,solid-nc-r2,2,2,1,16,0.3875,0.003870967741935484,0.6,True,does nothing,99.4,100.0,100.0,did nothing,0.5999999999999943,True
+solid / no-carry,solid-nc-r2,2,2,1,17,0.389,0.781491002570694,0.6580976863753213,True,pays off,21.349999999999998,99.95,100.0,paid off,78.60000000000001,True
+solid / no-carry,solid-nc-r2,2,2,2,18,0.3735,0.10843373493975904,0.6358768406961178,True,does nothing,90.05,99.95,100.0,unclassified,9.900000000000006,
+solid / no-carry,solid-nc-r2,2,2,2,19,0.3835,0.9661016949152542,0.6075619295958279,True,pays off,3.0,99.9,100.0,paid off,96.9,True
+solid / no-carry,solid-nc-r2,2,2,3,20,0.3905,0.015364916773367477,0.6414852752880922,True,does nothing,98.95,100.0,100.0,did nothing,1.0499999999999972,True
+solid / no-carry,solid-nc-r2,2,2,3,21,0.389,0.9370179948586118,0.6555269922879178,True,pays off,6.75,100.0,100.0,paid off,93.25,True
+solid / no-carry,solid-nc-r2,2,2,4,22,0.3725,0.0,0.625503355704698,True,does nothing,99.95,100.0,100.0,did nothing,0.04999999999999716,True
+solid / no-carry,solid-nc-r2,2,2,4,23,0.3815,0.20838794233289645,0.6448230668414154,True,does nothing,81.69999999999999,100.0,100.0,unclassified,18.30000000000001,
+corrupted / agreement,corrupt-agr-r0,0,2,1,16,0.251,0.00597609561752988,1.0,True,does nothing,99.3,100.0,100.0,did nothing,0.7000000000000028,True
+corrupted / agreement,corrupt-agr-r0,0,2,1,17,0.225,0.7911111111111111,1.0,True,pays off,21.25,100.0,100.0,paid off,78.75,True
+corrupted / agreement,corrupt-agr-r0,0,2,2,18,0.1995,0.0,1.0,True,does nothing,99.95,100.0,100.0,did nothing,0.04999999999999716,True
+corrupted / agreement,corrupt-agr-r0,0,2,2,19,0.204,0.8137254901960784,1.0,True,pays off,20.9,100.0,100.0,paid off,79.1,True
+corrupted / agreement,corrupt-agr-r0,0,2,3,20,0.198,0.050505050505050504,1.0,True,does nothing,95.05,100.0,100.0,unclassified,4.950000000000003,
+corrupted / agreement,corrupt-agr-r0,0,2,3,21,0.2115,0.966903073286052,1.0,True,pays off,3.2,99.9,99.95,paid off,96.7,True
+corrupted / agreement,corrupt-agr-r0,0,2,4,22,0.1945,0.017994858611825194,1.0,True,does nothing,98.6,100.0,100.0,did nothing,1.4000000000000057,True
+corrupted / agreement,corrupt-agr-r0,0,2,4,23,0.193,0.4481865284974093,1.0,True,does nothing,52.05,99.95,100.0,unclassified,47.900000000000006,
+corrupted / agreement,corrupt-agr-r1,1,2,1,16,0.2395,0.012526096033402923,1.0,True,does nothing,98.8,99.95,100.0,did nothing,1.1500000000000057,True
+corrupted / agreement,corrupt-agr-r1,1,2,1,17,0.2115,0.7635933806146572,1.0,True,pays off,21.9,100.0,100.0,paid off,78.1,True
+corrupted / agreement,corrupt-agr-r1,1,2,2,18,0.2115,0.640661938534279,1.0,True,pays off,33.5,99.95,100.0,paid off,66.45,True
+corrupted / agreement,corrupt-agr-r1,1,2,2,19,0.2055,1.0,1.0,True,pays off,0.0,99.95,100.0,paid off,99.95,True
+corrupted / agreement,corrupt-agr-r1,1,2,3,20,0.199,0.0,1.0,True,does nothing,99.95,99.95,100.0,did nothing,0.0,True
+corrupted / agreement,corrupt-agr-r1,1,2,3,21,0.1905,0.4330708661417323,1.0,True,does nothing,58.050000000000004,100.0,100.0,unclassified,41.949999999999996,
+corrupted / agreement,corrupt-agr-r1,1,2,4,22,0.2025,0.0024691358024691358,1.0,True,does nothing,99.9,100.0,100.0,did nothing,0.09999999999999432,True
+corrupted / agreement,corrupt-agr-r1,1,2,4,23,0.2175,0.004597701149425287,1.0,True,does nothing,99.95,100.0,100.0,did nothing,0.04999999999999716,True
+corrupted / agreement,corrupt-agr-r2,2,2,1,16,0.2365,0.0021141649048625794,1.0,True,does nothing,99.4,100.0,100.0,did nothing,0.5999999999999943,True
+corrupted / agreement,corrupt-agr-r2,2,2,1,17,0.227,0.76431718061674,1.0,True,pays off,21.349999999999998,100.0,100.0,paid off,78.65,True
+corrupted / agreement,corrupt-agr-r2,2,2,2,18,0.199,0.0,1.0,True,does nothing,99.8,100.0,100.0,did nothing,0.20000000000000284,True
+corrupted / agreement,corrupt-agr-r2,2,2,2,19,0.1945,0.2544987146529563,1.0,True,does nothing,70.1,100.0,100.0,unclassified,29.900000000000006,
+corrupted / agreement,corrupt-agr-r2,2,2,3,20,0.2015,0.004962779156327543,1.0,True,does nothing,99.75,100.0,100.0,did nothing,0.25,True
+corrupted / agreement,corrupt-agr-r2,2,2,3,21,0.215,0.14651162790697675,1.0,True,does nothing,86.05000000000001,99.95,100.0,unclassified,13.899999999999991,
+corrupted / agreement,corrupt-agr-r2,2,2,4,22,0.187,0.06149732620320856,1.0,True,does nothing,94.8,100.0,100.0,unclassified,5.200000000000003,
+corrupted / agreement,corrupt-agr-r2,2,2,4,23,0.2045,0.7701711491442543,1.0,True,pays off,18.3,100.0,100.0,paid off,81.7,True
+corrupted / no-carry,corrupt-nc-r0,0,2,1,16,0.4015,0.1506849315068493,0.45828144458281445,True,does nothing,99.3,99.95,100.0,did nothing,0.6500000000000057,True
+corrupted / no-carry,corrupt-nc-r0,0,2,1,17,0.3955,0.8343868520859671,0.4247787610619469,True,pays off,21.25,99.95,100.0,paid off,78.7,True
+corrupted / no-carry,corrupt-nc-r0,0,2,2,18,0.3715,0.27994616419919244,0.36608344549125166,True,does nothing,99.95,100.0,100.0,did nothing,0.04999999999999716,True
+corrupted / no-carry,corrupt-nc-r0,0,2,2,19,0.377,0.3395225464190981,0.3687002652519894,True,does nothing,89.35,99.9,100.0,unclassified,10.550000000000011,
+corrupted / no-carry,corrupt-nc-r0,0,2,3,20,0.3765,0.2735723771580345,0.3665338645418327,True,does nothing,98.35000000000001,99.95,100.0,did nothing,1.5999999999999943,True
+corrupted / no-carry,corrupt-nc-r0,0,2,3,21,0.384,0.7708333333333334,0.375,True,does harm,31.3,99.95,99.95,paid off,68.65,False
+corrupted / no-carry,corrupt-nc-r0,0,2,4,22,0.371,0.27088948787061995,0.36522911051212936,True,does nothing,99.95,100.0,100.0,did nothing,0.04999999999999716,True
+corrupted / no-carry,corrupt-nc-r0,0,2,4,23,0.3825,0.7790849673202614,0.3568627450980392,True,does harm,33.15,100.0,100.0,paid off,66.85,False
+corrupted / no-carry,corrupt-nc-r1,1,2,1,16,0.385,0.16233766233766234,0.45064935064935063,True,does nothing,98.8,100.0,100.0,did nothing,1.2000000000000028,True
+corrupted / no-carry,corrupt-nc-r1,1,2,1,17,0.3735,0.8045515394912985,0.43373493975903615,True,pays off,21.9,99.95,100.0,paid off,78.05000000000001,True
+corrupted / no-carry,corrupt-nc-r1,1,2,2,18,0.4045,0.3053152039555006,0.35970333745364647,True,does nothing,96.2,99.85,100.0,unclassified,3.6499999999999915,
+corrupted / no-carry,corrupt-nc-r1,1,2,2,19,0.4,0.9975,0.38,True,pays off,0.6,99.85,100.0,paid off,99.25,True
+corrupted / no-carry,corrupt-nc-r1,1,2,3,20,0.3775,0.3205298013245033,0.3748344370860927,True,does nothing,94.5,99.9,100.0,unclassified,5.400000000000006,
+corrupted / no-carry,corrupt-nc-r1,1,2,3,21,0.3795,0.997364953886693,0.3465085638998682,True,does harm,0.1,99.9,100.0,paid off,99.80000000000001,False
+corrupted / no-carry,corrupt-nc-r1,1,2,4,22,0.3815,0.2765399737876802,0.3473132372214941,True,does nothing,100.0,99.95,100.0,did nothing,-0.04999999999999716,True
+corrupted / no-carry,corrupt-nc-r1,1,2,4,23,0.3895,0.8562259306803595,0.3979460847240051,True,pays off,19.75,100.0,100.0,paid off,80.25,True
+corrupted / no-carry,corrupt-nc-r2,2,2,1,16,0.3875,0.13161290322580646,0.45161290322580644,True,does nothing,99.4,100.0,100.0,did nothing,0.5999999999999943,True
+corrupted / no-carry,corrupt-nc-r2,2,2,1,17,0.389,0.8123393316195373,0.4318766066838046,True,pays off,21.349999999999998,99.85,100.0,paid off,78.5,True
+corrupted / no-carry,corrupt-nc-r2,2,2,2,18,0.3735,0.29451137884872824,0.36010709504685406,True,does nothing,98.55000000000001,100.0,100.0,did nothing,1.4499999999999886,True
+corrupted / no-carry,corrupt-nc-r2,2,2,2,19,0.3835,0.9452411994784876,0.3468057366362451,True,does harm,7.049999999999999,99.95,100.0,paid off,92.9,False
+corrupted / no-carry,corrupt-nc-r2,2,2,3,20,0.3905,0.2791293213828425,0.36235595390524966,True,does nothing,97.8,100.0,100.0,did nothing,2.200000000000003,True
+corrupted / no-carry,corrupt-nc-r2,2,2,3,21,0.389,0.9858611825192802,0.38946015424164526,True,pays off,3.4000000000000004,100.0,100.0,paid off,96.6,True
+corrupted / no-carry,corrupt-nc-r2,2,2,4,22,0.3725,0.27248322147651005,0.3516778523489933,True,does nothing,99.9,100.0,100.0,did nothing,0.09999999999999432,True
+corrupted / no-carry,corrupt-nc-r2,2,2,4,23,0.3815,0.46788990825688076,0.3617300131061599,True,does nothing,74.5,100.0,100.0,unclassified,25.5,

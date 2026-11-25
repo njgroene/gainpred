@@ -165,32 +165,32 @@ threshold, split or number was changed.
 
 ### Checks at the new lengths, each round (the condition's own teacher)
 
-| Run | Round | Digits | Kept share | Novelty | Confirmed share | Kept right (audit) | Self-taught pieces replaced |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| `solid-agr-r0` | 1 | 16 | 35.2 | 0.4 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r0` | 1 | 17 | 35.1 | 77.4 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r0` | 2 | 18 | 34.1 | 1.0 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r0` | 2 | 19 | 35.2 | 61.9 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r0` | 3 | 20 | 33.9 | 0.3 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r0` | 3 | 21 | 36.0 | 14.0 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r0` | 4 | 22 | 33.8 | 0.0 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r0` | 4 | 23 | 34.5 | 22.2 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r1` | 1 | 16 | 34.1 | 0.9 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r1` | 1 | 17 | 33.6 | 77.7 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r1` | 2 | 18 | 36.4 | 0.5 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r1` | 2 | 19 | 33.6 | 89.6 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r1` | 3 | 20 | 33.8 | 3.3 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r1` | 3 | 21 | 33.8 | 99.3 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r1` | 4 | 22 | 34.2 | 0.1 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r1` | 4 | 23 | 36.3 | 20.9 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r2` | 1 | 16 | 33.0 | 0.3 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r2` | 1 | 17 | 34.9 | 77.4 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r2` | 2 | 18 | 33.8 | 0.4 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r2` | 2 | 19 | 33.7 | 30.3 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r2` | 3 | 20 | 35.0 | 0.0 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r2` | 3 | 21 | 35.7 | 27.3 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r2` | 4 | 22 | 33.1 | 1.1 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r2` | 4 | 23 | 34.9 | 75.5 | 100.0 | 100.00 | 0.00 |
+| Run | Round | Digits | Model's direct answer right | Kept share | Novelty | Confirmed share | Kept right (audit) | Self-taught pieces replaced |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `solid-agr-r0` | 1 | 16 | 99.3 | 35.2 | 0.4 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r0` | 1 | 17 | 21.2 | 35.1 | 77.4 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r0` | 2 | 18 | 99.4 | 34.1 | 1.0 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r0` | 2 | 19 | 37.9 | 35.2 | 61.9 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r0` | 3 | 20 | 99.8 | 33.9 | 0.3 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r0` | 3 | 21 | 87.8 | 36.0 | 14.0 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r0` | 4 | 22 | 100.0 | 33.8 | 0.0 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r0` | 4 | 23 | 76.8 | 34.5 | 22.2 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r1` | 1 | 16 | 98.8 | 34.1 | 0.9 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r1` | 1 | 17 | 21.9 | 33.6 | 77.7 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r1` | 2 | 18 | 99.5 | 36.4 | 0.5 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r1` | 2 | 19 | 9.7 | 33.6 | 89.6 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r1` | 3 | 20 | 97.3 | 33.8 | 3.3 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r1` | 3 | 21 | 1.0 | 33.8 | 99.3 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r1` | 4 | 22 | 99.9 | 34.2 | 0.1 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r1` | 4 | 23 | 79.1 | 36.3 | 20.9 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r2` | 1 | 16 | 99.4 | 33.0 | 0.3 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r2` | 1 | 17 | 21.3 | 34.9 | 77.4 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r2` | 2 | 18 | 99.7 | 33.8 | 0.4 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r2` | 2 | 19 | 68.2 | 33.7 | 30.3 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r2` | 3 | 20 | 99.9 | 35.0 | 0.0 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r2` | 3 | 21 | 70.9 | 35.7 | 27.3 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r2` | 4 | 22 | 99.1 | 33.1 | 1.1 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r2` | 4 | 23 | 29.9 | 34.9 | 75.5 | 100.0 | 100.00 | 0.00 |
 
 ### Floor-1 novelty each round (trusted-piece teacher; problems with no carry at cut 1 only; percent)
 
@@ -236,24 +236,24 @@ threshold, split or number was changed.
 
 ### Checks at the new lengths, each round (the condition's own teacher)
 
-| Run | Round | Digits | Kept share | Novelty | Confirmed share | Kept right (audit) | Self-taught pieces replaced |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| `solid-key-r0` | 1 | 16 | 100.0 | 0.7 | not applicable | 100.00 | 0.00 |
-| `solid-key-r0` | 1 | 17 | 100.0 | 78.8 | not applicable | 100.00 | 0.00 |
-| `solid-key-r0` | 2 | 18 | 100.0 | 0.0 | not applicable | 100.00 | 0.00 |
-| `solid-key-r0` | 2 | 19 | 100.0 | 10.5 | not applicable | 100.00 | 0.00 |
-| `solid-key-r0` | 3 | 20 | 100.0 | 0.2 | not applicable | 100.00 | 0.00 |
-| `solid-key-r0` | 3 | 21 | 100.0 | 20.8 | not applicable | 100.00 | 0.00 |
-| `solid-key-r0` | 4 | 22 | 100.0 | 0.9 | not applicable | 100.00 | 0.00 |
-| `solid-key-r0` | 4 | 23 | 100.0 | 80.8 | not applicable | 100.00 | 0.00 |
-| `solid-key-r1` | 1 | 16 | 100.0 | 1.2 | not applicable | 100.00 | 0.00 |
-| `solid-key-r1` | 1 | 17 | 100.0 | 78.1 | not applicable | 100.00 | 0.00 |
-| `solid-key-r1` | 2 | 18 | 100.0 | 0.2 | not applicable | 100.00 | 0.00 |
-| `solid-key-r1` | 2 | 19 | 100.0 | 50.2 | not applicable | 100.00 | 0.00 |
-| `solid-key-r1` | 3 | 20 | 100.0 | 0.1 | not applicable | 100.00 | 0.00 |
-| `solid-key-r1` | 3 | 21 | 100.0 | 14.3 | not applicable | 100.00 | 0.00 |
-| `solid-key-r1` | 4 | 22 | 100.0 | 0.1 | not applicable | 100.00 | 0.00 |
-| `solid-key-r1` | 4 | 23 | 100.0 | 62.4 | not applicable | 100.00 | 0.00 |
+| Run | Round | Digits | Model's direct answer right | Kept share | Novelty | Confirmed share | Kept right (audit) | Self-taught pieces replaced |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `solid-key-r0` | 1 | 16 | 99.3 | 100.0 | 0.7 | not applicable | 100.00 | 0.00 |
+| `solid-key-r0` | 1 | 17 | 21.2 | 100.0 | 78.8 | not applicable | 100.00 | 0.00 |
+| `solid-key-r0` | 2 | 18 | 100.0 | 100.0 | 0.0 | not applicable | 100.00 | 0.00 |
+| `solid-key-r0` | 2 | 19 | 89.5 | 100.0 | 10.5 | not applicable | 100.00 | 0.00 |
+| `solid-key-r0` | 3 | 20 | 99.8 | 100.0 | 0.2 | not applicable | 100.00 | 0.00 |
+| `solid-key-r0` | 3 | 21 | 79.1 | 100.0 | 20.8 | not applicable | 100.00 | 0.00 |
+| `solid-key-r0` | 4 | 22 | 99.1 | 100.0 | 0.9 | not applicable | 100.00 | 0.00 |
+| `solid-key-r0` | 4 | 23 | 19.1 | 100.0 | 80.8 | not applicable | 100.00 | 0.00 |
+| `solid-key-r1` | 1 | 16 | 98.8 | 100.0 | 1.2 | not applicable | 100.00 | 0.00 |
+| `solid-key-r1` | 1 | 17 | 21.9 | 100.0 | 78.1 | not applicable | 100.00 | 0.00 |
+| `solid-key-r1` | 2 | 18 | 99.8 | 100.0 | 0.2 | not applicable | 100.00 | 0.00 |
+| `solid-key-r1` | 2 | 19 | 49.8 | 100.0 | 50.2 | not applicable | 100.00 | 0.00 |
+| `solid-key-r1` | 3 | 20 | 100.0 | 100.0 | 0.1 | not applicable | 100.00 | 0.00 |
+| `solid-key-r1` | 3 | 21 | 85.7 | 100.0 | 14.3 | not applicable | 100.00 | 0.00 |
+| `solid-key-r1` | 4 | 22 | 99.9 | 100.0 | 0.1 | not applicable | 100.00 | 0.00 |
+| `solid-key-r1` | 4 | 23 | 37.6 | 100.0 | 62.4 | not applicable | 100.00 | 0.00 |
 
 ### Floor-1 novelty each round (trusted-piece teacher; problems with no carry at cut 1 only; percent)
 
@@ -322,32 +322,32 @@ No-carry rule on split 1, current model, 2,000 fresh problems per length; percen
 
 ### Checks at the new lengths, each round (the condition's own teacher)
 
-| Run | Round | Digits | Kept share | Novelty | Confirmed share | Kept right (audit) | Self-taught pieces replaced |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| `solid-agr-r0` | 1 | 24 | 34.2 | 0.0 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r0` | 1 | 25 | 33.9 | 3.1 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r0` | 2 | 26 | 32.6 | 0.2 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r0` | 2 | 27 | 32.6 | 3.1 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r0` | 3 | 28 | 33.8 | 0.0 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r0` | 3 | 29 | 33.7 | 2.4 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r0` | 4 | 30 | 34.8 | 0.0 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r0` | 4 | 31 | 34.7 | 0.0 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r1` | 1 | 24 | 32.0 | 0.2 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r1` | 1 | 25 | 35.7 | 0.3 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r1` | 2 | 26 | 34.8 | 0.0 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r1` | 2 | 27 | 33.4 | 1.0 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r1` | 3 | 28 | 33.8 | 0.1 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r1` | 3 | 29 | 33.7 | 13.1 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r1` | 4 | 30 | 34.4 | 0.0 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r1` | 4 | 31 | 34.1 | 0.1 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r2` | 1 | 24 | 34.4 | 0.4 | 100.0 | 99.71 | 0.00 |
-| `solid-agr-r2` | 1 | 25 | 33.1 | 0.6 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r2` | 2 | 26 | 34.4 | 0.1 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r2` | 2 | 27 | 33.6 | 28.4 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r2` | 3 | 28 | 34.4 | 0.3 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r2` | 3 | 29 | 35.8 | 3.4 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r2` | 4 | 30 | 34.0 | 1.5 | 100.0 | 99.71 | 0.00 |
-| `solid-agr-r2` | 4 | 31 | 33.9 | 43.7 | 100.0 | 99.85 | 0.00 |
+| Run | Round | Digits | Model's direct answer right | Kept share | Novelty | Confirmed share | Kept right (audit) | Self-taught pieces replaced |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `solid-agr-r0` | 1 | 24 | 100.0 | 34.2 | 0.0 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r0` | 1 | 25 | 96.2 | 33.9 | 3.1 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r0` | 2 | 26 | 100.0 | 32.6 | 0.2 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r0` | 2 | 27 | 97.6 | 32.6 | 3.1 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r0` | 3 | 28 | 100.0 | 33.8 | 0.0 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r0` | 3 | 29 | 96.4 | 33.7 | 2.4 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r0` | 4 | 30 | 100.0 | 34.8 | 0.0 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r0` | 4 | 31 | 99.9 | 34.7 | 0.0 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r1` | 1 | 24 | 99.9 | 32.0 | 0.2 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r1` | 1 | 25 | 99.5 | 35.7 | 0.3 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r1` | 2 | 26 | 99.9 | 34.8 | 0.0 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r1` | 2 | 27 | 98.9 | 33.4 | 1.0 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r1` | 3 | 28 | 99.8 | 33.8 | 0.1 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r1` | 3 | 29 | 85.9 | 33.7 | 13.1 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r1` | 4 | 30 | 100.0 | 34.4 | 0.0 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r1` | 4 | 31 | 99.7 | 34.1 | 0.1 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r2` | 1 | 24 | 99.8 | 34.4 | 0.4 | 100.0 | 99.71 | 0.00 |
+| `solid-agr-r2` | 1 | 25 | 99.0 | 33.1 | 0.6 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r2` | 2 | 26 | 99.9 | 34.4 | 0.1 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r2` | 2 | 27 | 73.5 | 33.6 | 28.4 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r2` | 3 | 28 | 99.8 | 34.4 | 0.3 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r2` | 3 | 29 | 96.9 | 35.8 | 3.4 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r2` | 4 | 30 | 98.9 | 34.0 | 1.5 | 100.0 | 99.71 | 0.00 |
+| `solid-agr-r2` | 4 | 31 | 55.6 | 33.9 | 43.7 | 100.0 | 99.85 | 0.00 |
 
 ### Floor-1 novelty each round (trusted-piece teacher; problems with no carry at cut 1 only; percent)
 
@@ -435,32 +435,32 @@ No-carry rule on split 1, current model, 2,000 fresh problems per length; percen
 
 ### Checks at the new lengths, each round (the condition's own teacher)
 
-| Run | Round | Digits | Kept share | Novelty | Confirmed share | Kept right (audit) | Self-taught pieces replaced |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| `solid-agr-r0` | 1 | 32 | 37.9 | 0.0 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r0` | 1 | 33 | 34.8 | 0.4 | 100.0 | 99.86 | 0.00 |
-| `solid-agr-r0` | 2 | 34 | 35.2 | 0.0 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r0` | 2 | 35 | 34.4 | 0.3 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r0` | 3 | 36 | 35.2 | 0.0 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r0` | 3 | 37 | 32.6 | 0.2 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r0` | 4 | 38 | 35.4 | 0.0 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r0` | 4 | 39 | 34.5 | 11.6 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r1-again` | 1 | 32 | 34.4 | 0.0 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r1-again` | 1 | 33 | 36.5 | 14.8 | 100.0 | 99.73 | 0.00 |
-| `solid-agr-r1-again` | 2 | 34 | 33.6 | 0.0 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r1-again` | 2 | 35 | 35.0 | 0.4 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r1-again` | 3 | 36 | 34.7 | 0.0 | 100.0 | 99.71 | 0.00 |
-| `solid-agr-r1-again` | 3 | 37 | 33.9 | 42.8 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r1-again` | 4 | 38 | 34.9 | 0.0 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r1-again` | 4 | 39 | 34.7 | 0.3 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r2` | 1 | 32 | 33.9 | 0.0 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r2` | 1 | 33 | 34.8 | 6.2 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r2` | 2 | 34 | 31.9 | 0.0 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r2` | 2 | 35 | 34.4 | 0.3 | 100.0 | 99.85 | 0.00 |
-| `solid-agr-r2` | 3 | 36 | 33.5 | 0.4 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r2` | 3 | 37 | 35.0 | 5.6 | 100.0 | 100.00 | 0.00 |
-| `solid-agr-r2` | 4 | 38 | 33.9 | 0.1 | 100.0 | 99.85 | 0.00 |
-| `solid-agr-r2` | 4 | 39 | 33.7 | 19.9 | 100.0 | 100.00 | 0.00 |
+| Run | Round | Digits | Model's direct answer right | Kept share | Novelty | Confirmed share | Kept right (audit) | Self-taught pieces replaced |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `solid-agr-r0` | 1 | 32 | 100.0 | 37.9 | 0.0 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r0` | 1 | 33 | 99.5 | 34.8 | 0.4 | 100.0 | 99.86 | 0.00 |
+| `solid-agr-r0` | 2 | 34 | 100.0 | 35.2 | 0.0 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r0` | 2 | 35 | 99.4 | 34.4 | 0.3 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r0` | 3 | 36 | 100.0 | 35.2 | 0.0 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r0` | 3 | 37 | 100.0 | 32.6 | 0.2 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r0` | 4 | 38 | 100.0 | 35.4 | 0.0 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r0` | 4 | 39 | 88.4 | 34.5 | 11.6 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r1-again` | 1 | 32 | 100.0 | 34.4 | 0.0 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r1-again` | 1 | 33 | 86.9 | 36.5 | 14.8 | 100.0 | 99.73 | 0.00 |
+| `solid-agr-r1-again` | 2 | 34 | 100.0 | 33.6 | 0.0 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r1-again` | 2 | 35 | 99.6 | 35.0 | 0.4 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r1-again` | 3 | 36 | 99.9 | 34.7 | 0.0 | 100.0 | 99.71 | 0.00 |
+| `solid-agr-r1-again` | 3 | 37 | 55.9 | 33.9 | 42.8 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r1-again` | 4 | 38 | 100.0 | 34.9 | 0.0 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r1-again` | 4 | 39 | 99.8 | 34.7 | 0.3 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r2` | 1 | 32 | 100.0 | 33.9 | 0.0 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r2` | 1 | 33 | 93.5 | 34.8 | 6.2 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r2` | 2 | 34 | 100.0 | 31.9 | 0.0 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r2` | 2 | 35 | 99.5 | 34.4 | 0.3 | 100.0 | 99.85 | 0.00 |
+| `solid-agr-r2` | 3 | 36 | 99.8 | 33.5 | 0.4 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r2` | 3 | 37 | 94.8 | 35.0 | 5.6 | 100.0 | 100.00 | 0.00 |
+| `solid-agr-r2` | 4 | 38 | 99.8 | 33.9 | 0.1 | 100.0 | 99.85 | 0.00 |
+| `solid-agr-r2` | 4 | 39 | 79.8 | 33.7 | 19.9 | 100.0 | 100.00 | 0.00 |
 
 ### Floor-1 novelty each round (trusted-piece teacher; problems with no carry at cut 1 only; percent)
 
@@ -534,32 +534,32 @@ Mean over 8-15 after each round (the study's run with 3,000 updates per round is
 
 ### Checks at the new lengths, each round (the condition's own teacher)
 
-| Run | Round | Digits | Kept share | Novelty | Confirmed share | Kept right (audit) | Self-taught pieces replaced |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| `solid-nc-r0` | 1 | 16 | 40.2 | 0.7 | 63.6 | 100.00 | 0.00 |
-| `solid-nc-r0` | 1 | 17 | 39.6 | 79.8 | 65.6 | 100.00 | 0.00 |
-| `solid-nc-r0` | 2 | 18 | 37.1 | 0.1 | 64.6 | 100.00 | 0.00 |
-| `solid-nc-r0` | 2 | 19 | 37.7 | 74.1 | 66.6 | 100.00 | 0.00 |
-| `solid-nc-r0` | 3 | 20 | 37.6 | 4.9 | 63.2 | 100.00 | 0.00 |
-| `solid-nc-r0` | 3 | 21 | 38.4 | 95.4 | 66.7 | 100.00 | 0.00 |
-| `solid-nc-r0` | 4 | 22 | 37.1 | 0.1 | 65.0 | 100.00 | 0.00 |
-| `solid-nc-r0` | 4 | 23 | 38.2 | 36.2 | 65.4 | 99.74 | 0.00 |
-| `solid-nc-r1` | 1 | 16 | 38.5 | 1.2 | 64.0 | 100.00 | 0.00 |
-| `solid-nc-r1` | 1 | 17 | 37.4 | 77.2 | 63.2 | 100.00 | 0.00 |
-| `solid-nc-r1` | 2 | 18 | 40.5 | 0.0 | 64.2 | 100.00 | 0.00 |
-| `solid-nc-r1` | 2 | 19 | 40.0 | 9.4 | 64.2 | 100.00 | 0.00 |
-| `solid-nc-r1` | 3 | 20 | 37.8 | 0.0 | 64.2 | 100.00 | 0.00 |
-| `solid-nc-r1` | 3 | 21 | 38.0 | 48.7 | 61.1 | 100.00 | 0.00 |
-| `solid-nc-r1` | 4 | 22 | 38.1 | 0.1 | 63.3 | 100.00 | 0.00 |
-| `solid-nc-r1` | 4 | 23 | 39.0 | 45.3 | 66.4 | 100.00 | 0.00 |
-| `solid-nc-r2` | 1 | 16 | 38.8 | 0.4 | 60.0 | 100.00 | 0.00 |
-| `solid-nc-r2` | 1 | 17 | 38.9 | 78.1 | 65.8 | 100.00 | 0.00 |
-| `solid-nc-r2` | 2 | 18 | 37.4 | 10.8 | 63.6 | 100.00 | 0.00 |
-| `solid-nc-r2` | 2 | 19 | 38.4 | 96.6 | 60.8 | 99.87 | 0.00 |
-| `solid-nc-r2` | 3 | 20 | 39.1 | 1.5 | 64.1 | 99.87 | 0.00 |
-| `solid-nc-r2` | 3 | 21 | 38.9 | 93.7 | 65.6 | 100.00 | 0.00 |
-| `solid-nc-r2` | 4 | 22 | 37.2 | 0.0 | 62.6 | 100.00 | 0.00 |
-| `solid-nc-r2` | 4 | 23 | 38.1 | 20.8 | 64.5 | 100.00 | 0.00 |
+| Run | Round | Digits | Model's direct answer right | Kept share | Novelty | Confirmed share | Kept right (audit) | Self-taught pieces replaced |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `solid-nc-r0` | 1 | 16 | 99.3 | 40.2 | 0.7 | 63.6 | 100.00 | 0.00 |
+| `solid-nc-r0` | 1 | 17 | 21.2 | 39.6 | 79.8 | 65.6 | 100.00 | 0.00 |
+| `solid-nc-r0` | 2 | 18 | 99.9 | 37.1 | 0.1 | 64.6 | 100.00 | 0.00 |
+| `solid-nc-r0` | 2 | 19 | 28.5 | 37.7 | 74.1 | 66.6 | 100.00 | 0.00 |
+| `solid-nc-r0` | 3 | 20 | 94.8 | 37.6 | 4.9 | 63.2 | 100.00 | 0.00 |
+| `solid-nc-r0` | 3 | 21 | 4.2 | 38.4 | 95.4 | 66.7 | 100.00 | 0.00 |
+| `solid-nc-r0` | 4 | 22 | 99.9 | 37.1 | 0.1 | 65.0 | 100.00 | 0.00 |
+| `solid-nc-r0` | 4 | 23 | 66.1 | 38.2 | 36.2 | 65.4 | 99.74 | 0.00 |
+| `solid-nc-r1` | 1 | 16 | 98.8 | 38.5 | 1.2 | 64.0 | 100.00 | 0.00 |
+| `solid-nc-r1` | 1 | 17 | 21.9 | 37.4 | 77.2 | 63.2 | 100.00 | 0.00 |
+| `solid-nc-r1` | 2 | 18 | 100.0 | 40.5 | 0.0 | 64.2 | 100.00 | 0.00 |
+| `solid-nc-r1` | 2 | 19 | 91.0 | 40.0 | 9.4 | 64.2 | 100.00 | 0.00 |
+| `solid-nc-r1` | 3 | 20 | 100.0 | 37.8 | 0.0 | 64.2 | 100.00 | 0.00 |
+| `solid-nc-r1` | 3 | 21 | 53.1 | 38.0 | 48.7 | 61.1 | 100.00 | 0.00 |
+| `solid-nc-r1` | 4 | 22 | 100.0 | 38.1 | 0.1 | 63.3 | 100.00 | 0.00 |
+| `solid-nc-r1` | 4 | 23 | 52.4 | 39.0 | 45.3 | 66.4 | 100.00 | 0.00 |
+| `solid-nc-r2` | 1 | 16 | 99.4 | 38.8 | 0.4 | 60.0 | 100.00 | 0.00 |
+| `solid-nc-r2` | 1 | 17 | 21.3 | 38.9 | 78.1 | 65.8 | 100.00 | 0.00 |
+| `solid-nc-r2` | 2 | 18 | 90.0 | 37.4 | 10.8 | 63.6 | 100.00 | 0.00 |
+| `solid-nc-r2` | 2 | 19 | 3.0 | 38.4 | 96.6 | 60.8 | 99.87 | 0.00 |
+| `solid-nc-r2` | 3 | 20 | 99.0 | 39.1 | 1.5 | 64.1 | 99.87 | 0.00 |
+| `solid-nc-r2` | 3 | 21 | 6.8 | 38.9 | 93.7 | 65.6 | 100.00 | 0.00 |
+| `solid-nc-r2` | 4 | 22 | 100.0 | 37.2 | 0.0 | 62.6 | 100.00 | 0.00 |
+| `solid-nc-r2` | 4 | 23 | 81.7 | 38.1 | 20.8 | 64.5 | 100.00 | 0.00 |
 
 ### Floor-1 novelty each round (trusted-piece teacher; problems with no carry at cut 1 only; percent)
 
@@ -609,32 +609,32 @@ Mean over 8-15 after each round (the study's run with 3,000 updates per round is
 
 ### Checks at the new lengths, each round (the condition's own teacher)
 
-| Run | Round | Digits | Kept share | Novelty | Confirmed share | Kept right (audit) | Self-taught pieces replaced |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| `corrupt-agr-r0` | 1 | 16 | 25.1 | 0.6 | 100.0 | 99.80 | 15.28 |
-| `corrupt-agr-r0` | 1 | 17 | 22.5 | 79.1 | 100.0 | 100.00 | 15.17 |
-| `corrupt-agr-r0` | 2 | 18 | 20.0 | 0.0 | 100.0 | 100.00 | 15.49 |
-| `corrupt-agr-r0` | 2 | 19 | 20.4 | 81.4 | 100.0 | 100.00 | 14.96 |
-| `corrupt-agr-r0` | 3 | 20 | 19.8 | 5.1 | 100.0 | 100.00 | 14.66 |
-| `corrupt-agr-r0` | 3 | 21 | 21.1 | 96.7 | 100.0 | 100.00 | 15.24 |
-| `corrupt-agr-r0` | 4 | 22 | 19.4 | 1.8 | 100.0 | 100.00 | 15.36 |
-| `corrupt-agr-r0` | 4 | 23 | 19.3 | 44.8 | 100.0 | 100.00 | 15.79 |
-| `corrupt-agr-r1` | 1 | 16 | 23.9 | 1.3 | 100.0 | 100.00 | 15.00 |
-| `corrupt-agr-r1` | 1 | 17 | 21.1 | 76.4 | 100.0 | 100.00 | 15.16 |
-| `corrupt-agr-r1` | 2 | 18 | 21.1 | 64.1 | 100.0 | 100.00 | 15.52 |
-| `corrupt-agr-r1` | 2 | 19 | 20.5 | 100.0 | 100.0 | 99.76 | 15.28 |
-| `corrupt-agr-r1` | 3 | 20 | 19.9 | 0.0 | 100.0 | 100.00 | 15.13 |
-| `corrupt-agr-r1` | 3 | 21 | 19.1 | 43.3 | 100.0 | 100.00 | 14.92 |
-| `corrupt-agr-r1` | 4 | 22 | 20.2 | 0.2 | 100.0 | 99.75 | 14.90 |
-| `corrupt-agr-r1` | 4 | 23 | 21.8 | 0.5 | 100.0 | 99.77 | 15.10 |
-| `corrupt-agr-r2` | 1 | 16 | 23.6 | 0.2 | 100.0 | 100.00 | 14.60 |
-| `corrupt-agr-r2` | 1 | 17 | 22.7 | 76.4 | 100.0 | 100.00 | 14.68 |
-| `corrupt-agr-r2` | 2 | 18 | 19.9 | 0.0 | 100.0 | 100.00 | 14.61 |
-| `corrupt-agr-r2` | 2 | 19 | 19.4 | 25.4 | 100.0 | 100.00 | 14.51 |
-| `corrupt-agr-r2` | 3 | 20 | 20.2 | 0.5 | 100.0 | 99.75 | 14.85 |
-| `corrupt-agr-r2` | 3 | 21 | 21.5 | 14.7 | 100.0 | 100.00 | 15.10 |
-| `corrupt-agr-r2` | 4 | 22 | 18.7 | 6.1 | 100.0 | 100.00 | 15.35 |
-| `corrupt-agr-r2` | 4 | 23 | 20.4 | 77.0 | 100.0 | 99.76 | 15.24 |
+| Run | Round | Digits | Model's direct answer right | Kept share | Novelty | Confirmed share | Kept right (audit) | Self-taught pieces replaced |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `corrupt-agr-r0` | 1 | 16 | 99.3 | 25.1 | 0.6 | 100.0 | 99.80 | 15.28 |
+| `corrupt-agr-r0` | 1 | 17 | 21.2 | 22.5 | 79.1 | 100.0 | 100.00 | 15.17 |
+| `corrupt-agr-r0` | 2 | 18 | 100.0 | 20.0 | 0.0 | 100.0 | 100.00 | 15.49 |
+| `corrupt-agr-r0` | 2 | 19 | 20.9 | 20.4 | 81.4 | 100.0 | 100.00 | 14.96 |
+| `corrupt-agr-r0` | 3 | 20 | 95.0 | 19.8 | 5.1 | 100.0 | 100.00 | 14.66 |
+| `corrupt-agr-r0` | 3 | 21 | 3.2 | 21.1 | 96.7 | 100.0 | 100.00 | 15.24 |
+| `corrupt-agr-r0` | 4 | 22 | 98.6 | 19.4 | 1.8 | 100.0 | 100.00 | 15.36 |
+| `corrupt-agr-r0` | 4 | 23 | 52.0 | 19.3 | 44.8 | 100.0 | 100.00 | 15.79 |
+| `corrupt-agr-r1` | 1 | 16 | 98.8 | 23.9 | 1.3 | 100.0 | 100.00 | 15.00 |
+| `corrupt-agr-r1` | 1 | 17 | 21.9 | 21.1 | 76.4 | 100.0 | 100.00 | 15.16 |
+| `corrupt-agr-r1` | 2 | 18 | 33.5 | 21.1 | 64.1 | 100.0 | 100.00 | 15.52 |
+| `corrupt-agr-r1` | 2 | 19 | 0.0 | 20.5 | 100.0 | 100.0 | 99.76 | 15.28 |
+| `corrupt-agr-r1` | 3 | 20 | 100.0 | 19.9 | 0.0 | 100.0 | 100.00 | 15.13 |
+| `corrupt-agr-r1` | 3 | 21 | 58.1 | 19.1 | 43.3 | 100.0 | 100.00 | 14.92 |
+| `corrupt-agr-r1` | 4 | 22 | 99.9 | 20.2 | 0.2 | 100.0 | 99.75 | 14.90 |
+| `corrupt-agr-r1` | 4 | 23 | 100.0 | 21.8 | 0.5 | 100.0 | 99.77 | 15.10 |
+| `corrupt-agr-r2` | 1 | 16 | 99.4 | 23.6 | 0.2 | 100.0 | 100.00 | 14.60 |
+| `corrupt-agr-r2` | 1 | 17 | 21.3 | 22.7 | 76.4 | 100.0 | 100.00 | 14.68 |
+| `corrupt-agr-r2` | 2 | 18 | 99.8 | 19.9 | 0.0 | 100.0 | 100.00 | 14.61 |
+| `corrupt-agr-r2` | 2 | 19 | 70.1 | 19.4 | 25.4 | 100.0 | 100.00 | 14.51 |
+| `corrupt-agr-r2` | 3 | 20 | 99.8 | 20.2 | 0.5 | 100.0 | 99.75 | 14.85 |
+| `corrupt-agr-r2` | 3 | 21 | 86.1 | 21.5 | 14.7 | 100.0 | 100.00 | 15.10 |
+| `corrupt-agr-r2` | 4 | 22 | 94.8 | 18.7 | 6.1 | 100.0 | 100.00 | 15.35 |
+| `corrupt-agr-r2` | 4 | 23 | 18.3 | 20.4 | 77.0 | 100.0 | 99.76 | 15.24 |
 
 ### Floor-1 novelty each round (trusted-piece teacher; problems with no carry at cut 1 only; percent)
 
@@ -684,32 +684,32 @@ Mean over 8-15 after each round (the study's run with 3,000 updates per round is
 
 ### Checks at the new lengths, each round (the condition's own teacher)
 
-| Run | Round | Digits | Kept share | Novelty | Confirmed share | Kept right (audit) | Self-taught pieces replaced |
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| `corrupt-nc-r0` | 1 | 16 | 40.2 | 15.1 | 45.8 | 85.68 | 15.28 |
-| `corrupt-nc-r0` | 1 | 17 | 39.6 | 83.4 | 42.5 | 84.83 | 15.17 |
-| `corrupt-nc-r0` | 2 | 18 | 37.1 | 28.0 | 36.6 | 72.01 | 15.49 |
-| `corrupt-nc-r0` | 2 | 19 | 37.7 | 34.0 | 36.9 | 74.27 | 14.96 |
-| `corrupt-nc-r0` | 3 | 20 | 37.6 | 27.4 | 36.7 | 73.17 | 14.66 |
-| `corrupt-nc-r0` | 3 | 21 | 38.4 | 77.1 | 37.5 | 70.83 | 15.24 |
-| `corrupt-nc-r0` | 4 | 22 | 37.1 | 27.1 | 36.5 | 72.91 | 15.36 |
-| `corrupt-nc-r0` | 4 | 23 | 38.2 | 77.9 | 35.7 | 70.85 | 15.79 |
-| `corrupt-nc-r1` | 1 | 16 | 38.5 | 16.2 | 45.1 | 84.94 | 15.00 |
-| `corrupt-nc-r1` | 1 | 17 | 37.4 | 80.5 | 43.4 | 86.61 | 15.16 |
-| `corrupt-nc-r1` | 2 | 18 | 40.5 | 30.5 | 36.0 | 71.82 | 15.52 |
-| `corrupt-nc-r1` | 2 | 19 | 40.0 | 99.8 | 38.0 | 72.38 | 15.28 |
-| `corrupt-nc-r1` | 3 | 20 | 37.8 | 32.1 | 37.5 | 71.26 | 15.13 |
-| `corrupt-nc-r1` | 3 | 21 | 38.0 | 99.7 | 34.7 | 71.15 | 14.92 |
-| `corrupt-nc-r1` | 4 | 22 | 38.1 | 27.7 | 34.7 | 72.35 | 14.90 |
-| `corrupt-nc-r1` | 4 | 23 | 39.0 | 85.6 | 39.8 | 75.10 | 15.10 |
-| `corrupt-nc-r2` | 1 | 16 | 38.8 | 13.2 | 45.2 | 87.23 | 14.60 |
-| `corrupt-nc-r2` | 1 | 17 | 38.9 | 81.2 | 43.2 | 83.03 | 14.68 |
-| `corrupt-nc-r2` | 2 | 18 | 37.4 | 29.5 | 36.0 | 71.22 | 14.61 |
-| `corrupt-nc-r2` | 2 | 19 | 38.4 | 94.5 | 34.7 | 75.49 | 14.51 |
-| `corrupt-nc-r2` | 3 | 20 | 39.1 | 27.9 | 36.2 | 74.14 | 14.85 |
-| `corrupt-nc-r2` | 3 | 21 | 38.9 | 98.6 | 38.9 | 72.11 | 15.10 |
-| `corrupt-nc-r2` | 4 | 22 | 37.2 | 27.2 | 35.2 | 72.89 | 15.35 |
-| `corrupt-nc-r2` | 4 | 23 | 38.1 | 46.8 | 36.2 | 71.04 | 15.24 |
+| Run | Round | Digits | Model's direct answer right | Kept share | Novelty | Confirmed share | Kept right (audit) | Self-taught pieces replaced |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `corrupt-nc-r0` | 1 | 16 | 99.3 | 40.2 | 15.1 | 45.8 | 85.68 | 15.28 |
+| `corrupt-nc-r0` | 1 | 17 | 21.2 | 39.6 | 83.4 | 42.5 | 84.83 | 15.17 |
+| `corrupt-nc-r0` | 2 | 18 | 100.0 | 37.1 | 28.0 | 36.6 | 72.01 | 15.49 |
+| `corrupt-nc-r0` | 2 | 19 | 89.3 | 37.7 | 34.0 | 36.9 | 74.27 | 14.96 |
+| `corrupt-nc-r0` | 3 | 20 | 98.4 | 37.6 | 27.4 | 36.7 | 73.17 | 14.66 |
+| `corrupt-nc-r0` | 3 | 21 | 31.3 | 38.4 | 77.1 | 37.5 | 70.83 | 15.24 |
+| `corrupt-nc-r0` | 4 | 22 | 100.0 | 37.1 | 27.1 | 36.5 | 72.91 | 15.36 |
+| `corrupt-nc-r0` | 4 | 23 | 33.1 | 38.2 | 77.9 | 35.7 | 70.85 | 15.79 |
+| `corrupt-nc-r1` | 1 | 16 | 98.8 | 38.5 | 16.2 | 45.1 | 84.94 | 15.00 |
+| `corrupt-nc-r1` | 1 | 17 | 21.9 | 37.4 | 80.5 | 43.4 | 86.61 | 15.16 |
+| `corrupt-nc-r1` | 2 | 18 | 96.2 | 40.5 | 30.5 | 36.0 | 71.82 | 15.52 |
+| `corrupt-nc-r1` | 2 | 19 | 0.6 | 40.0 | 99.8 | 38.0 | 72.38 | 15.28 |
+| `corrupt-nc-r1` | 3 | 20 | 94.5 | 37.8 | 32.1 | 37.5 | 71.26 | 15.13 |
+| `corrupt-nc-r1` | 3 | 21 | 0.1 | 38.0 | 99.7 | 34.7 | 71.15 | 14.92 |
+| `corrupt-nc-r1` | 4 | 22 | 100.0 | 38.1 | 27.7 | 34.7 | 72.35 | 14.90 |
+| `corrupt-nc-r1` | 4 | 23 | 19.8 | 39.0 | 85.6 | 39.8 | 75.10 | 15.10 |
+| `corrupt-nc-r2` | 1 | 16 | 99.4 | 38.8 | 13.2 | 45.2 | 87.23 | 14.60 |
+| `corrupt-nc-r2` | 1 | 17 | 21.3 | 38.9 | 81.2 | 43.2 | 83.03 | 14.68 |
+| `corrupt-nc-r2` | 2 | 18 | 98.6 | 37.4 | 29.5 | 36.0 | 71.22 | 14.61 |
+| `corrupt-nc-r2` | 2 | 19 | 7.0 | 38.4 | 94.5 | 34.7 | 75.49 | 14.51 |
+| `corrupt-nc-r2` | 3 | 20 | 97.8 | 39.1 | 27.9 | 36.2 | 74.14 | 14.85 |
+| `corrupt-nc-r2` | 3 | 21 | 3.4 | 38.9 | 98.6 | 38.9 | 72.11 | 15.10 |
+| `corrupt-nc-r2` | 4 | 22 | 99.9 | 37.2 | 27.2 | 35.2 | 72.89 | 15.35 |
+| `corrupt-nc-r2` | 4 | 23 | 74.5 | 38.1 | 46.8 | 36.2 | 71.04 | 15.24 |
 
 ### Floor-1 novelty each round (trusted-piece teacher; problems with no carry at cut 1 only; percent)
 
@@ -865,4 +865,166 @@ Built once from `/vol/runs/si-nocarry-seed2-authors/round_4/checkpoints/step_003
 | Kept | 10,000 | 10,000 | 10,000 | 10,000 | 10,000 | 10,000 | 10,000 | 10,000 |
 | Drawn | 25,978 | 25,894 | 26,098 | 26,010 | 25,871 | 26,381 | 26,028 | 66,975 |
 | Wrong | 0 | 0 | 0 | 1 | 1 | 2 | 2 | 0 |
+
+## Control: direct answers (amendment 27)
+
+**Prediction C1 (floor 2 is not learned with direct answers): held** (floor 2 failed; learned in 0 of 3 repeats).
+
+### Floor 2
+
+* **Verdict: failed** (3 repeats finished round 4; learned needs 2 of 3 repeats at >= 90% at every length 16-23).
+* Floor 1 eroded (> 3 points below the repeat's own level before the floor's first round, in 2 of 3 repeats): **no**.
+  * `direct-r0`: learned no (lowest on the floor 0.0%); floor 1 eroded no; largest drop at any length 3-15: 0.1 points at 7 digits.
+  * `direct-r1`: learned no (lowest on the floor 0.0%); floor 1 eroded no; largest drop at any length 3-15: 0.0 points at 14 digits.
+  * `direct-r2`: learned no (lowest on the floor 0.0%); floor 1 eroded no; largest drop at any length 3-15: 0.0 points at 14 digits.
+
+Accuracy per length and repeat after each round (percent; the floor's lengths, and floor 1):
+
+| Run | Round | 8 | 9 | 10 | 11 | 12 | 13 | 14 | 15 | 16 | 17 | 18 | 19 | 20 | 21 | 22 | 23 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `direct-r0` | 0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 99.9 | – | – | – | – | – | – | – | – |
+| `direct-r0` | 1 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 99.6 | 29.0 | – | – | – | – | – | – |
+| `direct-r0` | 2 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 99.4 | 25.3 | 0.8 | 0.0 | – | – | – | – |
+| `direct-r0` | 3 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 99.3 | 25.8 | 0.7 | 0.0 | 0.0 | 0.0 | – | – |
+| `direct-r0` | 4 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 99.2 | 24.6 | 0.8 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+| `direct-r1` | 0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 99.9 | – | – | – | – | – | – | – | – |
+| `direct-r1` | 1 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 99.6 | 30.6 | – | – | – | – | – | – |
+| `direct-r1` | 2 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 98.8 | 25.9 | 0.9 | 0.0 | – | – | – | – |
+| `direct-r1` | 3 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 99.4 | 26.3 | 0.9 | 0.0 | 0.0 | 0.0 | – | – |
+| `direct-r1` | 4 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 99.4 | 25.7 | 0.9 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+| `direct-r2` | 0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 99.9 | – | – | – | – | – | – | – | – |
+| `direct-r2` | 1 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 99.2 | 27.7 | – | – | – | – | – | – |
+| `direct-r2` | 2 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 98.8 | 24.3 | 0.3 | 0.0 | – | – | – | – |
+| `direct-r2` | 3 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 99.2 | 24.1 | 0.4 | 0.0 | 0.0 | 0.0 | – | – |
+| `direct-r2` | 4 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 99.4 | 24.2 | 0.3 | 0.0 | 0.0 | 0.0 | 0.0 | 0.0 |
+
+Kept answers per length (built from the model's direct answers):
+
+| Run | Digits | Drawn | Kept | Shortfall | Kept right (%) |
+| --- | --- | --- | --- | --- | --- |
+| `direct-r0` | 16 | 10,000 | 10,000 | 0 | 99.12 |
+| `direct-r0` | 17 | 10,000 | 10,000 | 0 | 21.05 |
+| `direct-r0` | 18 | 10,001 | 10,000 | 0 | 0.57 |
+| `direct-r0` | 19 | 10,000 | 10,000 | 0 | 0.00 |
+| `direct-r0` | 20 | 10,000 | 10,000 | 0 | 0.00 |
+| `direct-r0` | 21 | 10,000 | 10,000 | 0 | 0.00 |
+| `direct-r0` | 22 | 10,000 | 10,000 | 0 | 0.00 |
+| `direct-r0` | 23 | 10,000 | 10,000 | 0 | 0.00 |
+| `direct-r1` | 16 | 10,000 | 10,000 | 0 | 99.12 |
+| `direct-r1` | 17 | 10,000 | 10,000 | 0 | 20.23 |
+| `direct-r1` | 18 | 10,000 | 10,000 | 0 | 0.89 |
+| `direct-r1` | 19 | 10,000 | 10,000 | 0 | 0.00 |
+| `direct-r1` | 20 | 10,000 | 10,000 | 0 | 0.00 |
+| `direct-r1` | 21 | 10,000 | 10,000 | 0 | 0.00 |
+| `direct-r1` | 22 | 10,000 | 10,000 | 0 | 0.00 |
+| `direct-r1` | 23 | 10,000 | 10,000 | 0 | 0.00 |
+| `direct-r2` | 16 | 10,000 | 10,000 | 0 | 99.05 |
+| `direct-r2` | 17 | 10,000 | 10,000 | 0 | 20.83 |
+| `direct-r2` | 18 | 10,000 | 10,000 | 0 | 0.38 |
+| `direct-r2` | 19 | 10,000 | 10,000 | 0 | 0.00 |
+| `direct-r2` | 20 | 10,000 | 10,000 | 0 | 0.00 |
+| `direct-r2` | 21 | 10,000 | 10,000 | 0 | 0.00 |
+| `direct-r2` | 22 | 10,000 | 10,000 | 0 | 0.00 |
+| `direct-r2` | 23 | 10,000 | 10,000 | 0 | 0.00 |
+
+Checks before each round (agreement rule, for comparison only; it decides nothing):
+
+| Run | Round | Digits | Model's direct answer right | Kept share | Novelty | Confirmed share | Kept right (audit) | Self-taught pieces replaced |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `direct-r0` | 1 | 16 | 99.3 | 35.2 | 0.4 | 100.0 | 100.00 | 0.00 |
+| `direct-r0` | 1 | 17 | 21.2 | 35.1 | 77.4 | 100.0 | 100.00 | 0.00 |
+| `direct-r0` | 2 | 18 | 0.2 | 34.1 | 100.0 | 100.0 | 100.00 | 0.00 |
+| `direct-r0` | 2 | 19 | 0.0 | 35.2 | 100.0 | 100.0 | 100.00 | 0.00 |
+| `direct-r0` | 3 | 20 | 0.0 | 33.9 | 100.0 | 100.0 | 100.00 | 0.00 |
+| `direct-r0` | 3 | 21 | 0.0 | 36.1 | 100.0 | 100.0 | 100.00 | 0.00 |
+| `direct-r0` | 4 | 22 | 0.0 | 33.8 | 100.0 | 100.0 | 100.00 | 0.00 |
+| `direct-r0` | 4 | 23 | 0.0 | 34.5 | 100.0 | 100.0 | 100.00 | 0.00 |
+| `direct-r1` | 1 | 16 | 98.8 | 34.1 | 0.9 | 100.0 | 100.00 | 0.00 |
+| `direct-r1` | 1 | 17 | 21.9 | 33.6 | 77.7 | 100.0 | 100.00 | 0.00 |
+| `direct-r1` | 2 | 18 | 0.6 | 36.4 | 99.5 | 100.0 | 100.00 | 0.00 |
+| `direct-r1` | 2 | 19 | 0.0 | 33.6 | 100.0 | 100.0 | 100.00 | 0.00 |
+| `direct-r1` | 3 | 20 | 0.0 | 33.8 | 100.0 | 100.0 | 100.00 | 0.00 |
+| `direct-r1` | 3 | 21 | 0.0 | 33.8 | 100.0 | 100.0 | 100.00 | 0.00 |
+| `direct-r1` | 4 | 22 | 0.0 | 34.2 | 100.0 | 100.0 | 100.00 | 0.00 |
+| `direct-r1` | 4 | 23 | 0.0 | 36.3 | 100.0 | 100.0 | 100.00 | 0.00 |
+| `direct-r2` | 1 | 16 | 99.4 | 33.0 | 0.3 | 100.0 | 100.00 | 0.00 |
+| `direct-r2` | 1 | 17 | 21.3 | 34.9 | 77.4 | 100.0 | 100.00 | 0.00 |
+| `direct-r2` | 2 | 18 | 0.4 | 33.8 | 99.9 | 100.0 | 100.00 | 0.00 |
+| `direct-r2` | 2 | 19 | 0.0 | 33.7 | 100.0 | 100.0 | 100.00 | 0.00 |
+| `direct-r2` | 3 | 20 | 0.0 | 35.0 | 100.0 | 100.0 | 100.00 | 0.00 |
+| `direct-r2` | 3 | 21 | 0.0 | 35.7 | 100.0 | 100.0 | 100.00 | 0.00 |
+| `direct-r2` | 4 | 22 | 0.0 | 33.1 | 100.0 | 100.0 | 100.00 | 0.00 |
+| `direct-r2` | 4 | 23 | 0.0 | 34.9 | 100.0 | 100.0 | 100.00 | 0.00 |
+
+**Dollars spent on the control: 2.15** (logged GPU wall seconds x $1.10/h; cap $18).
+
+### Decisions I took (amendment 27: the control, the analyses and the paper files)
+
+The numbers in the tables above and in `results/pilot/analysis.md`, `results/pilot/macros.md` and
+`paper/generated/*climb*` are generated from the logs; none is typed by hand. No definition,
+threshold or number of the task was changed.
+
+1. **Order.** Amendment 27 was committed and pushed (38a2082) before any code of the control was
+   written; the control's code, its tests and its cost estimate followed (7afa892), then the launch.
+2. **Where the teacher lives.** The direct-answers teacher is a fourth teacher in the pilot's own module
+   (`gainpred.floors`: `decide`, `collect`, `teacher_splits`); none of `cuts.py`, `teachers.py`,
+   `rounds.py`, `data.py`, `train.py`, `p9b.py` or `writeup.py` was changed. The three existing teachers'
+   code paths are unchanged (their tests pass as before).
+3. **Checks of the control.** Before each round the control logs the agreement rule's checks at the two
+   new lengths (novelty, kept share, confirmed share), with `audit_direct_right`, computed by the same
+   code as in the pilot; they decide nothing. The floor-1 novelty checks of every pilot round are also
+   logged, as in the pilot. The "seen coming" numbers are not computed (the control's floor 1 is the
+   solid one, whose numbers the agreement runs already computed).
+4. **Cap.** The task's $18 is counted for this task only, as the logged wall seconds of the control's
+   calls. The estimate before launch ($2.44 for floor 2) used the pilot's cost model with one whole answer
+   per problem drawn (keep rate assumed 0.95).
+5. **Stop after floor 2.** Floor 2 was not learned, so by the task's rule floors 3 and 4 were not run.
+6. **Analyses (part 3).**
+   * *Basics check* (C): P9b's check 0, i.e. every easy length 3-7 at least 98% on the test set before
+     the round (the floor's eval after the previous round; round 0 for round 1).
+   * *Outcome* (C): exactly the thresholds of the task. P9b's extra clause (an easy-length fall of more
+     than 3 points counts as harm) is not applied. For "before 50% or lower", the tests are applied in
+     the order the task lists them (paid off, did nothing, taught wrong answers); "did nothing" includes
+     a fall.
+   * *Best* (C): the highest "after" at that length over every run of the 24-25 November pilot with the
+     same repeat number (solid agreement, solid no-carry, corrupted agreement, corrupted no-carry, and the
+     answer key for repeats 0 and 1). The control is a separate amendment and is not among them.
+   * *Novelty in A* is the value logged in the round's checks event; "first round" is in teaching order
+     across floors 2-4.
+   * *Error after* (B) is 100 minus the test-set accuracy (mean of the two carry groups) after the round
+     that first taught the length.
+7. **Paper files (part 4).**
+   * *Text width.* The task forbids opening anything under `paper/` other than the generated files, so
+     the text width was not read from the paper. The widest existing generated table that is set at
+     \small without scaling measures 380 pt (`table_withheld_slim.tex`, `table_rehearsal.tex`); every new
+     table was measured with tectonic and is at most that wide (widest: 376 pt). All new files were
+     compiled together (with `\input` of `numbers_pilot.tex`) without an overfull or underfull box.
+   * *"Before" in `table_climb_control.tex`* is the share of the model's own direct answers that were
+     right before the round, on 2,000 fresh problems (`audit_direct_right`): the test set is not scored
+     at a length before the round that teaches it.
+   * *Confirmed share in `table_climb_weak.tex`* for the no-carry rows is the one computed in the
+     agreement run of the same version of floor 1 (same model, computed once; pilot decision 2).
+   * *Lowest kept right* in `table_climb.tex` is the lowest share over the floor's built sets and repeats
+     (for the answer key it is read from the logs too).
+   * *Macros*: one per number in the tables, the figure (the mean bar at each length and the caption's
+     range) and the control's result; macro names spell digits as words because LaTeX names hold letters
+     only. `results/pilot/macros.md` lists each.
+   * The figure prints each mean of 4% or more rounded to a whole percent, directly on top of its bar.
+
+### Anything that looked wrong (control)
+
+1. **Nothing went wrong in the runs**: no crash, no shortfall; almost every direct answer was readable,
+   so the control drew barely more problems than it kept. Examples and updates per round equal the
+   agreement runs' exactly.
+2. **The control learned nothing new.** At 17 digits it trained on its own answers, of which only about
+   a fifth were right, and stayed near where it started; from 18 digits on it started at about 0%, its
+   kept answers were almost all wrong, and it stayed there. It did not get worse at the lengths it
+   already knew (16 digits and floor 1). This is what C1 predicted.
+3. **The agreement-rule model could already answer the even lengths before training them** (18, 20, 22
+   at about 99% before their round; see `table_climb_control.tex`), while the control's model could not.
+   So in the pilot the lengths actually taught by the splits are mostly the odd ones (17, 19, 21, 23),
+   where the error before the round was high (`figure_climb_errors`). This was read after the runs.
+4. **Four misses of the frozen rule**, all with corrupted pieces and the no-carry rule: the confirmed
+   share was below the frozen 2b level, so the verdict was "does harm", yet the round paid off (the model
+   learned despite the random wrong answers; see the pilot's anomaly 2).
 

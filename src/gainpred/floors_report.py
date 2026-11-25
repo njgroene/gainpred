@@ -220,13 +220,14 @@ def verdict_lines(runs: list[str], floor: int) -> list[str]:
 
 def checks_table(runs: list[str], floor: int) -> list[str]:
     """The round's checks at the new lengths, with the condition's own teacher (and corruption)."""
-    lines = ["| Run | Round | Digits | Kept share | Novelty | Confirmed share | Kept right (audit) | Self-taught pieces replaced |",
-             "| --- | --- | --- | --- | --- | --- | --- | --- |"]
+    lines = ["| Run | Round | Digits | Model's direct answer right | Kept share | Novelty | Confirmed share | Kept right (audit) | Self-taught pieces replaced |",
+             "| --- | --- | --- | --- | --- | --- | --- | --- | --- |"]
     for run in runs:
         for e in events(run):
             if e["event"] == "checks" and e.get("floor") == floor:
                 c = e["confirmed_share"]
-                lines.append(f"| `{run}` | {e['round']} | {e['digits']} | {fmt(100 * e['kept_share'])} | "
+                lines.append(f"| `{run}` | {e['round']} | {e['digits']} | {fmt(100 * e['audit_direct_right'])} | "
+                             f"{fmt(100 * e['kept_share'])} | "
                              f"{fmt(None if e['novelty'] is None else 100 * e['novelty'])} | "
                              f"{c if isinstance(c, str) else fmt(None if c is None else 100 * c)} | "
                              f"{fmt(None if e['audit_kept_right'] is None else 100 * e['audit_kept_right'], 2)} | "
@@ -380,6 +381,47 @@ def dollars_section(stages: dict[str, list[tuple[str, str | None]]]) -> list[str
     return lines
 
 
+CONTROL_RUNS = [f"direct-r{r}" for r in REPEATS]
+
+
+def control_section(notes: Path = PILOT_RESULTS / "notes_control.md") -> list[str]:
+    """Protocol amendment 27: the direct-answers control (prediction C1: floor 2 is NOT learned)."""
+    out = ["## Control: direct answers (amendment 27)", ""]
+    runs = present(CONTROL_RUNS)
+    if not runs:
+        return out + ["Not run.", ""]
+    v2 = verdict(CONTROL_RUNS, 2)
+    if v2["repeats"]:
+        held = not v2["learned"]
+        out += [f"**Prediction C1 (floor 2 is not learned with direct answers): {'held' if held else 'failed'}** "
+                f"(floor 2 {v2['verdict']}; learned in {sum(v2['learned_each'].values())} of 3 repeats).", ""]
+    floors = [f for f in (2, 3, 4) if any(e["event"] == "build" and e.get("floor") == f for r in runs for e in events(r))]
+    for f in floors:
+        out += [f"### Floor {f}", ""] + verdict_lines(CONTROL_RUNS, f) + ["", "Accuracy per length and repeat after "
+                "each round (percent; the floor's lengths, and floor 1):", ""]
+        lengths = list(FLOORS[1]) + list(FLOORS[f])
+        out += ["| Run | Round | " + " | ".join(map(str, lengths)) + " |", "|" + " --- |" * (len(lengths) + 2)]
+        for run in runs:
+            evs = events(run)
+            for k in range(0, 5):
+                a = accuracy(evs, f, k)
+                if a:
+                    out.append(f"| `{run}` | {k} | " + " | ".join(fmt(a.get(d)) for d in lengths) + " |")
+        out += ["", "Kept answers per length (built from the model's direct answers):", "",
+                "| Run | Digits | Drawn | Kept | Shortfall | Kept right (%) |", "| --- | --- | --- | --- | --- | --- |"]
+        for run in runs:
+            for e in events(run):
+                if e["event"] == "build" and e.get("floor") == f:
+                    out.append(f"| `{run}` | {e['digits']} | {e['drawn']:,} | {e['kept']:,} | {max(0, e['shortfall']):,} | "
+                               f"{fmt(None if e['kept_right'] is None else 100 * e['kept_right'], 2)} |")
+        out += ["", "Checks before each round (agreement rule, for comparison only; it decides nothing):", ""]
+        out += checks_table(runs, f) + [""]
+    spent = sum(seconds_of(r) for r in runs)
+    out += [f"**Dollars spent on the control: {dollars(spent):.2f}** (logged GPU wall seconds x $1.10/h; cap $18).", ""]
+    out += [notes.read_text().rstrip(), ""] if notes.exists() else []
+    return out
+
+
 def stage_a_gate() -> tuple[bool | None, list[str]]:
     """Stage A passes if both answer-key repeats are at >= 90% at every length 16-19 after round 2."""
     lines, ok = [], True
@@ -448,6 +490,7 @@ def write_report(path: Path = PILOT_RESULTS / "report.md", notes: Path = PILOT_R
     }
     out += ["## Dollars (logged GPU wall seconds x $1.10/h)", ""] + dollars_section(stages) + [""]
     out += ["## Rehearsal set audit", ""] + rehearsal_section()
+    out += control_section()
     text = "\n".join(out) + "\n"
     path.write_text(text)
     return text
