@@ -426,10 +426,13 @@ def pilot_rehearsal(run: str, model: str = "seed2") -> dict:
 
 @app.function(image=image, gpu=GPU, volumes={str(VOLUME_PATH): volume}, timeout=20 * 60 * 60)
 def pilot_floor(run: str, cfg: dict, floor: int, first_round: int, last_round: int, start: str = "",
-                base_run: str = "", seen: bool = False) -> None:
+                base_run: str = "", seen: bool = False, copy_lower_from: str = "",
+                expect_direct_right: dict | None = None) -> None:
     """Rounds of one floor for one condition and repeat. ``start``: on the first round of a floor,
     "solid" (the solid floor-1 model), "pilot:<run>" (round 4 of an under-trained floor-1 run) or
-    "floor:<run>" (round 4 of the floor below in that pilot run)."""
+    "floor:<run>" (round 4 of the floor below in that pilot run). Amendment 28: ``copy_lower_from``
+    copies that run's stored lower-floor answers into this run once (sha256 checked);
+    ``expect_direct_right`` is the start check (see ``floors.run_floor``)."""
     volume.reload()
     import torch
 
@@ -448,7 +451,8 @@ def pilot_floor(run: str, cfg: dict, floor: int, first_round: int, last_round: i
     try:
         run_floor(config, run, floor, first_round, last_round, checkpoint, PILOT_DIR, VOLUME_PATH / "data" / "addition",
                   VOLUME_PATH / "data" / "floors", torch.device("cuda"), base_run=base_run or None, seen=seen,
-                  after_round=volume.commit)
+                  after_round=volume.commit, copy_lower_from=copy_lower_from or None,
+                  expect_direct_right=expect_direct_right)
     finally:
         volume.commit()
 

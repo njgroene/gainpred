@@ -571,7 +571,9 @@ def run_floor(cfg: PilotConfig, run: str, floor: int, first_round: int, last_rou
               pilot_dir: Path, data_dir: Path, floor_data_dir: Path, device: torch.device,
               base_run: str | None = None, seen: bool = False,
               make_solver: Callable[[Transformer, int], Solver] | None = None,
-              after_round: Callable[[], None] | None = None) -> Transformer:
+              after_round: Callable[[], None] | None = None,
+              copy_lower_from: str | None = None,
+              expect_direct_right: dict[str, float] | None = None) -> Transformer:
     """Rounds ``first_round``..``last_round`` of ``floor`` for one condition and repeat.
 
     ``start_checkpoint``: the model to start from when ``first_round`` is 1; otherwise the run
@@ -579,6 +581,17 @@ def run_floor(cfg: PilotConfig, run: str, floor: int, first_round: int, last_rou
     lower-floor answers are rehearsed (itself by default; the agreement run of the same repeat
     for the answer-key control, owner's change C). ``seen``: compute the two "seen coming"
     numbers before the first round of floor 2.
+
+    Amendment 28 (the control one floor up) adds two options, used only on a floor's round 1:
+
+    * ``copy_lower_from``: copy that run's stored answers for every floor from 2 up to the floor
+      below into this run's folder, once, checking each copy's sha256 against the other run's index.
+      Unlike ``base_run``, later floors of this run then rehearse its *own* answers of the floors it
+      taught itself (``base_run`` would take every lower floor from the other run, on every floor).
+    * ``expect_direct_right``: ``{digits: share}``, the ``audit_direct_right`` the other run logged in
+      its own round 1 with the same model and the same fresh problems. If this run's value differs by
+      more than 0.2 points at any listed length, it stops before building or training anything
+      (the wrong model or the wrong problems were loaded).
     """
     from gainpred.checks import run_checks
     from gainpred.teachers import no_carry
@@ -604,10 +617,12 @@ def run_floor(cfg: PilotConfig, run: str, floor: int, first_round: int, last_rou
                 rows = load_kept(base_dir, d)
                 index = json.loads((base_dir / "kept" / "index.json").read_text())[str(d)]
                 save_kept(run_dir, d, index["floor"], index["round"], rows)
+    copied = copy_lower(pilot_dir / copy_lower_from, run_dir, floor) if copy_lower_from and first_round == 1 else None
     segment = {"pilot": asdict(cfg), "run": run, "floor": floor, "rounds": [first_round, last_round],
                "start_checkpoint": str(checkpoint), "base_run": base_run, "seen": seen,
                "floor1_rehearsal_sha256": floor1_sha, "device": device_name(device), "torch": torch.__version__,
-               "max_len": PILOT_MAX_LEN}
+               "max_len": PILOT_MAX_LEN, "copy_lower_from": copy_lower_from, "copied": copied,
+               "expect_direct_right": expect_direct_right}
     (run_dir / f"config-floor{floor}-rounds{first_round}-{last_round}.json").write_text(
         json.dumps(segment, indent=2) + "\n")
     log_file = open(run_dir / "rounds.jsonl", "a")
@@ -701,9 +716,19 @@ def run_floor(cfg: PilotConfig, run: str, floor: int, first_round: int, last_rou
         # 1. checks, before anything is built
         # The direct-answers control logs the agreement rule's checks, for comparison only.
         check_teacher = "agreement" if cfg.teacher == "direct" else cfg.teacher
+        measured = {}
         for d in new:
-            log({"event": "checks", "round": round_,
-                 **floor_checks(round_, d, check_teacher, "checks", solver, watch, True)})
+            report = floor_checks(round_, d, check_teacher, "checks", solver, watch, True)
+            measured[str(d)] = report["audit_direct_right"]
+            log({"event": "checks", "round": round_, **report})
+        if expect_direct_right and round_ == 1:
+            # Amendment 28: same model and same problems as the other run, so the same answers.
+            ok = start_check_passes(measured, expect_direct_right)
+            log({"event": "start_check", "measured": measured, "expected": expect_direct_right, "passed": ok})
+            if not ok:
+                log_file.close()
+                raise RuntimeError(f"start check failed: direct answers right {measured}, expected "
+                                   f"{expect_direct_right}; nothing was built or trained")
         log({"event": "floor1_checks", "round": round_, "novelty": floor1_novelty(round_, "floor1", solver, watch)})
         # 2. build
         examples: list[tuple[Addition, int]] = []
@@ -774,6 +799,44 @@ def run_floor(cfg: PilotConfig, run: str, floor: int, first_round: int, last_rou
     log({"event": "call_done", "rounds": [first_round, last_round], "wall_seconds": time.time() - started})
     log_file.close()
     return model
+
+
+START_CHECK_POINTS = 0.2
+"""Amendment 28: the largest allowed difference, in percentage points, in the start check."""
+
+
+def start_check_passes(measured: dict[str, float], expected: dict[str, float]) -> bool:
+    """Does every expected length's share of right direct answers match within 0.2 points?"""
+    return all(k in measured and abs(measured[k] - v) * 100 <= START_CHECK_POINTS + 1e-9
+               for k, v in expected.items())
+
+
+def copy_lower(source: Path, run_dir: Path, floor: int) -> dict[str, str]:
+    """Copy ``source``'s stored answers for floors 2 .. floor-1 (files and index entries) into
+    ``run_dir``. Each file is copied byte for byte and its content's sha256 checked against the
+    source's index before and after; nothing in ``source`` is written. Refuses to replace a
+    length this run already stores. Returns {digits: sha256}."""
+    src_index = json.loads((source / "kept" / "index.json").read_text())
+    out = {}
+    for f in range(2, floor):
+        for d in FLOORS[f]:
+            if kept_path(run_dir, d).exists():
+                raise FileExistsError(f"{run_dir} already stores {d} digits; runs are never overwritten")
+            raw = kept_path(source, d).read_bytes()
+            entry = src_index[str(d)]
+            if hashlib.sha256(gzip.decompress(raw)).hexdigest() != entry["sha256"]:
+                raise RuntimeError(f"{source} stored answers for {d} digits do not match its index")
+            dest = kept_path(run_dir, d)
+            dest.parent.mkdir(parents=True, exist_ok=True)
+            dest.write_bytes(raw)
+            index_path = run_dir / "kept" / "index.json"
+            index = json.loads(index_path.read_text()) if index_path.exists() else {}
+            index[str(d)] = dict(entry)
+            index_path.write_text(json.dumps(index, indent=2, sort_keys=True) + "\n")
+            if hashlib.sha256(gzip.decompress(dest.read_bytes())).hexdigest() != entry["sha256"]:
+                raise RuntimeError(f"the copy of {d} digits does not match {source}'s index")
+            out[str(d)] = entry["sha256"]
+    return out
 
 
 def _known(data_dir: Path, floor_data_dir: Path) -> set[Addition]:

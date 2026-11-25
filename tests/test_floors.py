@@ -461,3 +461,65 @@ def test_direct_control_run_end_to_end(tiny):
     done = {e["round"]: e for e in ev if e["event"] == "round_done"}
     assert done[2]["composition"]["stored_16"] == done[2]["composition"]["stored_17"] == 20
     assert json.loads((pilot / "direct-r0" / "config-floor2-rounds1-2.json").read_text())["pilot"]["teacher"] == "direct"
+
+
+# ---------------------------------------------------------------- amendment 28: the control one floor up
+
+def _tree(folder: Path) -> dict[str, str]:
+    return {str(p.relative_to(folder)): hashlib.sha256(p.read_bytes()).hexdigest()
+            for p in sorted(folder.rglob("*")) if p.is_file()}
+
+
+def test_start_check_allows_at_most_two_tenths_of_a_point():
+    assert fl.start_check_passes({"24": 0.999, "25": 0.9615}, {"24": 1.0, "25": 0.9615})
+    assert fl.start_check_passes({"24": 0.998, "25": 0.9615}, {"24": 1.0, "25": 0.9615})
+    assert not fl.start_check_passes({"24": 0.9975, "25": 0.9615}, {"24": 1.0, "25": 0.9615})
+    assert not fl.start_check_passes({"24": 1.0}, {"24": 1.0, "25": 0.9615})
+
+
+@pytest.mark.slow
+def test_control_one_floor_up_copies_floor_two_checks_the_start_and_rehearses_its_own_floor_three(tiny):
+    """direct3: starts from the agreement run's floor-2 model, copies (never moves or changes) its
+    floor-2 answers, stops before building if the start check fails, and on floor 4 rehearses its
+    own floor-3 answers."""
+    pilot, root = tiny["pilot"], tiny["root"]
+    start = fl.last_checkpoint(pilot / "agr-r0" / "floor2" / "round_4")
+    agr_ev = [json.loads(line) for line in (pilot / "agr-r0" / "rounds.jsonl").read_text().splitlines()]
+    expected = {str(e["digits"]): e["audit_direct_right"] for e in agr_ev
+                if e.get("floor") == 3 and e["event"] == "checks" and e["round"] == 1}
+    assert set(expected) == {"24", "25"}
+    before = _tree(pilot / "agr-r0")
+
+    def go(run, floor, first, last, checkpoint, solver, **kw):
+        fl.run_floor(fl.PilotConfig(**{**SMALL, "teacher": "direct"}), run, floor, first, last, checkpoint, pilot,
+                     root / "data" / "addition", root / "data" / "floors", torch.device("cpu"),
+                     make_solver=lambda m, r: solver, **kw)
+        return [json.loads(line) for line in (pilot / run / "rounds.jsonl").read_text().splitlines()]
+
+    # wrong whole answers: 0% right instead of 100%, so the run stops before building anything
+    with pytest.raises(RuntimeError, match="start check failed"):
+        go("direct3-bad", 3, 1, 1, start, WrongWholeSums(), copy_lower_from="agr-r0", expect_direct_right=expected)
+    bad = [json.loads(line) for line in (pilot / "direct3-bad" / "rounds.jsonl").read_text().splitlines()]
+    assert [e for e in bad if e["event"] == "start_check"][0]["passed"] is False
+    assert not any(e["event"] in ("build", "round_done") for e in bad)
+    assert not (pilot / "direct3-bad" / "floor3").exists()
+
+    ev = go("direct3-r0", 3, 1, 4, start, Recording(), copy_lower_from="agr-r0", expect_direct_right=expected)
+    assert [e for e in ev if e["event"] == "start_check"][0]["passed"] is True
+    src_index = json.loads((pilot / "agr-r0" / "kept" / "index.json").read_text())
+    own_index = json.loads((pilot / "direct3-r0" / "kept" / "index.json").read_text())
+    for d in range(16, 24):
+        assert own_index[str(d)] == src_index[str(d)]
+        assert fl.kept_path(pilot / "direct3-r0", d).read_bytes() == fl.kept_path(pilot / "agr-r0", d).read_bytes()
+    assert all(own_index[str(d)]["floor"] == 3 for d in range(24, 32))
+    config = json.loads((pilot / "direct3-r0" / "config-floor3-rounds1-4.json").read_text())
+    assert config["base_run"] is None and config["copy_lower_from"] == "agr-r0"
+    assert config["start_checkpoint"] == str(start) and set(config["copied"]) == {str(d) for d in range(16, 24)}
+    assert _tree(pilot / "agr-r0") == before  # the agreement run's folder is untouched
+
+    # floor 4 continues from its own floor 3 and rehearses its own floor-3 answers (agr-r0 has none at 26-31)
+    ev = go("direct3-r0", 4, 1, 1, fl.last_checkpoint(pilot / "direct3-r0" / "floor3" / "round_4"), Recording())
+    done = [e for e in ev if e.get("floor") == 4 and e["event"] == "round_done"][0]
+    assert all(done["composition"][f"stored_{d}"] == 20 for d in range(16, 32))
+    assert not any(e["event"] == "start_check" for e in ev if e.get("floor") == 4)
+    assert _tree(pilot / "agr-r0") == before
