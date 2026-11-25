@@ -164,10 +164,13 @@ def errors_figure(paths: list[Path]) -> dict:
     from gainpred.writeup import COLOURS
 
     er = error_rates()
-    plt.rcParams.update({"font.size": 9, "axes.spines.top": False, "axes.spines.right": False,
+    # Drawn at the width of the paper's text block (5.5 in), so the PDF is included unscaled and 8 pt is 8 pt.
+    plt.rcParams.update({"font.size": 8, "axes.spines.top": False, "axes.spines.right": False,
                          "axes.edgecolor": "#52514e", "axes.labelcolor": "#0b0b0b", "xtick.color": "#52514e",
-                         "ytick.color": "#52514e", "axes.grid": True, "grid.color": "#e4e3df", "grid.linewidth": 0.6})
-    fig, ax = plt.subplots(figsize=(6.8, 3.4))
+                         "ytick.color": "#52514e", "axes.grid": True, "grid.color": "#e4e3df", "grid.linewidth": 0.6,
+                         "font.family": "serif", "font.serif": ["STIXGeneral"], "mathtext.fontset": "stix",
+                         "pdf.fonttype": 42})
+    fig, ax = plt.subplots(figsize=(5.5, 2.2))
     xs = list(LENGTHS)
     ys = [er["mean"][d] for d in xs]
     ax.set_axisbelow(True)
@@ -185,11 +188,11 @@ def errors_figure(paths: list[Path]) -> dict:
         lo, hi = FLOORS[f].start, FLOORS[f].stop - 1
         if f > 2:
             ax.axvline(lo - 0.5, color="#52514e", lw=0.8, ls=":", zorder=1)
-        ax.text((lo + hi) / 2, top * 1.10, f"floor {f} ({lo}-{hi})", ha="center", va="top", fontsize=8,
+        ax.text((lo + hi) / 2, top * 1.10, f"{lo}\u2013{hi} digits", ha="center", va="top", fontsize=8,
                 color="#52514e")
     ax.set_xticks(xs)
     ax.tick_params(axis="x", labelsize=7)
-    ax.set_xlabel("Digits (the round's new length)")
+    ax.set_xlabel("Number of digits")
     ax.set_ylabel("Error before the round (%)")
     fig.tight_layout()
     for p in paths:

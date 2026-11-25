@@ -357,7 +357,7 @@ def splits_tex(reg: Reg) -> str:
                          f" + {reg.add(('Split', d, s + 1, 'Right'), str(b), f'{d} digits, split {s + 1}: right piece (digits)')}")
         rows.append(cells)
     return table("climb-splits", "The three splits of every length 16-39: digits of the left and right piece. A piece "
-                 "of 8 digits or more is self-taught (learned on an earlier floor).",
+                 "of 8 digits or more is self-taught (learned in an earlier stage).",
                  ["Digits", "Split 1", "Split 2", "Split 3"], rows, "rccc")
 
 

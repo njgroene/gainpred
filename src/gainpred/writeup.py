@@ -897,7 +897,9 @@ def figures() -> list[str]:
     PAPER.mkdir(parents=True, exist_ok=True)
     plt.rcParams.update({"font.size": 9, "axes.spines.top": False, "axes.spines.right": False,
                          "axes.edgecolor": "#52514e", "axes.labelcolor": "#0b0b0b", "xtick.color": "#52514e",
-                         "ytick.color": "#52514e", "axes.grid": True, "grid.color": "#e4e3df", "grid.linewidth": 0.6})
+                         "ytick.color": "#52514e", "axes.grid": True, "grid.color": "#e4e3df", "grid.linewidth": 0.6,
+                         "font.family": "serif", "font.serif": ["STIXGeneral"], "mathtext.fontset": "stix",
+                         "pdf.fonttype": 42})
     made = []
 
     # Figure 1: experiment 1, accuracy per length after round 4, confirming seeds.
@@ -1931,7 +1933,7 @@ def novelty_gain_tex() -> str:
 
 def novelty_gain_figure(plt) -> None:
     cases = novelty_cases()
-    fig, ax = plt.subplots(figsize=(6.4, 5.6))
+    fig, ax = plt.subplots(figsize=(5.5, 3.7))  # the width of the paper's text block: included unscaled
     xs = [0, 100]
     # The axes cover every case: the y-axis is symmetric, so both bound lines run the full width.
     lim = max(105.0, max(abs(c["change"]) for c in cases) + 5)
@@ -1950,11 +1952,11 @@ def novelty_gain_figure(plt) -> None:
     for c in (c for c in cases if not within_bound(c)):
         ax.scatter([c["novelty"]], [c["change"]], s=200, facecolors="none", edgecolors="#0b0b0b", lw=1.0, zorder=4)
         ax.annotate(f"No-carry rule, starting model {c['seed']},\nround {c['round']}, {c['digits']} digits",
-                    (c["novelty"], c["change"]), xytext=(c["novelty"] + 6, c["change"] - 4), fontsize=7,
+                    (c["novelty"], c["change"]), xytext=(c["novelty"] + 6, c["change"] - 4), fontsize=8,
                     va="top", arrowprops={"arrowstyle": "-", "color": "#52514e", "lw": 0.6})
     ax.set_xlim(-2, 102); ax.set_ylim(-lim, lim)
     ax.set_xlabel("Novelty (%)"); ax.set_ylabel("Change in accuracy (points)")
-    ax.legend(frameon=False, fontsize=7, loc="lower left")
+    ax.legend(frameon=False, fontsize=8, loc="lower left")
     fig.tight_layout(); fig.savefig(OUT / "figures" / "novelty_gain.png", dpi=200)
     fig.savefig(PAPER / "figure_novelty_gain.pdf"); plt.close(fig)
 
