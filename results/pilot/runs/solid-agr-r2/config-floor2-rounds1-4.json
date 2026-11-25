@@ -1,0 +1,33 @@
+{
+  "pilot": {
+    "teacher": "agreement",
+    "version": "solid",
+    "repeat": 2,
+    "model": "seed2",
+    "corruption": 0.0,
+    "kept_per_length": 10000,
+    "draw_cap_factor": 20,
+    "replay_per_length": 5000,
+    "check_sample": 2000,
+    "batch_size": 256,
+    "passes": 7,
+    "min_steps": 3000,
+    "decay_fraction": 0.3333333333333333,
+    "solver_batch_size": 4096,
+    "eval_per_length": null,
+    "max_chunk": 20000
+  },
+  "run": "solid-agr-r2",
+  "floor": 2,
+  "rounds": [
+    1,
+    4
+  ],
+  "start_checkpoint": "/vol/runs/si-nocarry-seed2-authors/round_4/checkpoints/step_003000.pt",
+  "base_run": null,
+  "seen": true,
+  "floor1_rehearsal_sha256": "7becd3c558576b97e7a9b5a11968d60f9f21ee79eb090ffa507017bef2157861",
+  "device": "NVIDIA A10",
+  "torch": "2.15.0+cu132",
+  "max_len": 136
+}

@@ -1,0 +1,49 @@
+{
+  "model": "seed2",
+  "checkpoint": "/vol/runs/si-nocarry-seed2-authors/round_4/checkpoints/step_003000.pt",
+  "sha256": "7becd3c558576b97e7a9b5a11968d60f9f21ee79eb090ffa507017bef2157861",
+  "rows": 80000,
+  "audit": {
+    "8": {
+      "kept": 10000,
+      "drawn": 25978,
+      "wrong": 0
+    },
+    "9": {
+      "kept": 10000,
+      "drawn": 25894,
+      "wrong": 0
+    },
+    "10": {
+      "kept": 10000,
+      "drawn": 26098,
+      "wrong": 0
+    },
+    "11": {
+      "kept": 10000,
+      "drawn": 26010,
+      "wrong": 1
+    },
+    "12": {
+      "kept": 10000,
+      "drawn": 25871,
+      "wrong": 1
+    },
+    "13": {
+      "kept": 10000,
+      "drawn": 26381,
+      "wrong": 2
+    },
+    "14": {
+      "kept": 10000,
+      "drawn": 26028,
+      "wrong": 2
+    },
+    "15": {
+      "kept": 10000,
+      "drawn": 66975,
+      "wrong": 0
+    }
+  },
+  "seconds": 175.65743231773376
+}
