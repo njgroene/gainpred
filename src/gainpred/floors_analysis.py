@@ -149,8 +149,8 @@ def error_rates() -> dict:
 
 
 ERRORS_CAPTION = ("Error rate of the model's own direct answer before the round that teaches each length, "
-                  "agreement rule, solid floor 1 (starting model 2); bar: mean of three repeats, dots: repeats; "
-                  "the mean is printed on bars of 4% or more. Before is measured on 2,000 fresh problems per "
+                  "agreement rule, solid floor 1 (starting model 2); bar: mean of three repeats, dots: repeats. "
+                  "Before is measured on 2,000 fresh problems per "
                   "length; after on the test set. After the round that first taught it, the test-set error at "
                   "every length 16-39 in every repeat was between {lo:.1f}% and {hi:.1f}%. Read after the runs, "
                   "from their logs.")
@@ -180,9 +180,6 @@ def errors_figure(paths: list[Path]) -> dict:
         ax.scatter([d] * len(REPEATS), [er["before"][(d, r)] for r in REPEATS], s=9, color="#0b0b0b", zorder=3,
                    linewidths=0)
     top = max(max(er["before"].values()), 1.0)
-    for d, y in zip(xs, ys):
-        if y >= 4:
-            ax.text(d, y + top * 0.012, f"{y:.0f}", ha="center", va="bottom", fontsize=7, color="#0b0b0b", zorder=4)
     ax.set_ylim(0, top * 1.12)
     for f in CLIMB_FLOORS:
         lo, hi = FLOORS[f].start, FLOORS[f].stop - 1
