@@ -219,8 +219,11 @@ def corrupt(answer: Answer, model: str, problem: Addition, split: int, piece: in
 # Building answers from two pieces
 # ============================================================================
 
-TEACHERS = ("agreement", "no_carry", "answer_key")
-TEACHER_NAMES = {"agreement": "Agreement rule", "no_carry": "No-carry rule", "answer_key": "Answer key"}
+TEACHERS = ("agreement", "no_carry", "answer_key", "direct")
+TEACHER_NAMES = {"agreement": "Agreement rule", "no_carry": "No-carry rule", "answer_key": "Answer key",
+                 "direct": "Direct answers"}
+"""``direct`` is the control of protocol amendment 27: the model's own answer to the whole problem,
+kept if readable. No splits, no pieces, no combine; the true sum never makes or filters an answer."""
 
 
 def _text(answer: Answer) -> str:
@@ -266,16 +269,23 @@ def build_floor(problems: list[Addition], splits: tuple[int, ...], solver: Solve
 
 
 def teacher_splits(teacher: str) -> tuple[int, ...]:
-    return {"agreement": (0, 1, 2), "no_carry": (0,), "answer_key": ()}[teacher]
+    return {"agreement": (0, 1, 2), "no_carry": (0,), "answer_key": (), "direct": ()}[teacher]
 
 
-def decide(teacher: str, problems: list[Addition], built: list[list[Built]]) -> list[Decision]:
+def decide(teacher: str, problems: list[Addition], built: list[list[Built]],
+           direct: list[Answer] | None = None) -> list[Decision]:
     """Keep or discard. ``built[i]`` must start with split 1 and hold every split the rule needs.
 
     * no-carry rule: split 1's joined answer, unless the right answer is longer than its piece;
     * agreement rule: an answer at least two of the three splits produce;
-    * answer key (control): the true sum, always.
+    * answer key (control): the true sum, always;
+    * direct answers (control, amendment 27): ``direct[i]``, the model's answer to the whole
+      problem, kept if it is readable. Nothing else is filtered.
     """
+    if teacher == "direct":
+        if direct is None or len(direct) != len(problems):
+            raise ValueError("the direct-answers teacher needs one direct answer per problem")
+        return [Decision(p, readable(a), (a,), None) for p, a in zip(problems, direct)]
     out = []
     for p, bs in zip(problems, built):
         if teacher == "no_carry":
@@ -358,9 +368,10 @@ def collect(teacher: str, solver: Solver, rng: random.Random, digits: int, quota
         splits = teacher_splits(teacher)
         built, info = build_floor(problems, splits, solver, corruption) if splits else (
             [[] for _ in problems], [[] for _ in problems])
-        for p, d, bs, inf in zip(problems, decide(teacher, problems, built), built, info):
+        direct = solver(problems) if teacher == "direct" else None  # whole problems, greedy
+        for i, (p, d, bs, inf) in enumerate(zip(problems, decide(teacher, problems, built, direct), built, info)):
             drawn += 1
-            rows.append(problem_row(p, d, inf))
+            rows.append(problem_row(p, d, inf, None if direct is None else direct[i]))
             decisions.append(d)
             built_all.append(bs)
             info_all.append(inf)
@@ -688,9 +699,11 @@ def run_floor(cfg: PilotConfig, run: str, floor: int, first_round: int, last_rou
         solver = solver_for(round_)
         new = round_lengths(floor, round_)
         # 1. checks, before anything is built
+        # The direct-answers control logs the agreement rule's checks, for comparison only.
+        check_teacher = "agreement" if cfg.teacher == "direct" else cfg.teacher
         for d in new:
             log({"event": "checks", "round": round_,
-                 **floor_checks(round_, d, cfg.teacher, "checks", solver, watch, True)})
+                 **floor_checks(round_, d, check_teacher, "checks", solver, watch, True)})
         log({"event": "floor1_checks", "round": round_, "novelty": floor1_novelty(round_, "floor1", solver, watch)})
         # 2. build
         examples: list[tuple[Addition, int]] = []

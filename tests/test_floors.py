@@ -402,3 +402,62 @@ def test_everything_stays_in_the_pilot_folder(tiny):
     root = tiny["root"]
     top = {p.name for p in root.iterdir()}
     assert top == {"data", "solid", "runs"} and {p.name for p in (root / "runs").iterdir()} == {"pilot"}
+
+
+# ---------------------------------------------------------------- amendment 27: the direct-answers control
+
+class WrongWholeSums(Recording):
+    """Adds pieces perfectly, but answers every whole problem of 16+ digits one too high, and
+    gives an unreadable answer to every problem whose first number is even."""
+
+    def __call__(self, problems, temperature=0.0):
+        self.asked += problems
+        return [(Unreadable("x") if p.a % 2 == 0 else solve(p) + 1) if p.n_digits >= 16 else solve(p)
+                for p in problems]
+
+
+def test_direct_teacher_keeps_every_readable_whole_answer_and_never_uses_the_true_sum():
+    problems = [EXAMPLE, Addition(EXAMPLE.a + 1, EXAMPLE.b)]  # first number odd, then even
+    d = fl.decide("direct", problems, [[], []], WrongWholeSums()(problems))
+    assert d[0].kept == solve(EXAMPLE) + 1 and d[1].kept is None  # wrong but readable: kept
+    with pytest.raises(ValueError):
+        fl.decide("direct", problems, [[], []])
+
+
+def test_direct_teacher_asks_whole_problems_only_and_draws_the_agreement_rules_stream():
+    solver = WrongWholeSums()
+    rows = []
+    kept, drawn, *_ = fl.collect("direct", solver, fl.stream("seed2", 1, 2, 1, 17, "build"), 17, 30, 500, set(),
+                                 None, rows)
+    assert solver.asked and all(p.n_digits == 17 for p in solver.asked)  # no pieces
+    assert len(kept) == 30 and drawn == len(rows) and all(a == solve(p) + 1 for p, a in kept)
+    assert all(r["splits"] == [] and "direct" in r for r in rows)
+    agree = []
+    fl.collect("agreement", PerfectCalculator(), fl.stream("seed2", 1, 2, 1, 17, "build"), 17, drawn, 500, set(),
+               None, agree)
+    assert [(r["a"], r["b"]) for r in rows] == [(r["a"], r["b"]) for r in agree][:drawn]
+    assert fl.teacher_splits("direct") == ()
+
+
+@pytest.mark.slow
+def test_direct_control_run_end_to_end(tiny):
+    """Two rounds of floor 2: wrong whole answers are kept, the checks are the agreement rule's,
+    and round 2 rehearses this run's own stored answers."""
+    pilot, root = tiny["pilot"], tiny["root"]
+    solid = root / "solid" / "step_000001.pt"
+    solver = WrongWholeSums()
+    fl.run_floor(fl.PilotConfig(**{**SMALL, "teacher": "direct"}), "direct-r0", 2, 1, 2, solid, pilot,
+                 root / "data" / "addition", root / "data" / "floors", torch.device("cpu"),
+                 make_solver=lambda m, r: solver)
+    ev = [json.loads(line) for line in (pilot / "direct-r0" / "rounds.jsonl").read_text().splitlines()]
+    checks = [e for e in ev if e["event"] == "checks"]
+    assert [e["digits"] for e in checks] == [16, 17, 18, 19] and all(e["teacher"] == "agreement" for e in checks)
+    assert all(e["audit_direct_right"] == 0.0 for e in checks)
+    builds = [e for e in ev if e["event"] == "build"]
+    assert all(e["kept"] == 20 and e["kept_right"] == 0.0 and e["shortfall"] == 0 for e in builds)
+    assert all(e["kept_share"] < 1 for e in builds)  # unreadables discarded
+    for d in (16, 17):
+        assert all(a == solve(p) + 1 for p, a in fl.load_kept(pilot / "direct-r0", d))
+    done = {e["round"]: e for e in ev if e["event"] == "round_done"}
+    assert done[2]["composition"]["stored_16"] == done[2]["composition"]["stored_17"] == 20
+    assert json.loads((pilot / "direct-r0" / "config-floor2-rounds1-2.json").read_text())["pilot"]["teacher"] == "direct"

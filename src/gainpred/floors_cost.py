@@ -24,7 +24,7 @@ from pathlib import Path
 from gainpred.floors import FLOORS, SPLITS, round_lengths, updates_for
 
 TIMING = Path("results/pilot/runs/timing/timing.json")
-KEEP = {"agreement": 0.34, "no_carry": 0.39, "answer_key": 1.0}
+KEEP = {"agreement": 0.34, "no_carry": 0.39, "answer_key": 1.0, "direct": 0.95}
 FLOOR1_NOVELTY_SECONDS = 64.0  # the study's no-carry checks at 8-15 (results/writeup/cost.md, round 4)
 OVERHEAD_SECONDS = 180.0
 DOLLARS_PER_HOUR = 1.10
@@ -77,9 +77,11 @@ class Model:
 
     def round(self, floor: int, round_: int, teacher: str, weak: float = 1.0) -> dict[str, float]:
         new = round_lengths(floor, round_)
-        splits = {"agreement": (0, 1, 2), "no_carry": (0,), "answer_key": ()}[teacher]
+        splits = {"agreement": (0, 1, 2), "no_carry": (0,), "answer_key": (), "direct": ()}[teacher]
         build = sum(self.gen(10_000 / KEEP[teacher] * (weak if teacher != "answer_key" else 1.0),
                              split_work(d, splits), d) for d in new) if splits else 0.0
+        if teacher == "direct":  # amendment 27: one whole answer per problem, almost all readable
+            build = sum(self.gen(10_000 / KEEP["direct"], work(d), d) for d in new)
         examples = 20_000 * round_ + 80_000 * (floor - 1) + 25_000  # new + stored + lower floors + replay
         updates = updates_for(examples)
         return {"checks": sum(self.checks(d) for d in new) + FLOOR1_NOVELTY_SECONDS * self.factor,
