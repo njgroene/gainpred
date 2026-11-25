@@ -1299,6 +1299,9 @@ def section4_numbers() -> dict[str, str]:
     nums["gpRiseNothingUnderTwo"] = sum(x < 2 for x in rise["Did little or nothing"])
     rr = p9b.round_rows(conf)
     nums |= {"gpRoundsCorrect": sum(o in p9b.MATCH[v] for _, _, v, o in rr), "gpRounds": len(rr)}
+    # Added after the evaluation runs (amendment 28, part 4): the accuracy of always predicting
+    # "does nothing", i.e. the share of the cases whose outcome is "did nothing".
+    nums["gpDidNothingPct"] = f"{100 * sum(c.outcome == 'did nothing' for c in conf) / n:.1f}"
     # Internal consistency: the parts add up.
     assert nums["gpCorrect"] == nums["gpOursCorrect"] == sum(nums[f"gpCorrectModel{w}"] for w in ("Two", "Three", "Four"))
     assert nums["gpHarmful"] == nums["gpDidHarm"] + nums["gpTaughtWrong"]
@@ -1310,7 +1313,8 @@ def section4_numbers() -> dict[str, str]:
 AFTER_EVALUATION = ("gpCorrectNoBasics", "gpVariant", "gpNoveltyMargin", "gpConfirmedMargin", "gpConfirmedHarmCases",
                     "gpConfirmedPaysCases", "gpRounds", "gpCtrlAfterSeven", "gpCtrlBeforeSeven", "gpWithheldSeven", "gpEdgesFive",
                     "gpKeptNoCarry", "gpCarryAfter", "gpNaturalCarry", "gpNovGain", "gpTaNoCarry", "gpTaAgreement",
-                    "gpTaNoSelect", "gpTaWeak", "gpTaFull", "gpTaP", "gpSteer", "gpReh", "gpSched")
+                    "gpTaNoSelect", "gpTaWeak", "gpTaFull", "gpTaP", "gpSteer", "gpReh", "gpSched", "gpDidNothing",
+                    "gpLrEdgesRandom")
 
 
 def numbers_tex(nums: dict[str, str]) -> str:
@@ -1628,6 +1632,11 @@ def section5_numbers() -> dict[str, str]:
     # "fell from ... to \gpEdgesFiveCorrect").
     nums["gpLrEdgesBeforeFive"] = (
         f"{statistics.mean(joined(evals(f'runs-edges_differ-seed{s}-u30000', 'study')[0], 5) for s in CONFIRMING):.1f}")
+    # Added after the evaluation runs (amendment 28, part 4): students taught with the edges-differ
+    # rule (after its one round), on the test group of randomly joined strings: lowest and highest
+    # over the starting models of the evaluation runs.
+    rj = [100 * evals(f"runs-edges_differ-seed{s}-u30000", "study")[1]["random_join"] for s in CONFIRMING]
+    nums["gpLrEdgesRandomJoinLow"], nums["gpLrEdgesRandomJoinHigh"] = f"{min(rj):.1f}", f"{max(rj):.1f}"
     # Filter gap (defined after the evaluation runs): kept share and the carry group after.
     for arm, name in FILTER_ARMS:
         rows = filter_gap_rows(arm, CONFIRMING)

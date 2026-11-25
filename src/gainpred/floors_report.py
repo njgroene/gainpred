@@ -422,6 +422,82 @@ def control_section(notes: Path = PILOT_RESULTS / "notes_control.md") -> list[st
     return out
 
 
+CONTROL3_RUNS = [f"direct3-r{r}" for r in REPEATS]
+
+
+def agr_run(repeat: int, floor: int) -> str:
+    """The agreement-rule run of a repeat on a floor (repeat 1's floor 4 is the relaunch)."""
+    return "solid-agr-r1-again" if repeat == 1 and floor == 4 else f"solid-agr-r{repeat}"
+
+
+def control3_section(notes: Path = PILOT_RESULTS / "notes_control3.md") -> list[str]:
+    """Protocol amendment 28: direct answers one floor up (prediction C2: floor 3 is NOT learned)."""
+    out = ["## Control one floor up: direct answers on floor 3 (amendment 28)", ""]
+    extra = sorted(p.name for p in RUNS.glob("direct3-*") if p.name not in CONTROL3_RUNS)
+    runs = present(CONTROL3_RUNS)
+    if not runs and not extra:
+        return out + ["Not run.", ""]
+    v3 = verdict(CONTROL3_RUNS, 3)
+    if v3["repeats"]:
+        out += [f"**Prediction C2 (floor 3 is not learned with direct answers, starting from the model that learned "
+                f"floor 2 with the agreement rule): {'failed' if v3['learned'] else 'held'}** (floor 3 "
+                f"{v3['verdict']}; learned in {sum(v3['learned_each'].values())} of 3 repeats).", ""]
+    out += ["### Check before training (round 1 of floor 3)", "",
+            "Same model and same 2,000 fresh problems as the agreement run's floor-3 round 1, so the share of right "
+            "direct answers at 24 and 25 digits must match within 0.2 points.", "",
+            "| Run | Digits | This run (%) | Agreement run (%) | Difference (points) | Passed |",
+            "| --- | --- | --- | --- | --- | --- |"]
+    for run in runs + extra:
+        for e in events(run):
+            if e["event"] == "start_check":
+                for d, x in e["expected"].items():
+                    y = e["measured"].get(d)
+                    out.append(f"| `{run}` | {d} | {fmt(None if y is None else 100 * y, 2)} | {fmt(100 * x, 2)} | "
+                               f"{fmt(None if y is None else 100 * (y - x), 2)} | {'yes' if e['passed'] else '**no**'} |")
+    out += [""]
+    for run in runs:
+        cfg = json.loads((RUNS / run / "config-floor3-rounds1-4.json").read_text()) \
+            if (RUNS / run / "config-floor3-rounds1-4.json").exists() else {}
+        if cfg:
+            out.append(f"* `{run}`: started from `{cfg['start_checkpoint']}`; base_run {cfg['base_run']}; floor-2 answers "
+                       f"copied from `{cfg['copy_lower_from']}` ({len(cfg['copied'] or {})} files, sha256 checked "
+                       "against its index).")
+    out += [""]
+    floors = [f for f in (3, 4) if any(e["event"] == "build" and e.get("floor") == f for r in runs for e in events(r))]
+    for f in floors:
+        lengths = list(FLOORS[f])
+        out += [f"### Floor {f}", ""] + verdict_lines(CONTROL3_RUNS, f) + [
+            "", f"Accuracy per length after each round (percent), beside the agreement run of the same repeat. "
+            f"Round 0 is before the floor's first round. Lowest {FLOORS[1].start}-{FLOORS[f].start - 1}: the lowest "
+            "accuracy at any shorter length 8 and up.", "",
+            "| Repeat | Run | Round | " + " | ".join(map(str, lengths)) + f" | Lowest {FLOORS[1].start}-"
+            f"{FLOORS[f].start - 1} |", "|" + " --- |" * (len(lengths) + 4)]
+        for r in REPEATS:
+            for run in (f"direct3-r{r}", agr_run(r, f)):
+                evs = [e for e in events(run) if e.get("floor") == f]
+                for k in range(0, 5):
+                    a = accuracy(evs, f, k)
+                    if a:
+                        low = min(a[d] for d in a if FLOORS[1].start <= d < FLOORS[f].start)
+                        out.append(f"| {r} | `{run}` | {k} | " + " | ".join(fmt(a.get(d)) for d in lengths)
+                                   + f" | {fmt(low)} |")
+        out += ["", "Kept answers per length (the model's direct answers):", "",
+                "| Run | Digits | Drawn | Kept | Shortfall | Kept right (%) |", "| --- | --- | --- | --- | --- | --- |"]
+        for run in runs:
+            for e in events(run):
+                if e["event"] == "build" and e.get("floor") == f:
+                    out.append(f"| `{run}` | {e['digits']} | {e['drawn']:,} | {e['kept']:,} | {max(0, e['shortfall']):,} | "
+                               f"{fmt(None if e['kept_right'] is None else 100 * e['kept_right'], 2)} |")
+        out += ["", "Checks before each round (agreement rule, for comparison only; it decides nothing):", ""]
+        out += checks_table(runs, f) + [""]
+    out += ["Examples and updates per round:", ""] + rounds_table(runs) + [""]
+    spent = sum(seconds_of(r) for r in runs + extra)
+    out += [f"**Dollars spent on this control: {dollars(spent):.2f}** (logged GPU wall seconds x $1.10/h, every "
+            "`direct3-*` run; cap $12).", ""]
+    out += [notes.read_text().rstrip(), ""] if notes.exists() else []
+    return out
+
+
 def stage_a_gate() -> tuple[bool | None, list[str]]:
     """Stage A passes if both answer-key repeats are at >= 90% at every length 16-19 after round 2."""
     lines, ok = [], True
@@ -491,6 +567,7 @@ def write_report(path: Path = PILOT_RESULTS / "report.md", notes: Path = PILOT_R
     out += ["## Dollars (logged GPU wall seconds x $1.10/h)", ""] + dollars_section(stages) + [""]
     out += ["## Rehearsal set audit", ""] + rehearsal_section()
     out += control_section()
+    out += control3_section()
     text = "\n".join(out) + "\n"
     path.write_text(text)
     return text

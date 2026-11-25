@@ -1028,3 +1028,211 @@ threshold or number of the task was changed.
    share was below the frozen 2b level, so the verdict was "does harm", yet the round paid off (the model
    learned despite the random wrong answers; see the pilot's anomaly 2).
 
+## Control one floor up: direct answers on floor 3 (amendment 28)
+
+**Prediction C2 (floor 3 is not learned with direct answers, starting from the model that learned floor 2 with the agreement rule): held** (floor 3 failed; learned in 0 of 3 repeats).
+
+### Check before training (round 1 of floor 3)
+
+Same model and same 2,000 fresh problems as the agreement run's floor-3 round 1, so the share of right direct answers at 24 and 25 digits must match within 0.2 points.
+
+| Run | Digits | This run (%) | Agreement run (%) | Difference (points) | Passed |
+| --- | --- | --- | --- | --- | --- |
+| `direct3-r0` | 24 | 100.00 | 100.00 | 0.00 | yes |
+| `direct3-r0` | 25 | 96.15 | 96.15 | 0.00 | yes |
+| `direct3-r1` | 24 | 99.90 | 99.90 | 0.00 | yes |
+| `direct3-r1` | 25 | 99.45 | 99.45 | 0.00 | yes |
+| `direct3-r2` | 24 | 99.80 | 99.80 | 0.00 | yes |
+| `direct3-r2` | 25 | 98.95 | 98.95 | 0.00 | yes |
+
+* `direct3-r0`: started from `/vol/runs/pilot/solid-agr-r0/floor2/round_4/checkpoints/step_005100.pt`; base_run None; floor-2 answers copied from `solid-agr-r0` (8 files, sha256 checked against its index).
+* `direct3-r1`: started from `/vol/runs/pilot/solid-agr-r1/floor2/round_4/checkpoints/step_005100.pt`; base_run None; floor-2 answers copied from `solid-agr-r1` (8 files, sha256 checked against its index).
+* `direct3-r2`: started from `/vol/runs/pilot/solid-agr-r2/floor2/round_4/checkpoints/step_005100.pt`; base_run None; floor-2 answers copied from `solid-agr-r2` (8 files, sha256 checked against its index).
+
+### Floor 3
+
+* **Verdict: failed** (3 repeats finished round 4; learned needs 2 of 3 repeats at >= 90% at every length 24-31).
+* Floor 1 eroded (> 3 points below the repeat's own level before the floor's first round, in 2 of 3 repeats): **no**.
+  * `direct3-r0`: learned no (lowest on the floor 0.1%); floor 1 eroded no; largest drop at any length 3-23: 0.0 points at 23 digits.
+  * `direct3-r1`: learned no (lowest on the floor 82.8%); floor 1 eroded no; largest drop at any length 3-23: 0.0 points at 20 digits.
+  * `direct3-r2`: learned no (lowest on the floor 39.2%); floor 1 eroded no; largest drop at any length 3-23: 0.0 points at 21 digits.
+
+Accuracy per length after each round (percent), beside the agreement run of the same repeat. Round 0 is before the floor's first round. Lowest 8-23: the lowest accuracy at any shorter length 8 and up.
+
+| Repeat | Run | Round | 24 | 25 | 26 | 27 | 28 | 29 | 30 | 31 | Lowest 8-23 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 0 | `direct3-r0` | 0 | – | – | – | – | – | – | – | – | 99.9 |
+| 0 | `direct3-r0` | 1 | 100.0 | 98.2 | – | – | – | – | – | – | 99.9 |
+| 0 | `direct3-r0` | 2 | 100.0 | 98.0 | 96.6 | 82.5 | – | – | – | – | 100.0 |
+| 0 | `direct3-r0` | 3 | 100.0 | 98.3 | 96.6 | 83.5 | 64.3 | 28.6 | – | – | 100.0 |
+| 0 | `direct3-r0` | 4 | 100.0 | 98.2 | 96.4 | 82.0 | 61.0 | 27.5 | 4.0 | 0.1 | 100.0 |
+| 0 | `solid-agr-r0` | 0 | – | – | – | – | – | – | – | – | 99.9 |
+| 0 | `solid-agr-r0` | 1 | 100.0 | 100.0 | – | – | – | – | – | – | 99.8 |
+| 0 | `solid-agr-r0` | 2 | 100.0 | 99.8 | 100.0 | 100.0 | – | – | – | – | 100.0 |
+| 0 | `solid-agr-r0` | 3 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | – | – | 100.0 |
+| 0 | `solid-agr-r0` | 4 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 |
+| 1 | `direct3-r1` | 0 | – | – | – | – | – | – | – | – | 99.9 |
+| 1 | `direct3-r1` | 1 | 100.0 | 100.0 | – | – | – | – | – | – | 100.0 |
+| 1 | `direct3-r1` | 2 | 100.0 | 100.0 | 100.0 | 100.0 | – | – | – | – | 100.0 |
+| 1 | `direct3-r1` | 3 | 100.0 | 100.0 | 100.0 | 99.9 | 100.0 | 97.4 | – | – | 100.0 |
+| 1 | `direct3-r1` | 4 | 100.0 | 100.0 | 100.0 | 99.9 | 100.0 | 97.8 | 92.7 | 82.8 | 100.0 |
+| 1 | `solid-agr-r1` | 0 | – | – | – | – | – | – | – | – | 99.9 |
+| 1 | `solid-agr-r1` | 1 | 100.0 | 99.9 | – | – | – | – | – | – | 99.9 |
+| 1 | `solid-agr-r1` | 2 | 100.0 | 99.9 | 100.0 | 100.0 | – | – | – | – | 99.9 |
+| 1 | `solid-agr-r1` | 3 | 100.0 | 100.0 | 100.0 | 100.0 | 99.9 | 100.0 | – | – | 100.0 |
+| 1 | `solid-agr-r1` | 4 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 | 100.0 |
+| 2 | `direct3-r2` | 0 | – | – | – | – | – | – | – | – | 99.9 |
+| 2 | `direct3-r2` | 1 | 100.0 | 99.9 | – | – | – | – | – | – | 99.9 |
+| 2 | `direct3-r2` | 2 | 100.0 | 99.9 | 99.8 | 99.0 | – | – | – | – | 99.9 |
+| 2 | `direct3-r2` | 3 | 100.0 | 99.9 | 99.7 | 99.0 | 96.9 | 89.0 | – | – | 100.0 |
+| 2 | `direct3-r2` | 4 | 100.0 | 100.0 | 99.7 | 99.1 | 96.8 | 89.7 | 71.2 | 39.2 | 100.0 |
+| 2 | `solid-agr-r2` | 0 | – | – | – | – | – | – | – | – | 99.9 |
+| 2 | `solid-agr-r2` | 1 | 100.0 | 100.0 | – | – | – | – | – | – | 100.0 |
+| 2 | `solid-agr-r2` | 2 | 100.0 | 100.0 | 100.0 | 100.0 | – | – | – | – | 100.0 |
+| 2 | `solid-agr-r2` | 3 | 100.0 | 99.9 | 100.0 | 100.0 | 100.0 | 100.0 | – | – | 99.9 |
+| 2 | `solid-agr-r2` | 4 | 100.0 | 100.0 | 99.9 | 100.0 | 99.9 | 100.0 | 100.0 | 100.0 | 100.0 |
+
+Kept answers per length (the model's direct answers):
+
+| Run | Digits | Drawn | Kept | Shortfall | Kept right (%) |
+| --- | --- | --- | --- | --- | --- |
+| `direct3-r0` | 24 | 10,000 | 10,000 | 0 | 99.92 |
+| `direct3-r0` | 25 | 10,000 | 10,000 | 0 | 96.71 |
+| `direct3-r0` | 26 | 10,000 | 10,000 | 0 | 96.77 |
+| `direct3-r0` | 27 | 10,000 | 10,000 | 0 | 75.92 |
+| `direct3-r0` | 28 | 10,000 | 10,000 | 0 | 63.38 |
+| `direct3-r0` | 29 | 10,000 | 10,000 | 0 | 21.57 |
+| `direct3-r0` | 30 | 10,003 | 10,000 | 0 | 3.74 |
+| `direct3-r0` | 31 | 10,137 | 10,000 | 0 | 0.00 |
+| `direct3-r1` | 24 | 10,000 | 10,000 | 0 | 99.95 |
+| `direct3-r1` | 25 | 10,000 | 10,000 | 0 | 99.19 |
+| `direct3-r1` | 26 | 10,000 | 10,000 | 0 | 99.98 |
+| `direct3-r1` | 27 | 10,000 | 10,000 | 0 | 99.59 |
+| `direct3-r1` | 28 | 10,000 | 10,000 | 0 | 99.84 |
+| `direct3-r1` | 29 | 10,000 | 10,000 | 0 | 92.75 |
+| `direct3-r1` | 30 | 10,000 | 10,000 | 0 | 93.03 |
+| `direct3-r1` | 31 | 10,004 | 10,000 | 0 | 73.85 |
+| `direct3-r2` | 24 | 10,000 | 10,000 | 0 | 99.92 |
+| `direct3-r2` | 25 | 10,000 | 10,000 | 0 | 98.94 |
+| `direct3-r2` | 26 | 10,000 | 10,000 | 0 | 99.67 |
+| `direct3-r2` | 27 | 10,000 | 10,000 | 0 | 97.13 |
+| `direct3-r2` | 28 | 10,000 | 10,000 | 0 | 97.35 |
+| `direct3-r2` | 29 | 10,000 | 10,000 | 0 | 81.02 |
+| `direct3-r2` | 30 | 10,000 | 10,000 | 0 | 69.07 |
+| `direct3-r2` | 31 | 10,000 | 10,000 | 0 | 33.81 |
+
+Checks before each round (agreement rule, for comparison only; it decides nothing):
+
+| Run | Round | Digits | Model's direct answer right | Kept share | Novelty | Confirmed share | Kept right (audit) | Self-taught pieces replaced |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| `direct3-r0` | 1 | 24 | 100.0 | 34.2 | 0.0 | 100.0 | 100.00 | 0.00 |
+| `direct3-r0` | 1 | 25 | 96.2 | 33.9 | 3.1 | 100.0 | 100.00 | 0.00 |
+| `direct3-r0` | 2 | 26 | 97.0 | 32.6 | 3.4 | 100.0 | 100.00 | 0.00 |
+| `direct3-r0` | 2 | 27 | 75.3 | 32.6 | 25.6 | 100.0 | 100.00 | 0.00 |
+| `direct3-r0` | 3 | 28 | 62.3 | 33.9 | 41.2 | 100.0 | 100.00 | 0.00 |
+| `direct3-r0` | 3 | 29 | 22.3 | 33.7 | 76.9 | 100.0 | 100.00 | 0.00 |
+| `direct3-r0` | 4 | 30 | 4.2 | 34.8 | 95.7 | 100.0 | 100.00 | 0.00 |
+| `direct3-r0` | 4 | 31 | 0.0 | 34.7 | 100.0 | 100.0 | 100.00 | 0.00 |
+| `direct3-r1` | 1 | 24 | 99.9 | 32.0 | 0.2 | 100.0 | 100.00 | 0.00 |
+| `direct3-r1` | 1 | 25 | 99.5 | 35.7 | 0.3 | 100.0 | 100.00 | 0.00 |
+| `direct3-r1` | 2 | 26 | 100.0 | 34.8 | 0.0 | 100.0 | 100.00 | 0.00 |
+| `direct3-r1` | 2 | 27 | 99.8 | 33.4 | 0.6 | 100.0 | 100.00 | 0.00 |
+| `direct3-r1` | 3 | 28 | 99.7 | 33.8 | 0.1 | 100.0 | 100.00 | 0.00 |
+| `direct3-r1` | 3 | 29 | 93.3 | 33.7 | 8.5 | 100.0 | 100.00 | 0.00 |
+| `direct3-r1` | 4 | 30 | 93.1 | 34.4 | 7.9 | 100.0 | 100.00 | 0.00 |
+| `direct3-r1` | 4 | 31 | 72.7 | 34.1 | 25.5 | 100.0 | 100.00 | 0.00 |
+| `direct3-r2` | 1 | 24 | 99.8 | 34.4 | 0.4 | 100.0 | 99.71 | 0.00 |
+| `direct3-r2` | 1 | 25 | 99.0 | 33.1 | 0.6 | 100.0 | 100.00 | 0.00 |
+| `direct3-r2` | 2 | 26 | 99.5 | 34.4 | 0.4 | 100.0 | 100.00 | 0.00 |
+| `direct3-r2` | 2 | 27 | 97.0 | 33.7 | 3.0 | 100.0 | 100.00 | 0.00 |
+| `direct3-r2` | 3 | 28 | 97.1 | 34.4 | 2.2 | 100.0 | 100.00 | 0.00 |
+| `direct3-r2` | 3 | 29 | 79.5 | 35.8 | 19.7 | 100.0 | 100.00 | 0.00 |
+| `direct3-r2` | 4 | 30 | 69.0 | 33.9 | 30.0 | 100.0 | 100.00 | 0.00 |
+| `direct3-r2` | 4 | 31 | 34.5 | 33.9 | 64.3 | 100.0 | 100.00 | 0.00 |
+
+Examples and updates per round:
+
+| Run | Floor | Round | Examples | Updates | Kept per new length | Kept right (%) | Minutes |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| `direct3-r0` | 3 | 1 | 205,000 | 5,700 | 24: 10,000 of 10,000, 25: 10,000 of 10,000 | 99.92, 96.71 | 15.2 |
+| `direct3-r0` | 3 | 2 | 225,000 | 6,200 | 26: 10,000 of 10,000, 27: 10,000 of 10,000 | 96.77, 75.92 | 17.5 |
+| `direct3-r0` | 3 | 3 | 245,000 | 6,700 | 28: 10,000 of 10,000, 29: 10,000 of 10,000 | 63.38, 21.57 | 19.8 |
+| `direct3-r0` | 3 | 4 | 265,000 | 7,300 | 30: 10,000 of 10,003, 31: 10,000 of 10,137 | 3.74, 0.00 | 22.7 |
+| `direct3-r1` | 3 | 1 | 205,000 | 5,700 | 24: 10,000 of 10,000, 25: 10,000 of 10,000 | 99.95, 99.19 | 14.6 |
+| `direct3-r1` | 3 | 2 | 225,000 | 6,200 | 26: 10,000 of 10,000, 27: 10,000 of 10,000 | 99.98, 99.59 | 16.6 |
+| `direct3-r1` | 3 | 3 | 245,000 | 6,700 | 28: 10,000 of 10,000, 29: 10,000 of 10,000 | 99.84, 92.75 | 18.8 |
+| `direct3-r1` | 3 | 4 | 265,000 | 7,300 | 30: 10,000 of 10,000, 31: 10,000 of 10,004 | 93.03, 73.85 | 21.5 |
+| `direct3-r2` | 3 | 1 | 205,000 | 5,700 | 24: 10,000 of 10,000, 25: 10,000 of 10,000 | 99.92, 98.94 | 15.2 |
+| `direct3-r2` | 3 | 2 | 225,000 | 6,200 | 26: 10,000 of 10,000, 27: 10,000 of 10,000 | 99.67, 97.13 | 17.5 |
+| `direct3-r2` | 3 | 3 | 245,000 | 6,700 | 28: 10,000 of 10,000, 29: 10,000 of 10,000 | 97.35, 81.02 | 19.9 |
+| `direct3-r2` | 3 | 4 | 265,000 | 7,300 | 30: 10,000 of 10,000, 31: 10,000 of 10,000 | 69.07, 33.81 | 22.8 |
+
+**Dollars spent on this control: 4.22** (logged GPU wall seconds x $1.10/h, every `direct3-*` run; cap $12).
+
+### Decisions I took (amendment 28: the control one floor up, its paper files, and the macros for hand-typed numbers)
+
+Every number in the tables above, in `results/pilot/macros.md` and in the new macros of
+`paper/generated/numbers_pilot.tex` and `numbers.tex` is generated from the logs; none is typed by hand.
+No definition, threshold or number of the task was changed.
+
+1. **Order.** Amendment 28 was committed and pushed (19fc186) before any code of this control; the code
+   and its tests followed (2bfd137), then the launch.
+2. **Starting model.** Each run was launched with `start = "floor:solid-agr-rN"`, which the existing
+   launcher resolves to the last checkpoint in `/vol/runs/pilot/solid-agr-rN/floor2/round_4/checkpoints/`.
+   The `start_checkpoint` recorded in each run's `config-floor3-rounds1-4.json` is the one that
+   `solid-agr-rN` recorded for floor 3 (`step_005100.pt`; for N = 1 the one of `solid-agr-r1`).
+3. **Copying the floor-2 answers.** A new option, `copy_lower_from`, copies the eight files and their
+   index entries byte for byte before round 1. Each copy's sha256 is checked against `solid-agr-rN`'s
+   index before and after copying. The index entries keep the floor and round they had in `solid-agr-rN`.
+   `base_run` is None in all three runs. Nothing is written to the folder of `solid-agr-rN`, and a test
+   checks that the source folder is unchanged.
+4. **Check before training.**
+   * The expected values were read from `solid-agr-rN`'s local logs and passed to the call. They are
+     recorded in `launches.jsonl` and in the run's config.
+   * The run compares them with its own `audit_direct_right` at 24 and 25 after the round-1 checks,
+     and before building anything. A difference of more than 0.2 points stops the run.
+   * As in `solid-agr-rN`, the floor-2 checks before floor 3 run first, so the fresh problems, and the
+     problems they exclude, are the same.
+   * All six values matched exactly.
+5. **Cap.** The $12 counts the logged wall seconds of every `direct3-*` run. The estimate before launch
+   was $4.08 for floor 3, from the pilot's cost model with one whole answer per problem. Floor 3 was not
+   learned, so floor 4 was not run.
+6. **Paper table.** `table_climb_control3.tex` keeps the columns of `table_climb_control.tex` and adds one
+   for the control: "Round 4", the test accuracy after round 4 of the floor (part 3 item 2 asks for that
+   number). It is 362 pt wide at \small, unscaled, against 380 pt for the widest existing unscaled table.
+   It compiles with both numbers files without an overfull or underfull box. No macros for floor 4 were
+   made, because it was not run.
+7. **"Largest drop at any shorter length"** is computed as in the pilot: from the floor's round-0 test to
+   after round 4, at every length from 3 to 23. It is 0.05 points in each repeat, which prints as 0.0.
+8. **Part 4.** None of the five numbers had a macro, so all were added. Earlier macros are unchanged and
+   the new lines are added only. Readings:
+   * (a) `\gpClimbGainGapRight`: the cases of analysis C whose outcome is "unclassified", in the three
+     named conditions. Novelty is the logged share (in percent); gain = after minus before, where
+     before is `audit_direct_right`.
+   * (b) `\gpClimbRehearsalRows` and `\gpClimbRehearsalWrong`: from the rehearsal set's `meta.json`,
+     whose audit compared each answer with the true sum.
+   * (c) `\gpClimbUpdatesLow` and `\gpClimbUpdatesHigh`: every `round_done` of floors 2-4 in the three
+     agreement repeats (36 rounds).
+   * (d) `\gpDidNothingPct`: the 258 cases of `\gpCases`; marked "% after".
+   * (e) `\gpLrEdgesRandomJoinLow` and `\gpLrEdgesRandomJoinHigh`: the test group `random_join`, after the
+     edges-differ rule's one round, over the starting models of the evaluation runs (2, 3, 4), as for
+     the other `\gpLr...` macros; marked "% after".
+
+### Anything that looked wrong (control one floor up)
+
+1. **Nothing went wrong in the runs.**
+   * There was no crash and no shortfall, and every check before training matched exactly.
+   * Examples and updates per round equal `solid-agr-rN`'s on floor 3 (5,700, 6,200, 6,700, 7,300
+     updates).
+2. **The control kept what it already knew and copied its own errors.**
+   * At each new length, the share of kept answers that were right was about the share of right direct
+     answers before the round. Accuracy after the round stayed close to that share.
+   * Lengths the model already answered (24-26) stayed at 96% or more.
+   * Beyond about 27 digits, accuracy fell as length grew in every repeat, down to 0.1%, 82.8% and 39.2% at
+     31 digits.
+   * No shorter length got worse.
+3. **The three repeats differ a lot.** Each repeat starts from its own agreement run's model, and those
+   models answered 27-31 digits differently before floor 3. For example, at 27 digits 75.9% of repeat
+   0's kept answers were right, against 99.6% in repeat 1. Repeat 1 came closest (82.8% at 31 digits),
+   but none of the three reached 90% at every length.
+

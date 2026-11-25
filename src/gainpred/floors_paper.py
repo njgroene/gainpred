@@ -7,7 +7,10 @@ Writes, into ``paper/generated/`` (never touching an existing file there):
   ``results/pilot/macros.md``, which lists each macro, its value and what it means;
 * ``table_climb.tex``, ``table_climb_control.tex``, ``table_climb_weak.tex``,
   ``table_climb_skip.tex``, ``table_climb_rule.tex``, ``table_climb_splits.tex``;
-* ``figure_climb_errors.pdf`` and ``figure_climb_errors.tex``.
+* ``figure_climb_errors.pdf`` and ``figure_climb_errors.tex``;
+* amendment 28: ``table_climb_control3.tex`` (the control one floor up) and, at the end of
+  ``numbers_pilot.tex``, its macros and those for numbers the text had typed by hand. Earlier
+  macros are never renamed or changed: new ones are registered after them.
 
 How the numbers are kept in step
 ================================
@@ -20,6 +23,7 @@ Run: ``uv run python -m gainpred.floors_paper``.
 
 from __future__ import annotations
 
+import json
 import re
 import statistics
 from pathlib import Path
@@ -37,7 +41,10 @@ CONTROL = [f"direct-r{r}" for r in fa.REPEATS]
 AGR = {2: [f"solid-agr-r{r}" for r in fa.REPEATS], 3: [f"solid-agr-r{r}" for r in fa.REPEATS], 4: FLOOR4_AGR}
 NEW_FILES = ("numbers_pilot.tex", "table_climb.tex", "table_climb_control.tex", "table_climb_weak.tex",
              "table_climb_skip.tex", "table_climb_rule.tex", "table_climb_splits.tex", "figure_climb_errors.pdf",
-             "figure_climb_errors.tex")
+             "figure_climb_errors.tex", "table_climb_control3.tex")
+CONTROL3 = [f"direct3-r{r}" for r in fa.REPEATS]
+"""The control one floor up (amendment 28): direct answers on floor 3 (and 4), from the model that
+learned floor 2 with the agreement rule. A relaunch after a crash would be named here instead."""
 
 ONES = ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten", "Eleven", "Twelve",
         "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen", "Nineteen"]
@@ -386,6 +393,97 @@ def control_result(reg: Reg) -> None:
             "(10,000 per length wanted)")
 
 
+# ---------------------------------------------------------------------------- amendment 28
+
+def control3_floors() -> list[int]:
+    """Floors the control one floor up built at least one set on."""
+    return [f for f in (3, 4) if builds(CONTROL3, f)]
+
+
+def control3_tex(reg: Reg) -> str | None:
+    """Per length of the floors the second control ran: the agreement rule's runs on the same
+    floor beside the control (same layout as ``table_climb_control.tex``, plus the control's
+    accuracy after round 4 of the floor)."""
+    floors = control3_floors()
+    if not floors:
+        return None
+    agr = [fa.run_events("solid-agr", r) for r in fa.REPEATS]
+    ctl = [events(r) for r in CONTROL3]
+    rows = []
+    for f in floors:
+        for d in FLOORS[f]:
+            ab, aa = before_after(agr, d)
+            cb, ca = before_after(ctl, d)
+            final = [a[d] for evs in ctl if 4 in finished_rounds(evs, f) and d in (a := accuracy(evs, f, 4))]
+            kept = [e["kept_right"] for e in builds(CONTROL3, f) if e["digits"] == d]
+            row = [str(d)]
+            for tag, b, a in (("Agr", ab, aa), ("Direct", cb, ca)):
+                who = "agreement rule" if tag == "Agr" else "direct answers (control one floor up, amendment 28)"
+                row += [reg.add((tag, d, "Before"), f1(statistics.mean(b)), f"{who}, {d} digits: share (%) of the "
+                                "model's direct answers right before the round that taught the length (2,000 fresh "
+                                "problems), mean of repeats") if b else "–",
+                        reg.add((tag, d, "After"), f1(statistics.mean(a)), f"{who}, {d} digits: test accuracy (%) after "
+                                "the round that taught the length, mean of repeats") if a else "–",
+                        reg.add((tag, d, "AfterLowest"), f1(min(a)), f"{who}, {d} digits: test accuracy (%) after the "
+                                "round that taught the length, lowest repeat") if a else "–"]
+            who = "direct answers (control one floor up, amendment 28)"
+            row.append(reg.add(("Direct", d, "AfterRoundFour"), f1(statistics.mean(final)), f"{who}, {d} digits: test "
+                               f"accuracy (%) after round 4 of floor {f}, mean of repeats") if final else "–")
+            row.append(reg.add(("Direct", d, "KeptRight"), f1(100 * statistics.mean(kept)), f"{who}, {d} digits: share "
+                               "(%) of kept training answers that were right, mean of repeats") if kept else "–")
+            rows.append(row)
+    last = FLOORS[floors[-1]].stop - 1
+    return table("climb-control3", f"Direct answers one floor up (control of amendment 28) beside the agreement rule, "
+                 f"per length 24-{last}. The control starts from the model that learned floor 2 with the agreement "
+                 "rule (each repeat from its own) and rehearses that rule's floor-2 answers. Before: share of the "
+                 "model's own direct answers that were right before the round that taught the length, on 2,000 fresh "
+                 "problems (%, mean of three repeats). After: test accuracy after that round (%, mean and lowest "
+                 "repeat). Round 4: the control's test accuracy after round 4 of the floor (%, mean). Kept right: "
+                 "share of the control's kept training answers that were right (%, mean of repeats). Read after the "
+                 "runs.",
+                 ["Digits", "Before", "After", "Lowest", "Before", "After", "Lowest", "Round 4", "Kept right"], rows,
+                 "rrrrrrrrr", span=[("Agreement rule", 2, 4), ("Direct answers", 5, 9)],
+                 rule_before={8} if len(floors) > 1 else frozenset())
+
+
+def control3_result(reg: Reg) -> None:
+    """Prediction C2 and the four floor numbers of the control one floor up."""
+    floors = control3_floors()
+    for f in floors:
+        if any(4 in finished_rounds(events(r), f) for r in CONTROL3):
+            floor_row(reg, "Direct", "Direct answers one floor up", CONTROL3, f)
+    if 3 in floors:
+        v = verdict(CONTROL3, 3)
+        reg.add(("ControlCTwo",), "failed" if v["learned"] else "held", "prediction C2 (floor 3 not learned with "
+                "direct answers, starting from the model that learned floor 2 with the agreement rule): held or failed")
+    reg.add(("ControlTwoFloors",), str(len(floors)), "direct answers one floor up (amendment 28): floors this control "
+            "ran")
+    spent = sum(seconds_of(p.name) for p in sorted((PILOT_RESULTS / "runs").glob("direct3-*")))
+    reg.add(("ControlTwoDollars",), f"{dollars(spent):.2f}", "direct answers one floor up (amendment 28): logged GPU "
+            "dollars, every run of this control (relaunches and stopped runs included)")
+
+
+def hand_typed(reg: Reg) -> None:
+    """Numbers the paper's text typed by hand until now (amendment 28, part 4)."""
+    cases = [c for c in fa.rule_cases() if c.outcome == "unclassified" and c.novelty is not None
+             and c.condition in ("solid / agreement", "solid / no-carry", "corrupted / agreement")]
+    gap = max(abs(100 * c.novelty - c.gain) for c in cases)
+    reg.add(("GainGapRight",), f1(gap), "frozen rule on the pilot's rounds (analysis C): over the unclassified cases of "
+            "solid / agreement, solid / no-carry and corrupted / agreement, the largest absolute difference between "
+            "novelty (%) and the gain (after minus before, points)")
+    meta = json.loads((PILOT_RESULTS / "runs" / "rehearsal-floor1-seed2" / "meta.json").read_text())
+    assert meta["rows"] == sum(a["kept"] for a in meta["audit"].values())
+    reg.add(("RehearsalRows",), f"{meta['rows']:,}", "floor-1 rehearsal set: number of answers (8-15 digits)")
+    reg.add(("RehearsalWrong",), str(sum(a["wrong"] for a in meta["audit"].values())), "floor-1 rehearsal set: "
+            "answers that are wrong (kept; never filtered)")
+    updates = [e["updates"] for r in fa.REPEATS for e in fa.run_events("solid-agr", r) if e["event"] == "round_done"]
+    assert len(updates) == 3 * 3 * 4
+    reg.add(("UpdatesLow",), f"{min(updates):,}", "fewest updates in any round of the agreement-rule runs on floors "
+            "2-4 (solid-agr-r0, -r1 with -r1-again for floor 4, -r2)")
+    reg.add(("UpdatesHigh",), f"{max(updates):,}", "most updates in any round of the agreement-rule runs on floors "
+            "2-4 (solid-agr-r0, -r1 with -r1-again for floor 4, -r2)")
+
+
 def write_all() -> dict[str, str]:
     reg = Reg()
     texts = {"table_climb.tex": climb_tex(reg), "table_climb_weak.tex": weak_tex(reg),
@@ -395,6 +493,12 @@ def write_all() -> dict[str, str]:
     if ctl:
         texts["table_climb_control.tex"] = ctl
     control_result(reg)
+    # Amendment 28: registered after every earlier macro, so numbers_pilot.tex only gains lines.
+    ctl3 = control3_tex(reg)
+    if ctl3:
+        texts["table_climb_control3.tex"] = ctl3
+    control3_result(reg)
+    hand_typed(reg)
     texts["numbers_pilot.tex"] = reg.tex()
     from gainpred.texwrap import wrap_text
     for name, text in texts.items():

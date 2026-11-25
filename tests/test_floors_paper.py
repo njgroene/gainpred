@@ -57,3 +57,15 @@ def test_analyses_cover_every_length_and_case():
     cases = fa.rule_cases()
     assert len(cases) == 4 * 3 * 8 + 3 * 16  # floor 2 for four conditions, floors 3-4 for the agreement rule
     assert fa.rule_counts(cases)["total"]["cases"] == len(cases)
+
+
+@needs_logs
+def test_amendment_28_macros_come_after_every_earlier_one_and_from_the_logs():
+    reg = fp.Reg()
+    fp.hand_typed(reg)
+    assert reg.items["gpClimbRehearsalRows"][0] == "80,000"
+    low, high = (int(reg.items[k][0].replace(",", "")) for k in ("gpClimbUpdatesLow", "gpClimbUpdatesHigh"))
+    assert 3_000 <= low <= high
+    assert float(reg.items["gpClimbGainGapRight"][0]) >= 0
+    assert "table_climb_control3.tex" in fp.NEW_FILES
+    assert all(r.startswith("direct3-r") for r in fp.CONTROL3) and not set(fp.CONTROL3) & set(fp.CONTROL)

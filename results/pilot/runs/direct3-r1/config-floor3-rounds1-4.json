@@ -1,0 +1,48 @@
+{
+  "pilot": {
+    "teacher": "direct",
+    "version": "solid",
+    "repeat": 1,
+    "model": "seed2",
+    "corruption": 0.0,
+    "kept_per_length": 10000,
+    "draw_cap_factor": 20,
+    "replay_per_length": 5000,
+    "check_sample": 2000,
+    "batch_size": 256,
+    "passes": 7,
+    "min_steps": 3000,
+    "decay_fraction": 0.3333333333333333,
+    "solver_batch_size": 4096,
+    "eval_per_length": null,
+    "max_chunk": 20000
+  },
+  "run": "direct3-r1",
+  "floor": 3,
+  "rounds": [
+    1,
+    4
+  ],
+  "start_checkpoint": "/vol/runs/pilot/solid-agr-r1/floor2/round_4/checkpoints/step_005100.pt",
+  "base_run": null,
+  "seen": false,
+  "floor1_rehearsal_sha256": "7becd3c558576b97e7a9b5a11968d60f9f21ee79eb090ffa507017bef2157861",
+  "device": "NVIDIA A10",
+  "torch": "2.15.0+cu132",
+  "max_len": 136,
+  "copy_lower_from": "solid-agr-r1",
+  "copied": {
+    "16": "7027c45bb5c0f92b1cee6733f62e65988bcd21672389cfb20493a0754c53ec93",
+    "17": "75a1cae0bce114d5c831a80ddd56ef0d49c4cd5470287a03e7030e36a6043434",
+    "18": "20a37e6a3df370f0c6261f2fb47b9521cd3d21bd938bed47370c5ba9cc2cfd00",
+    "19": "6ac7cec568a7e24c221132eedf6f43f70baff1a3fd47220eb1b8758a11e3a450",
+    "20": "c1e4c9ba1d768acd9bbcfd9f54140ed28f8386f4eb82782873d531a1d70e5bca",
+    "21": "338f9fc0c3fd4379084e76e02e813942b3eed0c8862e9f34042a8b99581fc480",
+    "22": "561fea781f49c489b9c2ac4d7cbe127d6fd05303978ec6208ed18d7ecf8e8cea",
+    "23": "43f9d1cf54d9076a34a493da90b296ffa243e78f297aee29a2c800d364e0d100"
+  },
+  "expect_direct_right": {
+    "24": 0.999,
+    "25": 0.9945
+  }
+}
