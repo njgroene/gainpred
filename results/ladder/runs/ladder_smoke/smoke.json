@@ -1,0 +1,9 @@
+{
+  "reason": "finished",
+  "direct_seconds_500": 0.12757372856140137,
+  "composed_seconds_500": 1.030320405960083,
+  "peak_memory_gib": 0.8455028533935547,
+  "gpu_memory_gib": 22.07928466796875,
+  "direct_readable": 1.0,
+  "cut1_readable": 1.0
+}
