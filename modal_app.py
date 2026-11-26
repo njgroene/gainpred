@@ -485,3 +485,138 @@ def pilot_undertrained(run: str, steps: int, model: str = "seed2") -> None:
                      runs_dir=PILOT_DIR)
 
     _pilot_call(run, body)
+
+
+# ----------------------------------------------------------------------------
+# The ladder (protocol amendment 29, gainpred.ladder). Everything under /vol/runs/ladder/.
+# Launched with ``uv run python -m gainpred.ladder spawn <function> <run> --segment S --kwargs '{...}'``.
+# ----------------------------------------------------------------------------
+
+LADDER_DIR = VOLUME_PATH / "runs" / "ladder"
+
+
+def _ladder_call(run: str, segment: str, body) -> None:
+    """Run ``body``; whatever happens, write the call's wall seconds and how it ended to
+    /vol/runs/ladder/<run>/calls/<segment>.json (the spending counter reads these)."""
+    import time
+    import traceback
+
+    started = time.time()
+    outcome: dict = {}
+    try:
+        outcome["reason"] = body(started)
+    except BaseException as e:  # noqa: BLE001 -- recorded, then raised again
+        outcome = {"reason": "crashed", "error": f"{type(e).__name__}: {e}"[:2000],
+                   "traceback": traceback.format_exc()[-4000:]}
+        raise
+    finally:
+        out = LADDER_DIR / run / "calls"
+        out.mkdir(parents=True, exist_ok=True)
+        (out / f"{segment or 'main'}.json").write_text(json.dumps(
+            {"segment": segment, "started": started, "ended": time.time(), "wall_seconds": time.time() - started,
+             **outcome}, indent=2) + "\n")
+        volume.commit()
+
+
+@app.function(image=image, volumes={str(VOLUME_PATH): volume}, timeout=15 * 60)
+def ladder_data() -> dict:
+    """The ladder's 8-39 digit test set on the volume (made once from its seed); returns the manifest."""
+    volume.reload()
+    from gainpred.ladder import write_test_set
+
+    out_dir = VOLUME_PATH / "data" / "ladder"
+    if (out_dir / "manifest.json").exists():
+        return json.loads((out_dir / "manifest.json").read_text())
+    make_data.local()
+    pilot_data.local()  # the sets it must not repeat
+    manifest = write_test_set(VOLUME_PATH / "data" / "addition", VOLUME_PATH / "data" / "floors", out_dir)
+    volume.commit()
+    return manifest
+
+
+@app.function(image=image, gpu=GPU, volumes={str(VOLUME_PATH): volume}, timeout=4 * 60 * 60)
+def ladder_seed(run: str, seed: int, steps: int = 10_000, eval_every: int = 1_000, eval_per_length: int = 0,
+                checkpoint_every: int = 2_000, norm_eps: float = 1e-6, decay_fraction: float = 0.1,
+                segment: str = "") -> None:
+    """The ladder's seed model: the starting-model recipe of ``start-seed2-authors`` (decision D15),
+    written to /vol/runs/ladder/<run>/."""
+    volume.reload()
+    import torch
+
+    from gainpred.train import TrainConfig, starting_training
+
+    cfg = TrainConfig(steps=steps, seed=seed, eval_every=eval_every, eval_per_length=eval_per_length or None,
+                      checkpoint_every=checkpoint_every, decay_fraction=decay_fraction)
+    print(f"GPU: {torch.cuda.get_device_name()}  torch {torch.__version__}  {cfg}")
+
+    def body(started):
+        starting_training(cfg, run, data_dir=VOLUME_PATH / "data" / "addition", device=torch.device("cuda"),
+                          runs_dir=LADDER_DIR, norm_eps=norm_eps or None)
+        return "finished"
+
+    _ladder_call(run, segment, body)
+
+
+@app.function(image=image, gpu=GPU, volumes={str(VOLUME_PATH): volume}, timeout=12 * 60 * 60)
+def ladder_arm(run: str, cfg: dict, seed_run: str, budget_seconds: float, segment: str = "",
+               prior_seconds: float = 0.0, first_round: int = 1) -> None:
+    """One arm of one random seed, rounds ``first_round``..16 unless it stops (gainpred.ladder.run_arm).
+    The seed checkpoint is the last one of /vol/runs/ladder/<seed_run>/."""
+    volume.reload()
+    import torch
+
+    from gainpred.floors import last_checkpoint
+    from gainpred.ladder import LadderConfig, run_arm
+
+    config = LadderConfig(**cfg)
+    checkpoint = last_checkpoint(LADDER_DIR / seed_run)
+    print(f"GPU: {torch.cuda.get_device_name()}  torch {torch.__version__}  seed {checkpoint}  {config}")
+
+    def body(started):
+        return run_arm(config, run, checkpoint, LADDER_DIR, VOLUME_PATH / "data" / "addition",
+                       VOLUME_PATH / "data" / "floors", VOLUME_PATH / "data" / "ladder", torch.device("cuda"),
+                       budget_seconds=budget_seconds, prior_seconds=prior_seconds, first_round=first_round,
+                       tag=segment, after_round=volume.commit, call_started=started)
+
+    _ladder_call(run, segment, body)
+
+
+@app.function(image=image, gpu=GPU, volumes={str(VOLUME_PATH): volume}, timeout=60 * 60)
+def ladder_smoke(run: str, checkpoint: str, segment: str = "") -> None:
+    """GPU smoke test (limit $1): round 1 of arm 3 with 200 kept answers per length and 100 updates
+    (the check at 8 and 9 digits on 2,000 sums each, timers, logging), then 500 direct and 500
+    composed answers (three cuts) at 39 digits for time and memory. Nothing from it is reused."""
+    volume.reload()
+    import time
+
+    import torch
+
+    from gainpred.floors import load_long
+    from gainpred.ladder import LadderConfig, answer_cuts, draw_fresh, run_arm, stream
+    from gainpred.teachers import ModelSolver
+
+    device = torch.device("cuda")
+
+    def body(started):
+        cfg = LadderConfig(seed="smoke", arm=3, kept_per_length=200, last_round=1, steps_override=100)
+        reason = run_arm(cfg, run, Path(checkpoint), LADDER_DIR, VOLUME_PATH / "data" / "addition",
+                         VOLUME_PATH / "data" / "floors", VOLUME_PATH / "data" / "ladder", device,
+                         call_started=started)
+        model = load_long(Path(checkpoint), device)
+        solver = ModelSolver(model, device, 1_000, seed=0)
+        problems = draw_fresh(stream("smoke", 0, 39, "timing"), 39, 500, set())
+        torch.cuda.reset_peak_memory_stats()
+        t0 = time.time()
+        direct = solver(problems)
+        t1 = time.time()
+        cuts = answer_cuts(problems, solver)
+        t2 = time.time()
+        result = {"reason": reason, "direct_seconds_500": t1 - t0, "composed_seconds_500": t2 - t1,
+                  "peak_memory_gib": torch.cuda.max_memory_allocated() / 2**30,
+                  "gpu_memory_gib": torch.cuda.get_device_properties(0).total_memory / 2**30,
+                  "direct_readable": sum(isinstance(a, int) for a in direct) / len(direct),
+                  "cut1_readable": sum(isinstance(c[0], int) for c in cuts) / len(cuts)}
+        (LADDER_DIR / run / "smoke.json").write_text(json.dumps(result, indent=2) + "\n")
+        return reason
+
+    _ladder_call(run, segment, body)
