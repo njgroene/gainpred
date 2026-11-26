@@ -559,9 +559,10 @@ def ladder_seed(run: str, seed: int, steps: int = 10_000, eval_every: int = 1_00
 
 @app.function(image=image, gpu=GPU, volumes={str(VOLUME_PATH): volume}, timeout=12 * 60 * 60)
 def ladder_arm(run: str, cfg: dict, seed_run: str, budget_seconds: float, segment: str = "",
-               prior_seconds: float = 0.0, first_round: int = 1) -> None:
+               prior_seconds: float = 0.0, first_round: int = 1, continue_round: int | None = None) -> None:
     """One arm of one random seed, rounds ``first_round``..16 unless it stops (gainpred.ladder.run_arm).
-    The seed checkpoint is the last one of /vol/runs/ladder/<seed_run>/."""
+    The seed checkpoint is the last one of /vol/runs/ladder/<seed_run>/. ``continue_round``: the
+    continuation of amendment 30 (redo of a round that diverged in an earlier call, then onwards)."""
     volume.reload()
     import torch
 
@@ -576,7 +577,8 @@ def ladder_arm(run: str, cfg: dict, seed_run: str, budget_seconds: float, segmen
         return run_arm(config, run, checkpoint, LADDER_DIR, VOLUME_PATH / "data" / "addition",
                        VOLUME_PATH / "data" / "floors", VOLUME_PATH / "data" / "ladder", torch.device("cuda"),
                        budget_seconds=budget_seconds, prior_seconds=prior_seconds, first_round=first_round,
-                       tag=segment, after_round=volume.commit, call_started=started)
+                       tag=segment, after_round=volume.commit, call_started=started,
+                       continue_round=continue_round)
 
     _ladder_call(run, segment, body)
 

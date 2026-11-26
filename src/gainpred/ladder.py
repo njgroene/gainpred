@@ -353,6 +353,8 @@ class LadderConfig:
     last_round: int = 16
     steps_override: int | None = None
     """Only the smoke test sets it (100 updates); None = the update count of the rules."""
+    diverged_level: float = 0.90
+    """Amendment 30 (R1): a trained round below this at a length 3-7 is redone once."""
 
 
 MAX_LEN = 136  # loaded as in the legacy loop (floors.PILOT_MAX_LEN): 39 digits fit
@@ -387,14 +389,93 @@ def stage_learned(acc: dict[str, dict], stage: int, level: float = 0.90) -> bool
     return all(acc.get(str(d), {}).get("acc_total", 0.0) >= level - 1e-12 for d in STAGES[stage])
 
 
+SHORT_LENGTHS = range(3, 8)
+
+
+def diverged(acc: dict[str, dict], level: float = 0.90) -> bool:
+    """Amendment 30 (R1): a trained round is diverged if, after its test, ``acc_total`` is below
+    ``level`` at one or more of the short lengths 3-7 (a missing length counts as 0)."""
+    return any(acc.get(str(d), {}).get("acc_total", 0.0) < level - 1e-12 for d in SHORT_LENGTHS)
+
+
+def _examples_digest(examples: list[tuple[Addition, int]]) -> str:
+    """Fingerprint of a training set in its order (shows that a redo trains on the same examples)."""
+    h = hashlib.sha256()
+    for p, a in examples:
+        h.update(f"{p.a} {p.b} {a}\n".encode())
+    return h.hexdigest()
+
+
+def _trained(dirs: list[Path]) -> list[Path]:
+    return [d for d in dirs if d.is_dir() and list((d / "checkpoints").glob("step_*.pt"))]
+
+
+def _round_result(run_dir: Path, r: int) -> Path | None:
+    """The weights a trained round ended with (None: the round trained nothing).
+
+    Amendment 30: if the round was redone, its redo folder (``round_{r}-redo``, or
+    ``round_{r}-redo-<tag>`` if a relaunch had to redo it again) is the result, and the first
+    attempt's folder is never chosen, whatever the other folders are called. Otherwise the
+    last of ``round_{r}`` and a relaunch's ``round_{r}-<tag>`` folders, as before."""
+    def is_redo(d: Path) -> bool:
+        return d.name == f"round_{r}-redo" or d.name.startswith(f"round_{r}-redo-")
+
+    redo = _trained([run_dir / f"round_{r}-redo", *sorted(d for d in run_dir.glob(f"round_{r}-redo-*"))])
+    if redo:
+        return last_checkpoint(redo[-1])
+    first = _trained([run_dir / f"round_{r}", *sorted(d for d in run_dir.glob(f"round_{r}-*") if not is_redo(d))])
+    return last_checkpoint(first[-1]) if first else None
+
+
 def _latest_weights(run_dir: Path, before: int) -> Path | None:
-    """The last checkpoint of a trained round before ``before`` (skipped rounds have none)."""
+    """The result of the last trained round before ``before`` (skipped rounds have none)."""
     for r in range(before - 1, 0, -1):
-        dirs = [run_dir / f"round_{r}"] + sorted(run_dir.glob(f"round_{r}-*"))
-        for d in reversed([d for d in dirs if d.exists()]):
-            if list((d / "checkpoints").glob("step_*.pt")):
-                return last_checkpoint(d)
+        found = _round_result(run_dir, r)
+        if found is not None:
+            return found
     return None
+
+
+def _read_log(run_dir: Path) -> list[dict]:
+    path = run_dir / "rounds.jsonl"
+    return [json.loads(line) for line in path.read_text().splitlines()] if path.exists() else []
+
+
+def _first_attempt_test(events: list[dict], round_: int) -> dict | None:
+    """The accuracies the first attempt of ``round_`` was tested at (the last such test logged)."""
+    found = [e["acc"] for e in events if e.get("event") == "test" and e["round"] == round_ and not e.get("redo")]
+    return found[-1] if found else None
+
+
+def _counting_test(events: list[dict], round_: int) -> dict | None:
+    """The test of ``round_`` that counts: its redo's if it was redone, else the last one logged."""
+    found = [e for e in events if e.get("event") == "test" and e["round"] == round_]
+    redo = [e for e in found if e.get("redo")]
+    return (redo or found or [{"acc": None}])[-1]["acc"]
+
+
+def refuse_continuation(run_dir: Path, round_: int, level: float = 0.90) -> None:
+    """Amendment 30 (R3): the continuation of a round is possible only if the round's stored answers
+    and those of every earlier round exist, and the first attempt was tested and diverged.
+    Raises before anything is loaded, trained or written."""
+    index_path = run_dir / "kept" / "index.json"
+    index = json.loads(index_path.read_text()) if index_path.exists() else {}
+    missing = [d for d in range(8, round_lengths(round_)[1] + 1)
+               if str(d) not in index or not (run_dir / "kept" / index[str(d)]["file"]).exists()]
+    if missing:
+        raise FileNotFoundError(f"{run_dir.name}: no stored answers for {missing} digits; cannot continue round "
+                                f"{round_} without its check and build")
+    wrong = [d for d in round_lengths(round_) if index[str(d)]["round"] != round_]
+    if wrong:
+        raise ValueError(f"{run_dir.name}: stored answers for {wrong} digits are not those of round {round_}")
+    events = _read_log(run_dir)
+    first = _first_attempt_test(events, round_)
+    if first is None or _counting_test(events, round_ - 1) is None:
+        raise ValueError(f"{run_dir.name}: rounds {round_ - 1} and {round_} must both have been tested")
+    if not diverged(first, level):
+        raise ValueError(f"{run_dir.name}: round {round_} did not diverge; there is nothing to redo")
+    if any(e.get("event") == "test" and e["round"] == round_ and e.get("redo") for e in events):
+        raise ValueError(f"{run_dir.name}: round {round_} was redone already; a round is redone at most once")
 
 
 def run_arm(cfg: LadderConfig, run: str, seed_checkpoint: Path, ladder_dir: Path, data_dir: Path,
@@ -402,26 +483,43 @@ def run_arm(cfg: LadderConfig, run: str, seed_checkpoint: Path, ladder_dir: Path
             prior_seconds: float = 0.0, first_round: int = 1, tag: str = "",
             make_solver: Callable[[object, int], Solver] | None = None,
             after_round: Callable[[], None] | None = None, clock: Callable[[], float] = time.time,
-            call_started: float | None = None) -> str:
+            call_started: float | None = None, continue_round: int | None = None,
+            test_hook: Callable[[int, str, dict], dict] | None = None) -> str:
     """Rounds ``first_round``..``cfg.last_round`` of one arm. Returns how the call ended:
-    finished, stage_not_learned, setup_stop, budget_stop or shortfall_stop.
+    finished, stage_not_learned, setup_stop, budget_stop, shortfall_stop, diverged_twice or
+    start_check_failed.
 
     ``budget_seconds``: the arm's budget; before each round, the call's own wall seconds plus
     ``prior_seconds`` (earlier calls of the same arm) are compared with it. ``first_round`` > 1
     continues after a crash from the arm's stored answers and its last checkpoint; ``tag``
     names that call's new files. ``call_started``: when the Modal call began (the budget counts
-    the call's wall seconds from there); None = now."""
+    the call's wall seconds from there); None = now.
+
+    Amendment 30. After the test of every trained round the divergence rule (``settle``) runs:
+    a round below ``cfg.diverged_level`` at a length 3-7 is trained once more from the same
+    start weights on the same examples with the batch seed "batches-redo", into
+    ``round_{r}-redo``, and tested again; diverged twice ends the arm. ``continue_round``: the
+    continuation of a round whose first attempt diverged in an earlier call: after a start check
+    of its start weights (within 0.2 points of the previous round's logged test at every length),
+    it rebuilds that round's training set from the stored answers (no check, no build) and runs
+    the same redo, then continues normally. ``test_hook(round, kind, acc)`` (tests only) may
+    replace the accuracies of a test; kind is "test", "redo" or "start_check"."""
     from gainpred.train import Stopwatch, TrainConfig, device_name, evaluate, train
 
     started = clock() if call_started is None else call_started
     run_dir = ladder_dir / run
+    if continue_round is not None:
+        refuse_continuation(run_dir, continue_round, cfg.diverged_level)
+        first_round = continue_round
+    earlier = _read_log(run_dir)
     run_dir.mkdir(parents=True, exist_ok=True)
     weights = seed_checkpoint if first_round == 1 else (_latest_weights(run_dir, first_round) or seed_checkpoint)
     model = load_long(weights, device)
     (run_dir / f"config-rounds{first_round}{'-' + tag if tag else ''}.json").write_text(json.dumps(
         {"ladder": asdict(cfg), "run": run, "first_round": first_round, "start_checkpoint": str(weights),
          "seed_checkpoint": str(seed_checkpoint), "budget_seconds": budget_seconds, "prior_seconds": prior_seconds,
-         "tag": tag, "device": device_name(device), "torch": torch.__version__, "max_len": MAX_LEN}, indent=2) + "\n")
+         "tag": tag, "continue_round": continue_round, "device": device_name(device), "torch": torch.__version__,
+         "max_len": MAX_LEN}, indent=2) + "\n")
     log_file = open(run_dir / "rounds.jsonl", "a")
 
     def log(event: dict) -> None:
@@ -434,13 +532,16 @@ def run_arm(cfg: LadderConfig, run: str, seed_checkpoint: Path, ladder_dir: Path
         return (make_solver(model, round_) if make_solver else
                 ModelSolver(model, device, cfg.solver_batch_size, seed=stream_seed(cfg.seed, round_, "solver")))
 
-    def test(round_: int, max_digits: int, watch) -> dict:
+    def test(round_: int, max_digits: int, watch, kind: str = "test") -> dict:
         model.eval()
         with watch.time("test"):
             evals = {name: evaluate(model, s.records, s.group_key, cfg.eval_batch_size, device)
                      for name, s in eval_sets(data_dir, ladder_data_dir, max_digits, cfg.eval_per_length).items()}
         acc = per_length(evals)
-        log({"event": "test", "round": round_, "acc": acc})
+        if test_hook:
+            acc = test_hook(round_, kind, acc)
+        if kind != "start_check":
+            log({"event": "test", "round": round_, "acc": acc, **({"redo": True} if kind == "redo" else {})})
         return acc
 
     def end(reason: str, **extra) -> str:
@@ -448,16 +549,89 @@ def run_arm(cfg: LadderConfig, run: str, seed_checkpoint: Path, ladder_dir: Path
         log_file.close()
         return reason
 
+    def training_set(round_: int, solver: Solver, watch) -> tuple[list[tuple[Addition, int]], int, dict[str, int]]:
+        """Every stored length 8 .. the round's longer length (arm 4's skipped pools expanded,
+        D7) and the replay sums of lengths 3-7 drawn from the round's own stream, labelled by
+        ``solver`` (the model the round starts from). The same call rebuilds it exactly."""
+        examples: list[tuple[Addition, int]] = []
+        composition: dict[str, int] = {}
+        n_raw = 0
+        for d in range(8, round_lengths(round_)[1] + 1):
+            rows_, source = load_pool(run_dir, d)
+            n_raw += len(rows_)
+            if source == "check_pool":
+                rows_ = expand(rows_, cfg.pool_target, stream(cfg.seed, round_, d, "upsample"))
+            examples += rows_
+            composition[str(d)] = len(rows_)
+        with watch.time("build"):
+            replay_problems = [p for d in EASY_DIGITS
+                               for p in draw_fresh(stream(cfg.seed, round_, d, "replay"), d,
+                                                   cfg.replay_per_length, exclude)]
+            replay_answers = solver(replay_problems)
+        replay = [(p, a) for p, a in zip(replay_problems, replay_answers) if isinstance(a, int)]
+        examples += replay
+        n_raw += len(replay)
+        composition["replay"] = len(replay)
+        return examples, n_raw, composition
+
+    def train_once(round_: int, examples, steps: int, start: Path, attempt: str, n_raw: int, composition, watch) -> Path:
+        """One training of a round: ``attempt`` "first" (batch seed "batches", folder ``round_{r}``)
+        or "redo" (reloads ``start``, batch seed "batches-redo", folder ``round_{r}-redo``)."""
+        nonlocal model
+        redo = attempt == "redo"
+        tcfg = TrainConfig(steps=steps, batch_size=cfg.batch_size,
+                           seed=stream_seed(cfg.seed, round_, "batches-redo" if redo else "batches"),
+                           eval_every=steps, checkpoint_every=steps, eval_per_length=cfg.eval_per_length,
+                           warmup_fraction=0.0, decay_fraction=cfg.decay_fraction)
+        out = run_dir / (f"round_{round_}-redo" if redo else f"round_{round_}")
+        if out.exists():
+            out = run_dir / f"{out.name}-{tag or 'again'}"
+        if redo:
+            model = load_long(start, device)
+        with watch.time("train"):
+            model = train(model, examples, tcfg, out, {}, device,
+                          extra_config={"task": "ladder/round", "round": round_, "arm": cfg.arm, "attempt": attempt,
+                                        "start_checkpoint": str(start), "n_raw_examples": n_raw,
+                                        "composition": composition, "examples_sha256": _examples_digest(examples)})
+        return out
+
+    def settle(round_: int, acc: dict, examples, steps: int, start: Path, n_raw: int, composition, watch,
+               after_the_fact: bool = False) -> tuple[dict, Path | None, str | None]:
+        """The divergence rule (amendment 30, R1), the one place a round is redone: returns the
+        accuracies that count, the redo's folder (None: not redone) and "diverged_twice" or None."""
+        if not diverged(acc, cfg.diverged_level):
+            return acc, None, None
+        log({"event": "diverged", "round": round_,
+             "acc_short": {str(d): acc.get(str(d), {}).get("acc_total") for d in SHORT_LENGTHS},
+             **({"after_the_fact": True} if after_the_fact else {})})
+        out = train_once(round_, examples, steps, start, "redo", n_raw, composition, watch)
+        acc = test(round_, round_lengths(round_)[1], watch, "redo")
+        return acc, out, ("diverged_twice" if diverged(acc, cfg.diverged_level) else None)
+
     last_acc: dict = {}
     if first_round == 1:
         watch = Stopwatch(device)
         last_acc = test(0, 9, watch)
         log({"event": "round0", "sec_test": watch.totals["test"]})
     else:
-        for e in map(json.loads, (run_dir / "rounds.jsonl").read_text().splitlines()):
-            if e.get("event") == "test" and e["round"] == first_round - 1:
-                last_acc = e["acc"]
+        last_acc = _counting_test(earlier, first_round - 1) or {}
 
+    if continue_round is not None:
+        # R3's start check: the start weights must test as the previous round's logged test did
+        watch = Stopwatch(device)
+        before = continue_round - 1
+        now = test(before, round_lengths(before)[1] if before else 9, watch, "start_check")
+        diff = {d: 100 * abs(now[d]["acc_total"] - v["acc_total"]) if d in now else None for d, v in last_acc.items()}
+        failed = not last_acc or any(v is None or v > 0.2 + 1e-9 for v in diff.values())
+        log({"event": "start_check", "round": continue_round, "compared_with_round": before,
+             "start_checkpoint": str(weights), "max_diff_points": max((v for v in diff.values() if v is not None),
+                                                                      default=None),
+             "diff_points": diff, "acc": now, "passed": not failed, "sec_test": watch.totals["test"]})
+        if failed:
+            log({"event": "start_check_failed", "round": continue_round})
+            return end("start_check_failed", round=continue_round)
+
+    start_weights = weights
     for round_ in range(first_round, cfg.last_round + 1):
         # stops before the round, in the order of the task: budget, then the stage rule
         spent = clock() - started + prior_seconds
@@ -469,87 +643,82 @@ def run_arm(cfg: LadderConfig, run: str, seed_checkpoint: Path, ladder_dir: Path
         watch = Stopwatch(device)
         solver = solver_for(round_)
         new = round_lengths(round_)
-        # 1. check (identical in every arm)
-        checks, pools = {}, {}
-        for d in new:
-            sample = draw_fresh(stream(cfg.seed, round_, d, "check"), d, cfg.check_sample, exclude)
-            with watch.time("check"):
-                cuts = answer_cuts(sample, solver)
-                direct = solver(sample)
-            report, pool = check_report(cfg.arm, sample, cuts, direct, cfg.skip_fraction, cfg.novelty_level)
-            checks[d], pools[d] = report, pool
-            log({"event": "check", "round": round_, "digits": d, **report})
-            _dump(run_dir / "logs" / f"round{round_}-{d}-check{'-' + tag if tag else ''}.jsonl.gz",
-                  [{"a": str(p.a), "b": str(p.b), "direct": _text(a), "cuts": [_text(x) for x in c]}
-                   for p, c, a in zip(sample, cuts, direct)])
-        if round_ == 1 and any(checks[d]["agreed_share"] < cfg.setup_level for d in new):
-            return end("setup_stop", agreed_share={str(d): checks[d]["agreed_share"] for d in new})
-        # 2. build (arm 4 builds only where its rule says so)
-        build = [d for d in new if cfg.arm != 4 or checks[d]["arm4_verdict"] == "build"]
-        new_rows: list[tuple[Addition, int]] = []
         composition: dict[str, int] = {}
-        for d in new:
-            if d not in build:
-                save_pool(run_dir, d, round_, pools[d], "check_pool", tag)
-                log({"event": "skip_length", "round": round_, "digits": d, "pool": len(pools[d])})
-                continue
-            rows: list[dict] = []
-            with watch.time("build"):
-                kept, drawn = collect(cfg.arm, solver, stream(cfg.seed, round_, d, "build"), d, cfg.kept_per_length,
-                                      cfg.draw_cap_factor * cfg.kept_per_length, exclude, rows, cfg.max_chunk)
-            _dump(run_dir / "logs" / f"round{round_}-{d}-build{'-' + tag if tag else ''}.jsonl.gz", rows)
-            log({"event": "build", "round": round_, "digits": d, "sums_drawn": drawn, "answers_kept": len(kept),
-                 "shortfall_flag": len(kept) < cfg.kept_per_length,
-                 "kept_acc": _share([a == solve(p) for p, a in kept]),
-                 "kept_carry_share": _share([carry_at_cut1(p) for p, _ in kept])})
-            if not kept:
-                return end("shortfall_stop", round=round_, digits=d)
-            save_pool(run_dir, d, round_, kept, "built", tag)
-        round_skipped = not build
-        if round_skipped:
-            # 3-4. nothing built: no replay, no training; the model is carried forward and tested
-            acc = test(round_, new[1], watch)
-            n_raw = n_eff = steps = 0
-        else:
-            # 3. training set: every stored length 8 .. new[1] (skipped pools expanded), replay
-            examples: list[tuple[Addition, int]] = []
-            n_raw = 0
-            for d in range(8, new[1] + 1):
-                rows_, source = load_pool(run_dir, d)
-                n_raw += len(rows_)
-                if source == "check_pool":
-                    rows_ = expand(rows_, cfg.pool_target, stream(cfg.seed, round_, d, "upsample"))
-                examples += rows_
-                composition[str(d)] = len(rows_)
-            with watch.time("build"):
-                replay_problems = [p for d in EASY_DIGITS
-                                   for p in draw_fresh(stream(cfg.seed, round_, d, "replay"), d,
-                                                       cfg.replay_per_length, exclude)]
-                replay_answers = solver(replay_problems)
-            replay = [(p, a) for p, a in zip(replay_problems, replay_answers) if isinstance(a, int)]
-            examples += replay
-            n_raw += len(replay)
-            composition["replay"] = len(replay)
-            n_eff = len(examples)
+        redo_out, stop, digest = None, None, None
+        continuation = round_ == continue_round
+        if continuation:
+            # R3: no check and no build; the stored answers, the replay labelled by the start model,
+            # then the redo of R1 against the first attempt's logged test
+            build: list[int] = []
+            round_skipped = False
+            examples, n_raw, composition = training_set(round_, solver, watch)
+            n_eff, digest = len(examples), _examples_digest(examples)
             steps = cfg.steps_override or updates_for(n_raw, cfg.passes, cfg.batch_size, cfg.min_steps)
-            tcfg = TrainConfig(steps=steps, batch_size=cfg.batch_size, seed=stream_seed(cfg.seed, round_, "batches"),
-                               eval_every=steps, checkpoint_every=steps, eval_per_length=cfg.eval_per_length,
-                               warmup_fraction=0.0, decay_fraction=cfg.decay_fraction)
-            out = run_dir / f"round_{round_}"
-            if out.exists():
-                out = run_dir / f"round_{round_}-{tag or 'again'}"
-            with watch.time("train"):
-                model = train(model, examples, tcfg, out, {}, device,
-                              extra_config={"task": "ladder/round", "round": round_, "arm": cfg.arm,
-                                            "n_raw_examples": n_raw, "composition": composition})
-            # 4. test
-            acc = test(round_, new[1], watch)
+            acc, redo_out, stop = settle(round_, _first_attempt_test(earlier, round_), examples, steps, start_weights,
+                                         n_raw, composition, watch, after_the_fact=True)
+            out = redo_out
+        else:
+            # 1. check (identical in every arm)
+            checks, pools = {}, {}
+            for d in new:
+                sample = draw_fresh(stream(cfg.seed, round_, d, "check"), d, cfg.check_sample, exclude)
+                with watch.time("check"):
+                    cuts = answer_cuts(sample, solver)
+                    direct = solver(sample)
+                report, pool = check_report(cfg.arm, sample, cuts, direct, cfg.skip_fraction, cfg.novelty_level)
+                checks[d], pools[d] = report, pool
+                log({"event": "check", "round": round_, "digits": d, **report})
+                _dump(run_dir / "logs" / f"round{round_}-{d}-check{'-' + tag if tag else ''}.jsonl.gz",
+                      [{"a": str(p.a), "b": str(p.b), "direct": _text(a), "cuts": [_text(x) for x in c]}
+                       for p, c, a in zip(sample, cuts, direct)])
+            if round_ == 1 and any(checks[d]["agreed_share"] < cfg.setup_level for d in new):
+                return end("setup_stop", agreed_share={str(d): checks[d]["agreed_share"] for d in new})
+            # 2. build (arm 4 builds only where its rule says so)
+            build = [d for d in new if cfg.arm != 4 or checks[d]["arm4_verdict"] == "build"]
+            for d in new:
+                if d not in build:
+                    save_pool(run_dir, d, round_, pools[d], "check_pool", tag)
+                    log({"event": "skip_length", "round": round_, "digits": d, "pool": len(pools[d])})
+                    continue
+                rows: list[dict] = []
+                with watch.time("build"):
+                    kept, drawn = collect(cfg.arm, solver, stream(cfg.seed, round_, d, "build"), d,
+                                          cfg.kept_per_length, cfg.draw_cap_factor * cfg.kept_per_length, exclude,
+                                          rows, cfg.max_chunk)
+                _dump(run_dir / "logs" / f"round{round_}-{d}-build{'-' + tag if tag else ''}.jsonl.gz", rows)
+                log({"event": "build", "round": round_, "digits": d, "sums_drawn": drawn, "answers_kept": len(kept),
+                     "shortfall_flag": len(kept) < cfg.kept_per_length,
+                     "kept_acc": _share([a == solve(p) for p, a in kept]),
+                     "kept_carry_share": _share([carry_at_cut1(p) for p, _ in kept])})
+                if not kept:
+                    return end("shortfall_stop", round=round_, digits=d)
+                save_pool(run_dir, d, round_, kept, "built", tag)
+            round_skipped = not build
+            out = None
+            if round_skipped:
+                # 3-4. nothing built: no replay, no training (so never redone); the model is tested again
+                acc = test(round_, new[1], watch)
+                n_raw = n_eff = steps = 0
+            else:
+                # 3. training set and training; 4. test; then the divergence rule
+                examples, n_raw, composition = training_set(round_, solver, watch)
+                n_eff, digest = len(examples), _examples_digest(examples)
+                steps = cfg.steps_override or updates_for(n_raw, cfg.passes, cfg.batch_size, cfg.min_steps)
+                out = train_once(round_, examples, steps, start_weights, "first", n_raw, composition, watch)
+                acc = test(round_, new[1], watch)
+                acc, redo_out, stop = settle(round_, acc, examples, steps, start_weights, n_raw, composition, watch)
+                out = redo_out or out
+        if out is not None:
+            start_weights = last_checkpoint(out)
         last_acc = acc
         t = watch.totals
         log({"event": "round_done", "round": round_, "built": build, "round_skipped": round_skipped,
              "n_raw_examples": n_raw, "n_effective_examples": n_eff, "num_updates": steps,
              "composition": composition, "sec_check": t["check"], "sec_build": t["build"], "sec_train": t["train"],
-             "sec_test": t["test"], "sec_total": clock() - round_start})
+             "sec_test": t["test"], "sec_total": clock() - round_start, "redone": redo_out is not None,
+             "examples_sha256": digest, **({"continuation": True} if continuation else {})})
+        if stop:
+            return end(stop, round=round_)
         if round_ % 4 == 0:
             log({"event": "stage", "stage": stage_of(round_), "learned": stage_learned(acc, stage_of(round_),
                                                                                        cfg.learned_level)})

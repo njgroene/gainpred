@@ -350,3 +350,216 @@ def test_relaunch_continues_from_the_last_completed_round(world):
     assert config["start_checkpoint"].endswith("round_1/checkpoints/step_000100.pt")
     done = of(ev, "round_done", round=2)[0]
     assert done["composition"]["8"] == done["composition"]["9"] == 30
+
+
+# ================================================================ amendment 30: the divergence rule
+#
+# The dry runs above use a tiny random CPU model, which is never 90% right at 3-7 digits, so
+# the divergence rule would fire in every one of their rounds. They test amendment 29's rules
+# and keep running with the rule switched off (the line below only adds to their configuration;
+# their code is unchanged). The tests below switch it on and script the test results with
+# ``test_hook``: 100% at 3-7 digits, except where a test says otherwise.
+
+SMALL["diverged_level"] = 0.0
+ON = {"diverged_level": 0.90}
+
+
+def scripted(low=(), short=0.5, long=None):
+    """A test hook: acc_total at 3-7 is 1.0, except at 5 digits ``short`` for the (round, kind)
+    pairs in ``low``; ``long`` {(round, kind): value} sets every length from 8 up."""
+    def hook(round_, kind, acc):
+        acc = {d: dict(v) for d, v in acc.items()}
+        for d in map(str, range(3, 8)):
+            acc[d]["acc_total"] = short if (round_, kind) in low and d == "5" else 1.0
+        if long and (round_, kind) in long:
+            for d in acc:
+                if int(d) >= 8:
+                    acc[d]["acc_total"] = long[(round_, kind)]
+        return acc
+    return hook
+
+
+def state_digest(model) -> str:
+    import hashlib
+    h = hashlib.sha256()
+    for k, v in sorted(model.state_dict().items()):
+        h.update(k.encode() + v.detach().cpu().numpy().tobytes())
+    return h.hexdigest()
+
+
+@pytest.fixture
+def trainings(monkeypatch):
+    """Every training run_arm starts: its start weights, examples, updates, batch seed, folder."""
+    import gainpred.train as tr
+    real, calls = tr.train, []
+
+    def spy(model, examples, cfg, run_dir, eval_sets, device, extra_config=None):
+        calls.append({"state": state_digest(model), "examples": list(examples), "steps": cfg.steps,
+                      "seed": cfg.seed, "folder": run_dir.name, "warmup": cfg.warmup_fraction,
+                      "decay": cfg.decay_fraction})
+        return real(model, examples, cfg, run_dir, eval_sets, device, extra_config)
+
+    monkeypatch.setattr(tr, "train", spy)
+    return calls
+
+
+def checkpoint_digest(world, run, folder):
+    from gainpred.floors import last_checkpoint, load_long
+    return state_digest(load_long(last_checkpoint(world["ladder"] / run / folder)))
+
+
+@pytest.mark.slow
+def test_a_diverged_round_is_redone_once_from_the_same_weights_on_the_same_examples(world, trainings):
+    run = "a3-redo"
+    reason, ev = go(world, run, 3, lambda r: Exact(), cfg={**ON, "last_round": 2}, test_hook=scripted({(1, "test")}))
+    assert reason == "finished"
+    assert [t["folder"] for t in trainings] == ["round_1", "round_1-redo", "round_2"]
+    first, redo, nxt = trainings
+    assert redo["state"] == first["state"] and redo["examples"] == first["examples"] and len(first["examples"]) > 0
+    assert redo["steps"] == first["steps"] and (redo["warmup"], redo["decay"]) == (first["warmup"], first["decay"])
+    assert first["seed"] == ld.stream_seed(5, 1, "batches") != redo["seed"] == ld.stream_seed(5, 1, "batches-redo")
+    assert [(e["round"], e["acc_short"]["5"]) for e in of(ev, "diverged")] == [(1, 0.5)]
+    assert [bool(e.get("redo")) for e in of(ev, "test", round=1)] == [False, True]
+    done = of(ev, "round_done")
+    assert [d["redone"] for d in done] == [True, False] and not of(ev, "diverged", round=2)
+    # the next round starts from the redo's weights, never from the first attempt's
+    assert nxt["state"] == checkpoint_digest(world, run, "round_1-redo") != checkpoint_digest(world, run, "round_1")
+    assert ld._latest_weights(world["ladder"] / run, 2).parent.parent.name == "round_1-redo"
+
+
+@pytest.mark.slow
+def test_the_stage_rule_uses_the_redos_test(world, trainings):
+    # the first attempt of round 4 would learn stage 1 (95% at 8-15) but is diverged; the redo is not
+    # diverged and is at 50% at 8-15, so stage 1 is not learned
+    hook = scripted({(4, "test")}, long={(4, "test"): 0.95, (4, "redo"): 0.5})
+    reason, ev = go(world, "a3-stage-redo", 3, lambda r: Exact(), cfg={**ON, "last_round": 5}, test_hook=hook)
+    assert reason == "stage_not_learned"
+    assert ld.stage_learned(of(ev, "test", round=4)[0]["acc"], 1) and not ld.stage_learned(of(ev, "test", round=4)[1]["acc"], 1)
+    assert of(ev, "stage") == [{"event": "stage", "stage": 1, "learned": False}]
+    assert [t["folder"] for t in trainings][-2:] == ["round_4", "round_4-redo"] and not of(ev, "check", round=5)
+
+
+@pytest.mark.slow
+def test_diverged_twice_ends_the_arm(world, trainings):
+    reason, ev = go(world, "a3-twice", 3, lambda r: Exact(), cfg={**ON, "last_round": 3},
+                    test_hook=scripted({(1, "test"), (1, "redo")}))
+    assert reason == "diverged_twice"
+    assert of(ev, "call_done")[0]["round"] == 1 and len(of(ev, "diverged")) == 1
+    assert [t["folder"] for t in trainings] == ["round_1", "round_1-redo"] and not of(ev, "check", round=2)
+
+
+@pytest.mark.slow
+def test_a_round_at_90_percent_is_not_redone(world, trainings):
+    reason, ev = go(world, "a3-at90", 3, lambda r: Exact(), cfg={**ON, "last_round": 1},
+                    test_hook=scripted({(1, "test")}, short=0.90))
+    assert reason == "finished" and not of(ev, "diverged") and len(of(ev, "test", round=1)) == 1
+    assert [t["folder"] for t in trainings] == ["round_1"] and not (world["ladder"] / "a3-at90" / "round_1-redo").exists()
+    assert not ld.diverged({str(d): {"acc_total": 0.9} for d in range(3, 8)})
+    assert ld.diverged({**{str(d): {"acc_total": 1.0} for d in range(3, 8)}, "7": {"acc_total": 0.8999}})
+
+
+@pytest.mark.slow
+def test_a_round_arm4_skipped_is_never_redone(world, trainings):
+    solvers = {1: Exact(), 2: DirectOff({10, 11})}
+    reason, ev = go(world, "a4-skip-redo", 4, lambda r: solvers[r], cfg={**ON, "last_round": 2},
+                    test_hook=scripted({(1, "test")}))
+    assert reason == "finished"
+    assert of(ev, "round_done", round=1)[0]["round_skipped"] and not of(ev, "diverged")
+    assert [t["folder"] for t in trainings] == ["round_2"]
+
+
+def test_the_redo_folder_is_the_rounds_result_whatever_the_names(tmp_path):
+    def make(name, step=10):
+        (tmp_path / name / "checkpoints").mkdir(parents=True)
+        (tmp_path / name / "checkpoints" / f"step_{step:06d}.pt").write_bytes(b"")
+
+    make("round_3")
+    make("round_3-relaunch")
+    assert ld._latest_weights(tmp_path, 5).parent.parent.name == "round_3-relaunch"
+    make("round_3-redo8")  # a call tagged "redo8": an ordinary relaunch folder (sorts before "relaunch"), not a redo
+    assert ld._latest_weights(tmp_path, 5).parent.parent.name == "round_3-relaunch"
+    make("round_3-redo")
+    make("round_3-zzz")
+    assert ld._latest_weights(tmp_path, 5).parent.parent.name == "round_3-redo"
+    assert ld._latest_weights(tmp_path, 4).parent.parent.name == "round_3-redo"
+    make("round_33")  # never round 3's
+    assert ld._latest_weights(tmp_path, 5).parent.parent.name == "round_3-redo"
+    (tmp_path / "round_4-redo").mkdir()  # a redo without a checkpoint (stopped early) is not a result
+    make("round_4")
+    assert ld._latest_weights(tmp_path, 5).parent.parent.name == "round_4"
+
+
+def original_without_the_rule(world, run, last_round):
+    """A run as amendment 29 ran it: rule off, and its last round's test scripted as diverged."""
+    reason, _ = go(world, run, 3, lambda r: Exact(), cfg={"last_round": last_round},
+                   test_hook=scripted({(last_round, "test")}))
+    assert reason == "finished"
+
+
+@pytest.mark.slow
+def test_the_continuation_redoes_the_round_without_check_or_build_then_goes_on(world, trainings):
+    run = "a3-cont"
+    original_without_the_rule(world, run, 2)
+    original = list(trainings)
+    assert [t["folder"] for t in original] == ["round_1", "round_2"]
+    before = (world["ladder"] / run / "rounds.jsonl").read_text().splitlines()
+    reason, ev = go(world, run, 3, lambda r: Exact(), cfg={**ON, "last_round": 3}, continue_round=2, tag="redo2",
+                    prior_seconds=7.0, test_hook=scripted())
+    assert reason == "finished"
+    new = ev[len(before):]
+    assert [e["event"] for e in new][:2] == ["start_check", "diverged"]
+    assert new[0]["passed"] and new[0]["max_diff_points"] == 0.0 and new[0]["compared_with_round"] == 1
+    assert set(new[0]["diff_points"]) == {str(d) for d in range(3, 10)}
+    assert new[1]["round"] == 2 and new[1]["after_the_fact"]
+    assert not of(new, "check", round=2) and not of(new, "build", round=2) and not of(new, "skip_length", round=2)
+    assert of(new, "check", round=3) and of(new, "build", round=3)
+    redo, nxt = trainings[2:]
+    assert redo["folder"] == "round_2-redo" and nxt["folder"] == "round_3"
+    # the same start weights, examples (stored answers + the replay labelled by the start model) and updates
+    assert redo["state"] == original[1]["state"] == checkpoint_digest(world, run, "round_1")
+    assert redo["examples"] == original[1]["examples"] and redo["steps"] == original[1]["steps"]
+    assert redo["seed"] == ld.stream_seed(5, 2, "batches-redo") != original[1]["seed"]
+    assert nxt["state"] == checkpoint_digest(world, run, "round_2-redo")
+    d2 = of(new, "round_done", round=2)[0]
+    assert d2["continuation"] and d2["redone"] and d2["built"] == [] and d2["sec_check"] == 0
+    assert of(new, "test", round=2)[0]["redo"]
+    # nothing the original call wrote was changed
+    assert (world["ladder"] / run / "rounds.jsonl").read_text().splitlines()[:len(before)] == before
+    config = json.loads((world["ladder"] / run / "config-rounds2-redo2.json").read_text())
+    assert config["continue_round"] == 2 and "/round_1/checkpoints/" in config["start_checkpoint"]
+
+
+@pytest.mark.slow
+def test_the_continuation_refuses_without_stored_answers(world, trainings):
+    run = "a3-nopools"
+    original_without_the_rule(world, run, 1)
+    log_before = (world["ladder"] / run / "rounds.jsonl").read_text()
+    with pytest.raises(FileNotFoundError):  # round 2 never built anything
+        go(world, run, 3, lambda r: Exact(), cfg=ON, continue_round=2, tag="c2")
+    index = json.loads((world["ladder"] / run / "kept" / "index.json").read_text())
+    (world["ladder"] / run / "kept" / index["9"]["file"]).unlink()
+    with pytest.raises(FileNotFoundError):
+        go(world, run, 3, lambda r: Exact(), cfg=ON, continue_round=1, tag="c1")
+    assert (world["ladder"] / run / "rounds.jsonl").read_text() == log_before
+    assert not list((world["ladder"] / run).glob("config-rounds*-c*.json")) and len(trainings) == 1
+
+
+@pytest.mark.slow
+def test_the_start_check_ends_the_call_before_training(world, trainings):
+    run = "a3-startcheck"
+    original_without_the_rule(world, run, 1)
+
+    def off_by(points):
+        def hook(round_, kind, acc):
+            acc = scripted()(round_, kind, acc)
+            if kind == "start_check":
+                acc["9"]["acc_total"] += points / 100
+            return acc
+        return hook
+
+    reason, ev = go(world, run, 3, lambda r: Exact(), cfg=ON, continue_round=1, tag="c1", test_hook=off_by(0.3))
+    assert reason == "start_check_failed"
+    check = of(ev, "start_check")[-1]
+    assert not check["passed"] and abs(check["max_diff_points"] - 0.3) < 1e-6
+    assert of(ev, "start_check_failed") and of(ev, "call_done")[-1]["reason"] == "start_check_failed"
+    assert len(trainings) == 1 and not of(ev, "diverged") and not (world["ladder"] / run / "round_1-redo").exists()
