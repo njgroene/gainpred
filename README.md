@@ -5,6 +5,8 @@ Code, protocol, logs and paper sources for
 > **Is This Round Worth Running? Steering Compositional Self-Improvement from a Model's Own Answers**
 > Nikolaj Groeneweg, [Nimble Lab](https://nimblelab.ai), 2026.
 
+**[Read the paper (PDF)](paper/is-this-round-worth-running.pdf)**
+
 The paper builds on [Shin et al. (2026), *Compositional Self-Improvement: Promises and Pitfalls*](https://arxiv.org/abs/2611.00452).
 In compositional self-improvement a model splits a hard problem into easier
 ones it already solves, composes their answers, and trains on the result. A
@@ -100,6 +102,8 @@ make latexmk    # or a full TeX installation
 ```
 
 The supplementary material is part of the same PDF, after the appendices.
+A built copy is kept at `paper/is-this-round-worth-running.pdf`; `main.pdf`
+itself is a build product and is not tracked.
 
 ## Re-running the experiments
 
