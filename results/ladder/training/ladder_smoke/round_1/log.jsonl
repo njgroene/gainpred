@@ -1,3 +1,0 @@
-{"event": "train", "step": 50, "loss": 0.18024179458618164, "loss_max": 1.1740169525146484, "grad_norm": 13.442950439453124, "grad_norm_max": 58.33439254760742, "lr": 0.0005, "answer_tokens": 85090, "seconds": {"train": 2.789305333000012}}
-{"event": "train", "step": 100, "loss": 0.05166142463684082, "loss_max": 0.33415865898132324, "grad_norm": 7.125164794921875, "grad_norm_max": 44.551753997802734, "lr": 5e-06, "answer_tokens": 170355, "seconds": {"train": 5.30807095900003}}
-{"event": "done", "step": 100, "seconds": {"train": 5.30807095900003}}
