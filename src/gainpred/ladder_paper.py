@@ -55,9 +55,9 @@ COLOURS = {1: "#8a8985", 2: "#2e8b6a", 3: "#e8622c", 4: "#2f6fb5"}
 LINE_LABELS = {1: "direct", 2: "composed", 3: "composed and agreed", 4: "self-paced"}
 
 PAPER_FILES = ("numbers_ladder.tex", "table_ladder_lengths.tex", "table_ladder_cuts.tex",
-               "figure_ladder_accuracy.pdf", "figure_ladder_loss.pdf")
+               "figure_ladder_accuracy.pdf", "figure_ladder_loss.pdf", "figure_ladder_decisions.pdf")
 RESULT_FILES = ("per_length.csv", "per_round.csv", "macros.md", "figures/figure_ladder_accuracy.png",
-                "figures/figure_ladder_loss.png")
+                "figures/figure_ladder_loss.png", "figures/figure_ladder_decisions.png")
 
 PER_LENGTH_COLUMNS = ["seed", "arm", "digits", "round", "direct_acc", "cut1_acc", "confirmed_share", "agreed_share",
                       "m_agreed", "agreed_acc", "novelty_arm", "novelty_agreed", "arm4_verdict", "built",
@@ -670,6 +670,55 @@ def loss_figure(paper: Path, results: Path) -> list[Path]:
     return paths
 
 
+BUILT_COLOUR, SKIPPED_COLOUR = "#d0392b", "#2f6fb5"
+
+
+def decision_points(arms) -> dict[int, list[dict]]:
+    """Per seed, arm 4's rows of per_length.csv as {digits, after, direct, built}: the data the
+    decisions figure draws (accuracies in %)."""
+    out: dict[int, list[dict]] = {s: [] for s in SEEDS}
+    for r in per_length_rows(arms):
+        row = dict(zip(PER_LENGTH_COLUMNS, r))
+        if row["arm"] == 4:
+            out[row["seed"]].append({"digits": row["digits"], "after": 100 * row["acc_after_round"],
+                                     "direct": 100 * row["direct_acc"], "built": bool(row["built"])})
+    for pts in out.values():
+        pts.sort(key=lambda p: p["digits"])
+    return out
+
+
+def decisions_figure(arms, paper: Path, results: Path) -> list[Path]:
+    """Arm 4 (self-paced) per seed: accuracy before each length's round (the check's direct answers;
+    red where it decided to train, blue where it did not) and accuracy after the round."""
+    plt = _style()
+    from matplotlib.lines import Line2D
+    from matplotlib.patches import Patch
+    fig, axes = plt.subplots(1, 3, figsize=(5.5, 2.1), sharey=True)
+    for ax, s in zip(axes, SEEDS):
+        pts = decision_points(arms)[s]
+        ax.set_axisbelow(True)
+        ax.plot([p["digits"] for p in pts], [p["after"] for p in pts], color="#3a3a38", lw=1.3, zorder=2)
+        ax.scatter([p["digits"] for p in pts], [p["direct"] for p in pts], s=13, linewidths=0, zorder=3,
+                   c=[BUILT_COLOUR if p["built"] else SKIPPED_COLOUR for p in pts])
+        ax.set_title(f"Seed {s}", fontsize=8)
+        ax.set_ylim(-4, 106)
+        ax.set_yticks([0, 25, 50, 75, 100])
+        ax.set_xticks([8, 16, 24, 32, 39])
+        ax.set_xlabel("Number of digits")
+    axes[0].set_ylabel("Accuracy (%)")
+    handles = [Line2D([], [], color="#3a3a38", lw=1.3),
+               Line2D([], [], ls="none", marker="o", ms=13 ** 0.5, mew=0, color="#8a8985"),
+               Patch(color=BUILT_COLOUR), Patch(color=SKIPPED_COLOUR)]
+    labels = ["accuracy after round", "accuracy before round", "model decided to train",
+              "model decided not to train"]
+    fig.tight_layout(pad=0.3, w_pad=0.6, rect=(0, 0, 1, 0.88))  # the top 12% holds the legend
+    fig.legend(handles, labels, loc="upper center", bbox_to_anchor=(0.5, 1.0), ncol=4, frameon=False,
+               fontsize=7.4, handlelength=1.6, columnspacing=1.2)
+    paths = _save(fig, "figure_ladder_decisions", paper, results)
+    plt.close(fig)
+    return paths
+
+
 # ---------------------------------------------------------------------------- all of it
 
 def build_register(arms) -> LadReg:
@@ -709,6 +758,7 @@ def write_all(paper: Path = PAPER, results: Path = LADDER_RESULTS) -> list[Path]
         written.append(results / name)
     written += accuracy_figure(arms, paper, results)
     written += loss_figure(paper, results)
+    written += decisions_figure(arms, paper, results)
     return written
 
 

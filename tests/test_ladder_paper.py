@@ -87,3 +87,12 @@ def test_redo_inside_a_call_counts_both_attempts(arms):
     assert a3.updates_run() - a3.logged_updates() == 8_400
     r14 = [t for t in a3.attempts() if t["round"] == 14]
     assert [t["attempt"] for t in r14] == [1, 2] and [t["seconds"] for t in r14] == [True, False]
+
+
+def test_decisions_figure_data(arms):
+    """Task 5, check A: per seed, red (built) and blue (not built) circles, and the lowest blue one."""
+    pts = lp.decision_points(arms)
+    assert [len(pts[s]) for s in lp.SEEDS] == [32, 32, 32]
+    assert [sum(p["built"] for p in pts[s]) for s in lp.SEEDS] == [21, 17, 19]
+    assert [sum(not p["built"] for p in pts[s]) for s in lp.SEEDS] == [11, 15, 13]
+    assert [lp.f1(min(p["direct"] for p in pts[s] if not p["built"])) for s in lp.SEEDS] == ["96.0", "98.5", "98.4"]
