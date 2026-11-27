@@ -1,0 +1,61 @@
+{
+  "model": {
+    "vocab_size": 33,
+    "pad_id": 31,
+    "n_layers": 6,
+    "d_model": 384,
+    "n_heads": 6,
+    "d_ff": 1536,
+    "max_len": 136,
+    "init_std": 0.02,
+    "norm_eps": 1e-06,
+    "lr": 0.0005,
+    "betas": [
+      0.9,
+      0.99
+    ],
+    "eps": 1e-12,
+    "weight_decay": 0.1
+  },
+  "train": {
+    "steps": 5100,
+    "batch_size": 256,
+    "seed": 398073675,
+    "log_every": 50,
+    "eval_every": 5100,
+    "eval_per_length": null,
+    "eval_batch_size": 1000,
+    "checkpoint_every": 5100,
+    "warmup_fraction": 0.0,
+    "decay_fraction": 0.3333333333333333,
+    "min_lr_ratio": 0.01,
+    "grad_clip": 1.0,
+    "stop_after": null,
+    "save_checkpoints": true
+  },
+  "device": "NVIDIA A10",
+  "torch": "2.15.0+cu132",
+  "task": "ladder/round",
+  "round": 8,
+  "arm": 3,
+  "n_raw_examples": 185000,
+  "composition": {
+    "8": 10000,
+    "9": 10000,
+    "10": 10000,
+    "11": 10000,
+    "12": 10000,
+    "13": 10000,
+    "14": 10000,
+    "15": 10000,
+    "16": 10000,
+    "17": 10000,
+    "18": 10000,
+    "19": 10000,
+    "20": 10000,
+    "21": 10000,
+    "22": 10000,
+    "23": 10000,
+    "replay": 25000
+  }
+}

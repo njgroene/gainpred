@@ -39,7 +39,3 @@ launch-logs/
 
 # agent worktrees
 .claude/worktrees/
-
-# Ladder data fetched from the Modal volume (local only)
-results/ladder/training/
-results/ladder/records/
