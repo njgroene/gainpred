@@ -1,0 +1,58 @@
+{
+  "10": {
+    "file": "10.main.jsonl.gz",
+    "round": 2,
+    "rows": 10000,
+    "sha256": "27942c7d919d28a463454bf2e5a8bed035aa5bccdf833fad47e7fa1c8df4c227",
+    "source": "built"
+  },
+  "11": {
+    "file": "11.main.jsonl.gz",
+    "round": 2,
+    "rows": 10000,
+    "sha256": "c1e50bd3bd3a573586bae8f839815f6cc17b42da5b9bb3e69c10a68438f23a49",
+    "source": "built"
+  },
+  "12": {
+    "file": "12.main.jsonl.gz",
+    "round": 3,
+    "rows": 10000,
+    "sha256": "8e620d54bf2553ca3adf047cff03d9523446e00c1a3954c224a72910867d0d06",
+    "source": "built"
+  },
+  "13": {
+    "file": "13.main.jsonl.gz",
+    "round": 3,
+    "rows": 10000,
+    "sha256": "ebaa22b41002c5ac4973a83ef9377fa354ad0906b28e7cd05df7f908efabcebd",
+    "source": "built"
+  },
+  "14": {
+    "file": "14.main.jsonl.gz",
+    "round": 4,
+    "rows": 10000,
+    "sha256": "49a4a777c54c3189aed33e93242abe38b2c066c272b8e654ef590cef3ae4df27",
+    "source": "built"
+  },
+  "15": {
+    "file": "15.main.jsonl.gz",
+    "round": 4,
+    "rows": 10000,
+    "sha256": "a42bcd28560e5aa34d6e415ec7099816dd940597ff21183da84a3ff967358252",
+    "source": "built"
+  },
+  "8": {
+    "file": "8.main.jsonl.gz",
+    "round": 1,
+    "rows": 10000,
+    "sha256": "bf1835a9ba0031d4024f4ea5904ac0e6e70d7ff935c3c21bdf99c34c919d2f0e",
+    "source": "built"
+  },
+  "9": {
+    "file": "9.main.jsonl.gz",
+    "round": 1,
+    "rows": 10000,
+    "sha256": "c190bff6a3947c1a67d31f1ab69a5471c8606a5ad160c3d58ed3801fc7c0dcf4",
+    "source": "built"
+  }
+}
