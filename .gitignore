@@ -39,3 +39,6 @@ launch-logs/
 
 # agent worktrees
 .claude/worktrees/
+
+# arXiv upload folder (derived from paper/; rebuild before each submission)
+/arxiv-submission/
