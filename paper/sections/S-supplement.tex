@@ -1,0 +1,201 @@
+\section{Details of the setup}
+\label{app:setup-details}
+\label{app:settings}
+
+\paragraph{Outcomes.} Table~\ref{tab:outcomes} states the outcome rule of
+Section~\ref{sec:setup}. Its boundaries suit the present setting, in which a
+successful round takes a new length from zero to 70\% or more at once and an
+unsuccessful one leaves it near zero; elsewhere they would have to be chosen
+anew.
+
+\begin{table}[htbp]
+\centering
+\caption{The outcome of a round at one problem length. Scores are accuracies
+  on test problems, in percentage points. ``The best'' is the highest score
+  any teacher's student reached at that length, in the same round and from the
+  same starting model.}
+\label{tab:outcomes}
+\small
+\begin{tabular}{@{}lll@{}}
+\toprule
+Length & Outcome & Condition \\
+\midrule
+Could already do & Did nothing & Changes by at most 3 points \\
+ & Did harm & Falls by more than 3 points, here or on easy problems \\
+\addlinespace
+New & Paid off & Rises by at least 20 points, to within 10 of the best \\
+ & Taught wrong answers & Rises, but ends 30 points or more below the best \\
+ & \quad (counted as harm) & \\
+ & Did little or nothing & Rises by less than 10 points \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\paragraph{Adjustments before the freeze.}
+Four adjustments were made between the calibration runs and the freeze.
+First, we placed novelty ahead of agreement, which raised the number of
+correctly predicted calibration cases from 107 to 166 of 176. Second, we
+increased the number of splits for 13- to 15-digit problems from three to
+five, because three splits artificially depressed the confirmed share of an
+otherwise sound teacher. Third, we added the 10-point and 50\% conditions to
+the outcome rule. Fourth, we added the requirement that at least 5\% of
+answers be kept, which guards against sampling noise: when a teacher keeps
+fewer than a hundred answers, the proportion of new ones varies widely
+between samples.
+
+
+\paragraph{Reproduction.}
+Table~\ref{tab:reproduction} compares our accuracies with those reported by
+\citet{shin2026compositional}. The two are not directly comparable: they
+train for eight rounds and test up to 23 digits, whereas we train for four
+and test up to 15. Within those limits the pattern is the same. With their
+filter the model reaches nearly full accuracy at every length it has been
+taught, and without it accuracy remains far lower.
+
+\input{generated/table_reproduction}
+
+
+\section{Further results on the predictions}
+\label{app:prediction}
+
+This section contains the material referred to in
+Section~\ref{sec:do-the-checks-predict} of the paper: the kinds of case
+(Table~\ref{tab:p9b-cases}), the margins of the checks
+(Figure~\ref{fig:checks}), the cases from weak starting models
+(Table~\ref{tab:weak}), the cases without an outcome
+(Table~\ref{tab:no-outcome}), the comparison with training briefly
+(Tables~\ref{tab:baseline} and~\ref{tab:cost-addition}), and the agreement
+rule against the no-carry rule
+(Figure~\ref{fig:exp1}).
+
+\input{generated/table_p9b_cases}
+
+\paragraph{Margins.}
+Figure~\ref{fig:checks} shows why these predictions are robust. The values of
+each check form two clusters, and the threshold lies in the gap between them.
+Leaving aside the cases decided by the 5\% minimum, novelty was at most
+\gpNoveltyMarginLow\% wherever the prediction was ``does nothing'' and at
+least \gpNoveltyMarginHigh\% everywhere else. The confirmed share was at most
+\gpConfirmedMarginLow\% in the \gpConfirmedHarmCases{} cases it predicted to
+do harm, and at least \gpConfirmedMarginHigh\% in the \gpConfirmedPaysCases{}
+it predicted to pay off. Any thresholds within these ranges yield the same
+predictions. We computed the ranges after the evaluation runs; the
+thresholds themselves were fixed beforehand.
+
+\input{generated/figure_checks}
+
+\paragraph{The basics check.} Ten cases with an outcome come from starting
+models that fail the basics check, so the rule predicted harm in all ten. It
+was right once (Table~\ref{tab:weak}). Three of
+these models were just below the pass mark, with at least 91\% on every size
+of easy problem. All six of their cases paid off, as they do for a fully
+trained starting model. The other three failed some sizes of easy problem
+almost entirely. Their rounds mostly did little, and taught wrong answers in
+one case. Weak basics therefore did not predict harm in our runs.
+
+The measurements of Section~\ref{sec:confirmed-right} explain why. A model
+just below the pass mark still yields a teacher that is mostly right, and its
+rounds pay off. A much weaker model yields a teacher whose accuracy varies
+sharply from one length to the next, from \gpTaWeakAccLow\% to
+\gpTaWeakAccHigh\%, and its confirmed share fell with that accuracy, to
+\gpTaWeakConfirmedLow\%. What the basics check was intended to establish, the
+agreement check establishes more directly, on the hard problems themselves.
+Without the basics check, the two other checks would have been correct in
+\gpCorrectNoBasics{} of \gpCases{} cases (\gpCorrectNoBasicsPct\%). We
+computed this after the evaluation runs, and the rule as frozen remains our
+main result.
+
+One of the remaining errors is a failure of imitation
+(Section~\ref{sec:what-changes}). At 8 digits, one of the very weak models
+yielded a teacher that was right on nearly all of its kept answers, and the
+student's accuracy nevertheless rose by less than 10 points. A teacher can be
+right and the student unable to follow.
+
+\input{generated/table_weak}
+\input{generated/table_no_outcome}
+
+\paragraph{Compared with training briefly.}
+\label{sec:vs-baseline}
+\label{sec:baselines}
+We compare the prediction rule with two baselines. The first always predicts
+the most frequent outcome. The second is the obvious alternative to checks:
+start the round, train for 200 of the 3,000 updates, measure accuracy on the
+test set, and extrapolate from the early change. We defined this baseline
+after the evaluation runs; its thresholds were tuned on the calibration runs
+and recorded before any of its results on the evaluation runs were read.
+Unlike our checks, it requires correct answers to the hard problems.
+
+Computational cost is measured as wall-clock time on a single GPU. For each
+round, we compare the time needed to run the checks with the total time of
+the round, that is, generating the kept answers and training on them.
+
+The obvious alternative is to start the round and inspect it
+. As originally run, this baseline was correct
+in \gpBaselineCorrect{} of \gpCases{} cases (\gpBaselineCorrectPct\%). A
+variant that we defined after the evaluation runs, in the baseline's favor,
+reached \gpVariantCorrect{} (\gpVariantCorrectPct\%), still below the checks
+(Table~\ref{tab:baseline}). The baseline missed harmful cases: it flagged
+\gpBaselineHarmFlagged{} of \gpHarmful{}, and the variant
+\gpVariantHarmFlagged{}, whereas the checks flagged all \gpHarmful{}. It
+outperformed the checks on the \gpWeakCases{} cases from weak starting
+models, with \gpBaselineWeakCorrect{} and \gpVariantWeakCorrect{} correct
+against \gpOursWeakCorrect{}, because it does not rely on the basics check.
+
+\input{generated/table_baseline}
+
+The baseline is also more expensive and more demanding. It took
+\gpBaselineCostAdditionPct\% of the computing time of a round, because it must first
+build the round's training answers, and it requires correct answers to the
+hard problems. The checks took \gpChecksCostAdditionPct\%
+(Table~\ref{tab:cost-addition}) and require none. Rounds are short in this
+setting, so these proportions would differ with longer training: the cost of
+the checks depends on the number of problems examined, not on the length of
+training.
+
+\input{generated/table_cost_addition}
+
+\paragraph{Agreement against the hand-written filter.}
+\label{sec:agreement-vs-filter}
+
+The agreement rule keeps an answer whenever two splits produce it, and
+encodes no knowledge of carrying. After four rounds, the resulting student
+was on average within \gpGapMean{} percentage points of the student trained
+with the no-carry rule at every length from 8 to 15 digits
+(Figure~\ref{fig:exp1}; Table~\ref{tab:passmark}), and trailed it by at most \gpGapWorst{} points in
+the worst single run. Even on problems with a carry across the first split,
+the largest gaps were \gpGapMeanCarry{} points on average and
+\gpGapWorstCarry{} points in the worst run. We had not specified in advance
+how closely the two had to match.
+
+\input{generated/figure_exp1}
+
+The measurements of Section~\ref{sec:confirmed-right} explain how this is
+possible. Agreement does not require a teacher that is usually right. With no
+selection, the first split's answer was correct in only
+\gpTaNoSelectAccLow--\gpTaNoSelectAccHigh\% of cases, yet the answers that
+another split confirmed were correct in at least
+\gpTaNoSelectAccConfirmedLow\%. The agreement rule keeps such answers and
+discards the rest, and its kept answers were correct in at least
+\gpTaAgreementAccLow\% of cases. A filter written for the task encodes why an
+answer is wrong. Agreement relies only on wrong answers not recurring from
+one split to the next, which on this task was sufficient.
+
+Dispensing with a hand-written filter has a cost. Because the agreement rule
+must construct each answer several times, it took \gpBuildRatio{} times as
+long as the no-carry rule to fill the same training quota. It also yields a
+skewed sample: whereas roughly \gpNaturalCarryLow\% of fresh problems have a
+carry at the first split, only \gpKeptAgreementLow\% to
+\gpKeptAgreementHigh\% of the answers kept by the agreement rule do. Splits
+are most likely
+to agree when none of them errs, which removes the hardest cases
+disproportionately. Finally, the rule presupposes a second valid way of
+splitting the problem.
+
+\citet{shin2026compositional} leave open how a composition procedure can be
+validated without a task-specific filter. For addition, agreement across
+splits provides one practical answer.
+
+\input{generated/table_passmark}
+
+\input{sections/S-ladder}

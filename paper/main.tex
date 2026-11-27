@@ -11,22 +11,36 @@
 
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
+\usepackage{xr-hyper}       % references into supplement.tex (prefix S-)
 \usepackage{hyperref}
 \usepackage{url}
 \usepackage{booktabs}
 \usepackage{amsfonts}
+\usepackage{amsmath}
+\usepackage{amsthm}
 \usepackage{nicefrac}
 \usepackage{microtype}
 \usepackage{xcolor}
 \usepackage{graphicx}
 \usepackage{amssymb}
 \usepackage{array}
+\usepackage{float}             % [H] placement for tables and figures
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning,calc}
-\usepackage[section]{placeins}
+\usepackage[section,above,below]{placeins}
+\usepackage[title]{appendix}   % headings read "Appendix A ..."
 \input{generated/numbers}  % numbers cited in the text (gainpred.writeup)
+\input{generated/numbers_pilot}  % numbers of the earlier loop (gainpred.floors_paper)
+\input{generated/numbers_ladder}  % numbers of Section 5 (gainpred.ladder_paper)
 
-\title{Is This Round Worth Running? Predicting the Outcome of Compositional Self-Improvement Before Training}
+\newtheorem{proposition}{Proposition}
+
+% Where the code, protocol, logs and supplement live.
+\urlstyle{same}  % URLs in the text font (no bitmap typewriter font in the PDF)
+\renewcommand{\ttdefault}{lmtt}  % outline typewriter font (Latin Modern), not a bitmap
+\newcommand{\repourl}{\url{https://github.com/njgroene/gainpred}}
+
+\title{Is This Round Worth Running? Steering Compositional Self-Improvement from a Model's Own Answers}
 
 \author{%
   Nikolaj Groeneweg \\
@@ -43,14 +57,55 @@
 \input{sections/1-introduction}
 \input{sections/2-teacher-and-student}
 \input{sections/3-setup}
-\input{sections/4-do-the-checks-predict}
-\input{sections/5-three-further-findings}
-\input{sections/6-beyond-synthetic-tasks}
-\input{sections/7-discussion-and-limits}
+\input{sections/4-predicting-a-round}
+\input{sections/5-ladder}
+\input{sections/6-discussion}
+\paragraph{Use of AI.}
+Large language models and coding assistants were used to write experiment and
+plotting code, orchestrate runs, aggregate and tabulate logs into tables and
+figures, consolidate the appendices and supplement, and edit prose. All
+hypotheses, experimental designs, code, and numerical results were verified by
+the author, who takes full responsibility for the contents of this paper.
 
-% Keep every entry listed until the text cites them all.
-\nocite{*}
+
+
 \bibliographystyle{plainnat}
 \bibliography{refs}
+
+\begin{appendices}
+\input{sections/A-appendix}
+\end{appendices}
+
+% ---- Supplementary material, in the same PDF ----
+\clearpage
+\makeatletter
+% Inside the supplement, a label foo is stored as S-foo, so that the main
+% text's \ref{S-foo} finds it. A \ref{foo} inside the supplement uses S-foo
+% if it exists and otherwise the main text's foo.
+\let\gp@label\label
+\let\gp@ref\ref
+\renewcommand{\label}[1]{\gp@label{S-#1}}
+\renewcommand{\ref}[1]{\@ifundefined{r@S-#1}{\gp@ref{#1}}{\gp@ref{S-#1}}}
+\makeatother
+\setcounter{section}{0}
+\setcounter{table}{0}
+\setcounter{figure}{0}
+\renewcommand{\thesection}{S\arabic{section}}
+\renewcommand{\thetable}{S\arabic{table}}
+\renewcommand{\thefigure}{S\arabic{figure}}
+\renewcommand{\theHsection}{S\arabic{section}}   % distinct link targets
+\renewcommand{\theHtable}{S\arabic{table}}
+\renewcommand{\theHfigure}{S\arabic{figure}}
+
+\begin{center}
+  {\Large\bfseries Supplementary Material}
+\end{center}
+
+\noindent Section, table and figure numbers that begin with S are in this
+supplement; all others refer to the paper. Every table and figure here is
+generated from the logs in the repository (\repourl), which also holds the
+code, the frozen protocol with its amendments, and a record of every run.
+
+\input{sections/S-supplement}
 
 \end{document}

@@ -808,6 +808,9 @@ COST_ARMS = tuple((f"si-{arm}-seed{{s}}-authors", label, True, range(1, 5)) for 
 )
 
 
+ADDITION_COST_LABELS = frozenset(label for _, label, addition, _ in COST_ARMS if addition)
+
+
 def cost_runs(pattern: str, seeds: tuple[int, ...]) -> list[str]:
     if pattern == "run f":
         return [runf_run(s) for s in seeds]
@@ -1290,6 +1293,11 @@ def section4_numbers() -> dict[str, str]:
     tf = sum(k * f for _, k, _, f, _ in cost)
     nums["gpBaselineCostPct"] = f"{100 * sum(k * p for _, k, p, _, _ in cost) / tf:.0f}"
     nums["gpChecksCostPct"] = f"{100 * sum(k * c for _, k, _, _, c in cost) / tf:.0f}"
+    # The same two shares over the addition rounds only (amendment 31): the paper reports addition alone.
+    cost_add = [row for row in cost if row[0] in ADDITION_COST_LABELS]
+    tfa = sum(k * f for _, k, _, f, _ in cost_add)
+    nums["gpBaselineCostAdditionPct"] = f"{100 * sum(k * p for _, k, p, _, _ in cost_add) / tfa:.0f}"
+    nums["gpChecksCostAdditionPct"] = f"{100 * sum(k * c for _, k, _, _, c in cost_add) / tfa:.0f}"
 
     m = margins(conf)
     nums |= {"gpNoveltyLevel": f"{100 * p9b.LEVEL_1:.0f}", "gpConfirmedLevel": "38",
@@ -2560,6 +2568,10 @@ def paper_files() -> dict[str, str]:
     out["table_cost.tex"] = tex_table(
         "cost", "Seconds per round on one A10 GPU, evaluation runs: whole round (build, replay, checks, 3,000 updates; "
         "evaluation not timed) and the checks alone.", ["Teacher", "Rounds", "Round s", "Checks s", "Checks %"], rows)
+    out["table_cost_addition.tex"] = tex_table(
+        "cost-addition", "Seconds per round on one A10 GPU, evaluation runs on addition: whole round (build, replay, "
+        "checks, 3,000 updates; evaluation not timed) and the checks alone.",
+        ["Teacher", "Rounds", "Round s", "Checks s", "Checks %"], [r for r in rows if r[0] in ADDITION_COST_LABELS])
 
     # Section 5: agreement rule against the no-carry rule.
     pm, pc = pass_mark(CONFIRMING, "mean"), pass_mark(CONFIRMING, "carry")
@@ -2601,6 +2613,11 @@ def paper_files() -> dict[str, str]:
     tf = sum(n * f for _, n, _, f, _ in cost)
     probe_share = 100 * sum(n * p for _, n, p, _, _ in cost) / tf
     checks_share = 100 * sum(n * c for _, n, _, _, c in cost) / tf
+    # The table's cases are all addition, so its cost column is taken over the addition rounds (amendment 31).
+    cost = [row for row in cost if row[0] in ADDITION_COST_LABELS]
+    tf = sum(n * f for _, n, _, f, _ in cost)
+    probe_share = 100 * sum(n * p for _, n, p, _, _ in cost) / tf
+    checks_share = 100 * sum(n * c for _, n, _, _, c in cost) / tf
     labels = {"ours": "Our checks", "baseline": "Baseline, as run",
               "favour": "Baseline, variant in its favour (defined after the evaluation runs)"}
 
@@ -2624,7 +2641,7 @@ def paper_files() -> dict[str, str]:
         "baseline", f"Our checks against the train-briefly-and-look baseline, evaluation runs (cases correctly "
         f"predicted, %). Harmful cases flagged: harmful cases (did harm, or taught wrong answers) predicted to do "
         f"harm. The baseline trains 200 updates and reads accuracy on the test problems, so it needs their correct "
-        f"answers; our checks do not. Cost: share of a full round. Levels fitted on the calibration runs: as run "
+        f"answers; our checks do not. Cost: share of a full round, over the addition rounds. Levels fitted on the calibration runs: as run "
         f"G = {lv['G']}, H = {lv['H']}, D = {lv['D']}; variant Z = {lf['Z']}, G = {lf['G']}, H = {lf['H']}, D = {lf['D']}.",
         ["Rule", "All", "Paid off", "Did nothing", "Harmful cases flagged", "Correct answers", "Cost %"], rows,
         fit=True, rule_before={3})

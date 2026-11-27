@@ -1,0 +1,66 @@
+\section{Discussion}
+\label{sec:discussion-and-limits}
+
+\paragraph{What the results say.}
+In the setting we studied, a model can tell from its own answers what a round
+of self-improvement will do, select its own training data, and decide where to
+train. Two quantities carry all three roles: \emph{novelty} (how often the
+teacher's answers differ from the student's) and the \emph{confirmed share}
+(how often a second split reproduces them), standing in for the correct answers
+and hand-written filter used by \citet{shin2026compositional}. As a filter,
+agreement between splits is what lets the loop work at all: without it, the
+model learns nothing from direct answers or learns the composition's carry
+error. As a measurement, novelty tracks how much of each length remains to be
+learned closely enough to skip a third to a half of the work at no cost in
+accuracy---provided any cutoff placed on it matches the question asked
+(flagging a large single-round jump versus checking whether any gap remains).
+We stopped the ladder at 39 digits by choice: on two starting models, final
+accuracy at the longest sums matched that at the shortest, while on the third
+errors accumulated slowly, leaving open how much further it would have climbed.
+
+\paragraph{Relation to other work.}
+\label{sec:related}
+Training a model on outputs produced with an auxiliary procedure---tree search
+\citep{anthony2017thinking}, decomposition \citep{christiano2018amplification},
+or richer prompts \citep{zhang2026basersi}---is standard practice, though
+training on self-generated outputs can also degrade a model
+\citep{shumailov2024collapse}. Whereas prior work uses the teacher--student gap
+to drive training, or predicts self-training gains from dataset statistics
+\citep{vanasch2016predicting}, we use that gap before training to decide
+whether and where to train. Two concurrent studies ask related questions with
+stronger signals: \citet{li2026evolve} select self-distillation data using
+gradients and ground-truth labels, and \citet{he2026recursive} filter agent
+generations only after training and measuring their gain; we decide beforehand
+from outputs alone. For estimating accuracy without labels, prior work relies
+on agreement across models \citep{baek2022agreement}, across two views in
+co-training \citep{blum1998cotraining}, or among a model's own samples at test
+time \citep{wang2023selfconsistency} and during self-training
+\citep{shafayat2025selftrain}. Our sample-and-vote baseline follows the last
+approach and taught nothing; agreement across distinct splits acts instead like
+two views inside a single model, informative precisely because the computation
+paths and their errors differ. Finally, on length generalization, removing
+positional encodings \citep{kazemnejad2023positional} or adding position-aware
+embeddings \citep{mcleish2024abacus} extends addition
+architecturally---\citet{zhou2024algorithms} characterize which algorithms
+extrapolate in this way---while filtered self-training on direct answers
+extends our architecture one digit at a time \citep{lee2025selfimproving}; here
+the architecture stays fixed and split-confirmed composition carries it across
+32 lengths.
+
+\paragraph{Scope and outlook.}
+\label{sec:limits}
+Our empirical evidence is of two kinds: the single-round predictor was frozen
+before evaluation, whereas the 39-digit ladder is exploratory---its rules were
+fixed before running, save for the divergence retry rule added on the first
+seed, and its pacing threshold was set from logs of an earlier loop. Using one
+small model, three evaluation seeds, and a synthetic task was a deliberate
+choice so every output could be scored exactly and harmful rounds induced
+cleanly. Extending the same two quantities to larger models and open-ended
+tasks will test three assumptions built into our setup. First, the checks
+evaluate a supplied procedure that admits distinct splits; they do not discover
+how to decompose a task. Second, they inspect only the answers a teacher keeps,
+not what selection omits: a teacher that is right on every answer it keeps
+can still harm the student by leaving a whole class of problems out of
+training, and neither quantity would show it. Third, exact
+string match will need to give way to semantic agreement where valid answers
+are not unique.

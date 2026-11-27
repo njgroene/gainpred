@@ -1,26 +1,26 @@
 \section{Teacher and student}
 \label{sec:teacher-and-student}
 
-% Needs in the preamble of main.tex:
-%   \usepackage{amssymb}
-%   \usepackage{array}
-%   \usepackage{tikz}
-%   \usetikzlibrary{arrows.meta,positioning,calc}
-
-This section introduces the teacher--student framework used in our paper, as
-well as the diagnostic checks that follow from it. We use the addition task as
-a running example throughout; Section~\ref{sec:setup} gives the details of the
-tasks and the experimental setup.
+We first set out the framework used in both parts of the paper. Viewing each
+round through two roles of the same model yields bounds on how much a round can
+change the model and on how accurate its constructed answers are; from these
+follow our selection rule and a pre-round prediction of what a round will do.
 
 \subsection{One round, two roles}
 \label{sec:two-roles}
 
-At the start of round $i$, we have a single model, $M_{i-1}$, alongside a pool of
-hard problems (longer than anything the model has been trained on), with no
-correct answers attached. We put $M_{i-1}$ to work in two distinct
-roles (Figure~\ref{fig:roles}).
+At the start of round $i$ we have a single model, $M_{i-1}$, and a pool of hard
+problems beyond its supervised starting range, for which no correct answers are
+available. We consider $M_{i-1}$ in two roles (Figure~\ref{fig:roles}). As
+the student, the model answers a hard problem directly. As the teacher, it
+follows a procedure: it decomposes the hard problem into easier pieces, answers
+each piece, combines the partial answers into an answer to the whole, and
+decides whether to keep that answer, a final step we call \emph{selection}. We
+refer to a particular decomposition of a problem as a \emph{split}. The teacher
+is not a separate, stronger model; it is the same model augmented by a
+procedure \citep{lopezpaz2016unifying, zhang2026basersi}.
 
-\begin{figure}[htbp]
+\begin{figure}[t]
 \centering
 \begin{tikzpicture}[
   font=\small,
@@ -68,278 +68,131 @@ roles (Figure~\ref{fig:roles}).
 \node[chk, above=4mm of combine] (agr)
   {agreement: does a second split give the same answer?};
 \draw[chkline] (agr.west) -| (split.north);
-\node[chk] (con) at ($(combine.south)+(0,-7.5mm)$)
-  {construction: is the\\answer ever new?};
-\draw[chkline] (con.north) -- (combine.south);
 \end{tikzpicture}
 \caption{One round of self-improvement, seen as two roles of one model. Shaded
-  boxes are calls to the model $M_{i-1}$. The teacher's kept answers are the
-  training set $D_i$. Dashed lines mark where each check looks; none of them
-  uses a correct answer to the hard problem.}
+  boxes are calls to the model $M_{i-1}$. The teacher's kept answers form the
+  training data. Dashed lines mark where the two checks look; neither
+  consults a correct answer to the hard problem.}
 \label{fig:roles}
 \end{figure}
 
-Acting as the \emph{student}, the model simply tackles a hard problem head-on
-and produces a direct answer. Acting as the \emph{teacher}, it follows a
-structured procedure: it breaks the hard problem into smaller, easier pieces,
-solves each piece individually, stitches those partial solutions back together,
-and decides whether to keep or discard the resulting answer in a final step we call
-\emph{selection}. Crucially, the teacher is not a separate, stronger model. It
-is the exact same model, just guided by a decomposition procedure.
+In multi-digit addition, the teacher splits both numbers at the same position,
+adds the left and right pieces separately, and writes the two sums side by
+side. The result is wrong whenever a carry crosses the split, giving the
+right-hand sum an extra digit that should have been added to the left. The
+filter of \citet{shin2026compositional}, which we call the \emph{no-carry
+rule}, discards every such problem. Our \emph{agreement rule} requires no
+knowledge of arithmetic: it keeps an answer whenever at least two different
+splits produce it.
 
-The answers that survive selection form the training set $D_i$, which is then
-used to update $M_{i-1}$ into $M_i$. Because the student is trained on the
-teacher's outputs, each round simply pulls the student's predictions toward the
-teacher's. Three practical consequences immediately follow:
+Training the model on the kept answers---its pseudo-labels
+\citep{lee2013pseudolabel}---moves the student's answers toward the teacher's.
+If the teacher's answers coincide with the student's, the round accomplishes
+nothing; if they are wrong, it degrades the student. For a round to help, the
+teacher's answers must differ from the student's and be correct.
 
-\begin{itemize}
-\item If the teacher produces the exact same answers as the student, there is
-  nothing new to learn, and the round achieves nothing.
-\item If the teacher's answers are wrong, training pulls the student toward
-  errors, actively degrading performance.
-\item If the teacher is fundamentally incapable of generating the solutions the
-  student lacks, no amount of iteration will bridge the gap, and progress
-  stalls.
-\end{itemize}
+\subsection{What a round can change}
+\label{sec:what-changes}
 
-For a round of self-improvement to actually work, the teacher's answers must
-therefore \emph{differ} from the student's, be \emph{correct}, and
-\emph{cover what the student is missing}. While the second and third requirements
-restate the failure modes identified by \citet{shin2026compositional}, the first
-is our own addition.
+Fix a round and a problem length, and consider the hard problems of that length
+for which the teacher keeps an answer. Let $T$ denote the teacher's kept answer
+and $S$ the student's direct answer. Three quantities characterize the round
+before it is run: the student's accuracy $a_S$, the fraction of these problems
+on which $S$ is correct; the teacher's accuracy $a_T$, the fraction on which
+$T$ is correct; and the \emph{novelty} $\nu$, the fraction on which $T$ and $S$
+disagree. The first two cannot be determined without correct answers; the third
+can. We call \emph{imitation} the idealized case in which, after the round, the
+student gives the teacher's answer on every one of these problems.
 
-\subsection{A worked example}
-\label{sec:worked-example}
+\begin{proposition}
+\label{prop:novelty}
+Under imitation, a round changes the student's accuracy on the problems the
+teacher keeps by $a_T - a_S$, and $|a_T - a_S| \le \nu$. If the teacher is
+always right, the change is $+\nu$, and $\nu = 1 - a_S$ is the student's error.
+If the student is always right, the change is $-\nu$, and $\nu = 1 - a_T$ is
+the teacher's error.
+\end{proposition}
 
-This teacher-student model is not new to this study. Treating a model with extra help as the teacher of the
-same model without it goes back to distillation with privileged information
-\citep{lopezpaz2016unifying}, and recent work uses exactly these two roles to
-write the help a model gets from its prompts into its weights
-\citep{zhang2026basersi}. That work uses the gap between teacher and student
-to change the student's weights. We use it to decide, beforehand, whether
-changing them is worthwhile.
+The argument is short. Where teacher and student agree, imitation changes
+nothing. Where they disagree, at most one of them is right, so all problems
+gained or lost by the student lie among those on which the two differ; and if
+one of the two is always right, they differ exactly where the other is wrong.
+Novelty alone therefore bounds the magnitude of the change: without novelty
+nothing changes, and no change can exceed $\nu$. Its direction depends on which
+role is right where they disagree, which novelty cannot reveal. When the
+teacher is right, novelty equals the student's remaining error, and hence the
+expected gain. Imitation remains an idealization: a student may fail to learn
+what it is shown, or generalize beyond what it is shown, and the problems the
+teacher keeps need not represent all problems of that length.
 
-Figure~\ref{fig:example} walks through a concrete example of both roles in
-action. Here, a model trained only on three- to seven-digit numbers is asked to
-add two eight-digit numbers. Unsurprisingly, the student's direct attempt fails.
-To solve it as a teacher, the model splits each number in two, adds the left
-and right pieces separately, and concatenates the two results. With the first
-split, this breaks down: the right-hand pieces sum to a five-digit number, and
-the extra carry digit gets stuck awkwardly in the middle of the combined string
-instead of carrying over to the left. However, the next two splits happen to
-cut at boundaries with no carry, so both yield the right total.
-
-What enters the training set next comes down to the selection rule. Without any
-filtering, the teacher blindly keeps the flawed first answer. The filter
-proposed by \citet{shin2026compositional}, which we call the \emph{no-carry
-rule}, recognizes that an oversized partial sum signals an overflow error and
-discards the example entirely. By contrast, our \emph{agreement rule} requires
-no domain-specific arithmetic knowledge: it simply keeps an answer if at least
-two different splits arrive at the same result.
-
-\begin{figure}[htbp]
-\centering
-\small
-\begin{tabular}{@{}lll@{}}
-\toprule
-\multicolumn{3}{@{}l}{\textbf{Problem:} \texttt{35128624 + 21415273}
-  \quad (correct answer \texttt{56543897}, not available to the model)} \\
-\midrule
-\multicolumn{3}{@{}l}{\textbf{Student} answers directly:
-  \texttt{56533897} \;$\times$} \\
-\midrule
-\multicolumn{3}{@{}l}{\textbf{Teacher} splits, answers each piece, and writes
-  the sums side by side:} \\
-Split & Sums of the pieces & Built answer \\
-\texttt{3512|8624} & \texttt{3512+2141 = 5653},\;
-  \texttt{8624+5273 = 13897} & \texttt{565313897} \;$\times$ \\
-\texttt{351|28624} & \texttt{351+214 = 565},\;
-  \texttt{28624+15273 = 43897} & \texttt{56543897} \;\checkmark \\
-\texttt{35128|624} & \texttt{35128+21415 = 56543},\;
-  \texttt{624+273 = 897} & \texttt{56543897} \;\checkmark \\
-\midrule
-\multicolumn{3}{@{}l}{\textbf{Selection} decides what is kept for training:} \\
-No selection & keeps the first split's answer & \texttt{565313897}
-  \;$\times$ \\
-No-carry rule  & \texttt{13897} does not fit in four digits & nothing kept \\
-Agreement rule & two of the three splits agree & \texttt{56543897}
-  \;\checkmark \\
-\bottomrule
-\end{tabular}
-\caption{One addition problem seen by the student and by the teacher. The
-  marks \checkmark{} and $\times$ are for the reader: the model never sees
-  them. The student's answer is illustrative. The no-carry rule is the
-  hand-written filter of \citet{shin2026compositional}; the agreement rule
-  needs no knowledge of carrying.}
-\label{fig:example}
-\end{figure}
-
-\subsection{Two questions before every round}
+\subsection{Two checks before every round}
 \label{sec:two-questions}
 
-Before committing to a training round, we draw a fresh batch of hard problems
-and have the model play both roles. No weights are updated, and no correct
-answers are consulted. Instead, we ask two diagnostic questions.
+Before a round, we draw a fresh sample of hard problems and have the model play
+both roles; no weights are updated and no correct answers are consulted. The
+\emph{novelty check} estimates $\nu$ as the fraction of the teacher's kept
+answers that differ from the student's direct answers. Comparing direct and
+decomposed answers has been used to detect reasoning errors
+\citep{bottman2026operadic, yang2024decc}; we use it to gauge whether a
+round has anything left to teach.
 
-\paragraph{Is there anything new?} The \emph{novelty check} calculates the
-fraction of the teacher's kept answers that actually differ from the student's
-direct predictions. If nearly all of them match what the student already outputs,
-training will be a dead end. With a reliable teacher, novelty is high on problem
-lengths the student has yet to master, and drops near zero on lengths it
-already knows. While comparing direct and decomposed answers has previously
-been used to catch reasoning errors \citep{bottman2026operadic,yang2024decc}, we
-use it here to gauge whether a training round has anything left to teach. Of
-course, novelty alone cannot distinguish progress from regression: a different
-answer might fix a student's mistake, or introduce a brand-new one.
+The \emph{agreement check} asks whether the teacher's answers can be trusted. A
+correct answer should not depend on where the input happens to be split,
+whereas composition errors typically do: a carry corrupts one split while
+leaving another intact. Recomputing each kept answer under alternative splits
+gives the \emph{confirmed share} $c$, the fraction reproduced exactly by at
+least one other split. Let $\varepsilon$ be the fraction of kept answers that
+are wrong and nonetheless confirmed.
 
-\paragraph{Does a second split agree?} A valid solution should not depend on
-where we happened to slice the input. Combining errors, on the other hand, are
-usually sensitive to the cut point, as illustrated in Figure~\ref{fig:example} where a
-carry ruins the first split while leaving the others untouched. To test for
-this, the \emph{agreement check} re-derives each kept answer using alternative
-splits and measures the fraction reproduced identically by at least one other
-split, which we call the \emph{confirmed share}. A low confirmed share warns
-that much of the teacher's training data is unreliable. Two caveats are worth
-noting here. First, the alternative splits must cut at distinct positions; two
-splits sharing a boundary will fail at that boundary in the exact same way,
-giving a false sense of consensus. Second, agreement does not guarantee
-correctness: two different splits can still converge on the same mistake.
+\begin{proposition}
+\label{prop:agreement}
+The teacher's accuracy satisfies $a_T \ge c - \varepsilon$. For $c > 0$, the
+fraction of confirmed answers that is correct is $1 - \varepsilon/c$.
+\end{proposition}
 
-The agreement rule of Figure~\ref{fig:example} is this same check, used as a
-selection step. Because it keeps only answers that a second split confirms,
-any teacher using it has a confirmed share of 100\% by construction, and only
-the novelty check remains informative in that setting.
+Every confirmed answer is either right, or wrong and confirmed, so the fraction
+of kept answers that are both right and confirmed is $c - \varepsilon$; this
+cannot exceed $a_T$, and dividing by $c$ gives the accuracy among confirmed
+answers. The two statements play complementary roles. First, when $\varepsilon$
+is small, $c$ bounds the teacher's accuracy from below---as a bound rather than
+an estimate, since a right answer goes unconfirmed whenever every alternative
+split hits a carry. Second, when $\varepsilon$ is small relative to $c$, the
+confirmed answers are nearly all right ($1 - \varepsilon/c \approx 1$) even if
+the teacher is mostly wrong overall. Both rely on different splits failing in
+different ways, which is why alternative splits must cut at distinct
+positions---following the logic of self-testing programs
+\citep{blum1993selftesting}, with split invariance as the tested property
+(tested empirically in Section~\ref{sec:do-the-checks-predict}). Used as
+selection, this check becomes the agreement rule: keeping only confirmed
+answers discards the unconfirmed errors, leaves $c = 1$ on the kept set by
+construction, and leaves novelty as the remaining signal of what the student
+has left to learn.
 
-\subsection{One question per procedure}
-\label{sec:one-question}
 
-Our third diagnostic evaluates the decomposition procedure itself, not any
-particular round, so it only needs to be run once per procedure.
+\subsection{From checks to a prediction}
+\label{sec:rule}
 
-\paragraph{Can the teacher build anything new?} The \emph{construction check}
-measures how often the teacher's final answer is identical to one of the
-individual sub-problem answers it started with. If this happens 100\% of the
-time, the teacher is merely \emph{handing back} partial solutions: every answer
-it produces for a hard problem is already something the model outputs for an
-easier piece, so it can show the student nothing beyond the sub-problems.
-Concatenating sums never falls into this trap, because the combined number is
-always longer than either partial sum. On our second task, finding the longest
-run of repeated characters in a string, the procedure from
-\citet{shin2026compositional} always hands back: it simply returns the longest
-run found inside an isolated piece, meaning it can never detect a run spanning
-across a cut. Because this limitation is structural, we can measure it upfront
-by substituting an oracle solver for the model before any training begins. In
-practice, real models yielded identical scores on addition and nearly identical
-ones on the string task (Table~\ref{tab:check3}).
+Propositions~\ref{prop:novelty} and~\ref{prop:agreement} give continuous
+bounds; turning them into a discrete verdict on a single round (\emph{pays
+off}, \emph{does nothing}, or \emph{does harm}) requires thresholds. Three
+questions are asked in order, and the first answered ``no'' decides the
+prediction: (i)~\emph{Basics}: is accuracy high enough on easy problems from
+the supervised starting range (where labels already exist) to trust the piece
+answers? If not, the round does harm. (ii)~\emph{Novelty}: does the teacher
+keep enough answers to judge, and do they differ from the student's often
+enough to produce a large gain? If not, the round does nothing.
+(iii)~\emph{Agreement}: are enough kept answers confirmed by another split to
+trust that they are right? If not, the round does harm; otherwise it pays off.
 
-\input{generated/table_check3}
-
-That said, passing the construction check is necessary rather than sufficient.
-A procedure might be capable of constructing novel answers in general while
-still systematically filtering out the exact cases the student needs to see.
-The no-carry rule illustrates this blind spot: it constructs valid multi-digit
-sums beyond the student's reach, yet because it discards every problem
-involving a carry across the boundary, the student is never shown a carry at
-that position. The construction check is blind to this filtering bias, a
-limitation whose consequences we examine in Section~\ref{sec:three-further-findings}.
-
-\subsection{From answers to a prediction}
-\label{sec:prediction}
-
-For any given round and problem length, we combine our two per-round checks to
-forecast one of three outcomes: the round will \emph{pay off}, \emph{do
-nothing}, or \emph{do harm}. The rule also includes a third per-round check that we specified in advance:
-because the teacher relies on the model's ability to solve smaller
-sub-problems, a \emph{basics check} measures accuracy on easy problems.
-The prediction is given by three questions asked in order
-(Figure~\ref{fig:prediction}); the first that is answered ``no'' decides.
-
-% Flowchart of the prediction rule. Needs in the preamble:
-%   \usepackage{tikz}
-%   \usetikzlibrary{arrows.meta,positioning}
-\begin{figure}[htbp]
-    \centering
-    \begin{tikzpicture}[
-      font=\small,
-      every node/.append style={execute at begin node={\hyphenpenalty=10000\relax}},
-      node distance=5mm and 16mm,
-      q/.style={draw, rounded corners=2pt, text width=70mm, align=left,
-        inner sep=5pt},
-      res/.style={draw, thick, rounded corners=2pt, text width=38mm,
-        align=left, inner sep=5pt, fill=black!8},
-      flow/.style={-{Stealth[length=2mm]}, semithick},
-      lab/.style={font=\footnotesize\itshape, inner sep=2pt},
-    ]
-    \node[q] (basics) {\textbf{Basics.} Are the easy problems solved?\\
-      {\footnotesize Accuracy is at least 98\% on every group of easy problems.}};
-    \node[q, below=of basics] (novelty) {\textbf{Novelty.} Is there anything
-      new?\\
-      {\footnotesize The teacher keeps at least 5\% of the sample, and at least
-      50\% of the kept answers differ from the student's.}};
-    \node[q, below=of novelty] (agree) {\textbf{Agreement.} Does a second split
-      agree?\\
-      {\footnotesize At least 38\% of the kept answers are confirmed by another
-      split.}};
-    \node[res, right=of basics] (harm1) {\textbf{Does harm}\\
-      {\footnotesize The teacher would build on wrong answers.}};
-    \node[res, right=of novelty] (nothing) {\textbf{Does nothing}\\
-      {\footnotesize The teacher has nothing to teach.}};
-    \node[res, right=of agree] (harm2) {\textbf{Does harm}\\
-      {\footnotesize The teacher's answers cannot be trusted.}};
-    \node[res, below=of agree.south west, anchor=north west] (pays)
-      {\textbf{Pays off}\\
-      {\footnotesize Enough new answers, and enough of them confirmed.}};
-    \draw[flow] (basics) -- node[lab, above] {no} (harm1);
-    \draw[flow] (novelty) -- node[lab, above] {no} (nothing);
-    \draw[flow] (agree) -- node[lab, above] {no} (harm2);
-    \draw[flow] ([xshift=10mm]basics.south west) --
-      node[lab, right] {yes} ([xshift=10mm]novelty.north west);
-    \draw[flow] ([xshift=10mm]novelty.south west) --
-      node[lab, right] {yes} ([xshift=10mm]agree.north west);
-    \draw[flow] ([xshift=10mm]agree.south west) --
-      node[lab, right] {yes} ([xshift=10mm]pays.north west);
-    \end{tikzpicture}
-    \caption{How the checks give a prediction for one round at one problem length.
-      The questions are asked in order, and the first ``no'' decides. Thresholds
-      were calibrated on a separate set of pilot runs prior to evaluation (Section~\ref{sec:setup}).
-      The basics check is the only one that uses correct answers, and only for easy problems.}
-    \label{fig:prediction}
-    \end{figure}
-
-Novelty is tested before agreement because an answer the student already knows
-can never change the model. Both the ordering of these rules and their numerical 
-thresholds were calibrated on a separate set of pilot runs prior to evaluation (Section~\ref{sec:setup}).
-The construction check is omitted from these round-by-round rules since it is
-run once upfront to verify whether a procedure can ever teach anything beyond
-the pieces.
-
-Table~\ref{tab:checks} summarizes all four checks, and
-Section~\ref{sec:do-the-checks-predict} evaluates how well our forecasts matched
-actual training outcomes. In short, the novelty and agreement checks proved
-highly predictive, whereas the basics check did not.
-
-\begin{table}[htbp]
-\centering
-\caption{The checks. Kept answers are those the teacher's selection step
-  retains for training. The first three use no correct answers. The version of
-  the construction check for addition was defined after the evaluation runs.}
-\label{tab:checks}
-\small
-\begin{tabular}{@{}l>{\raggedright\arraybackslash}p{0.25\linewidth}>{\raggedright\arraybackslash}p{0.36\linewidth}l@{}}
-\toprule
-Check & Question & What is measured & Asked \\
-\midrule
-Novelty & Is there anything new? & Share of kept answers that differ from the
-  student's direct answer & Every round \\
-\addlinespace
-Agreement & Does a second split agree? & Share of kept answers that another
-  split reproduces & Every round \\
-\addlinespace
-Construction & Can the teacher build anything new? & Share of the teacher's
-  answers identical to an answer for one of the pieces & Once per procedure \\
-\addlinespace
-Basics & Are the easy problems solved? & Accuracy on easy problems & Every
-  round \\
-\bottomrule
-\end{tabular}
-\end{table}
+None of our thresholds come from theory or numerical optimization. For the
+single-round evaluation in Section~\ref{sec:do-the-checks-predict}, two were set by
+judgment up front---98\% on every easy-problem length as ``nearly solved,'' and
+5\% kept answers (100 of 2,000) so the rates are not computed on a handful of
+examples. The other two---50\% for novelty and 38\% for agreement---were chosen
+by eye on two calibration models before running the three evaluation models
+(Section~\ref{sec:setup}): both quantities fell into two wide-apart clusters,
+so we placed a cutoff in the gap between them (for agreement, midway between
+roughly 29\% and 47\%; Supplement~\ref{S-app:prediction}). Because the gaps are wide, the exact
+numbers matter little within them; what does matter is the question being
+asked---pacing a multi-round loop asks whether \emph{anything} is left to
+learn, and uses a 2\% novelty cutoff instead (Section~\ref{sec:ladder}).

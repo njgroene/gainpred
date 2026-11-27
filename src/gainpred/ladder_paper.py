@@ -546,7 +546,7 @@ def novelty_cell(x: float | None) -> str:
 def lengths_table(arms) -> str:
     head = [" & " + " & ".join(rf"\multicolumn{{4}}{{c}}{{Seed {s}}}" for s in SEEDS) + r" \\",
             "".join(rf"\cmidrule(lr){{{2 + 4 * i}-{5 + 4 * i}}}" for i in range(3)),
-            "Digits & " + " & ".join(["Arm 3", "Arm 4", "Novelty", "Arm 4 did"] * 3) + r" \\"]
+            "Digits & " + " & ".join(["Agreed", "Paced", "Novelty", "Paced did"] * 3) + r" \\"]
     body = []
     for d in LENGTHS:
         if d in (16, 24, 32):
@@ -558,9 +558,10 @@ def lengths_table(arms) -> str:
             cells += [p1(a3.final(d)), p1(a4.final(d)), novelty_cell(c4["novelty_agreed"]),
                       "skipped" if d in a4.skipped_lengths() else "built"]
         body.append(" & ".join(cells) + r" \\")
-    caption = tex_escape("For each length and seed: final accuracy (%) of arm 3 and of arm 4 after their last round, "
-                         "arm 4's novelty in its check before the length's round (% of pair-agreed answers that "
-                         "differ from the direct answer), and whether arm 4 built or skipped the length.")
+    caption = tex_escape("For each length and seed: final accuracy (%) of the third arm (Agreed) and of the "
+                         "self-paced arm (Paced) after their last round, the self-paced arm's novelty in its check "
+                         "before the length's round (% of pair-agreed answers that differ from the direct answer), "
+                         "and whether it built or skipped the length.")
     return tex_table("ladder-lengths", caption, "r" + "rrrl" * 3, head, body, r"\scriptsize")
 
 
@@ -632,10 +633,10 @@ def accuracy_figure(arms, paper: Path, results: Path) -> list[Path]:
     return paths
 
 
-LOSS_LINES = (("ladder_s5_arm3", "round_8", "#c0392b", "arm 3, seed 5, first attempt (diverged)"),
-              ("ladder_s5_arm3", "round_8-redo", "#e8622c", "arm 3, seed 5, redo"),
-              ("ladder_s5_arm4", "round_8", "#2f6fb5", "arm 4, seed 5"),
-              ("ladder_s6_arm3", "round_8", "#9a9892", "arm 3, seeds 6 and 7"),
+LOSS_LINES = (("ladder_s5_arm3", "round_8", "#c0392b", "third arm, seed 5, first attempt (diverged)"),
+              ("ladder_s5_arm3", "round_8-redo", "#e8622c", "third arm, seed 5, redo"),
+              ("ladder_s5_arm4", "round_8", "#2f6fb5", "self-paced arm, seed 5"),
+              ("ladder_s6_arm3", "round_8", "#9a9892", "third arm, seeds 6 and 7"),
               ("ladder_s7_arm3", "round_8", "#9a9892", None))
 
 
@@ -692,7 +693,6 @@ def decisions_figure(arms, paper: Path, results: Path) -> list[Path]:
     red where it decided to train, blue where it did not) and accuracy after the round."""
     plt = _style()
     from matplotlib.lines import Line2D
-    from matplotlib.patches import Patch
     fig, axes = plt.subplots(1, 3, figsize=(5.5, 2.1), sharey=True)
     for ax, s in zip(axes, SEEDS):
         pts = decision_points(arms)[s]
@@ -707,12 +707,12 @@ def decisions_figure(arms, paper: Path, results: Path) -> list[Path]:
         ax.set_xlabel("Number of digits")
     axes[0].set_ylabel("Accuracy (%)")
     handles = [Line2D([], [], color="#3a3a38", lw=1.3),
-               Line2D([], [], ls="none", marker="o", ms=13 ** 0.5, mew=0, color="#8a8985"),
-               Patch(color=BUILT_COLOUR), Patch(color=SKIPPED_COLOUR)]
-    labels = ["accuracy after round", "accuracy before round", "model decided to train",
-              "model decided not to train"]
+               Line2D([], [], ls="none", marker="o", ms=13 ** 0.5, mew=0, color=BUILT_COLOUR),
+               Line2D([], [], ls="none", marker="o", ms=13 ** 0.5, mew=0, color=SKIPPED_COLOUR)]
+    labels = ["accuracy after round", "before round, model decided to train",
+              "before round, model decided not to train"]
     fig.tight_layout(pad=0.3, w_pad=0.6, rect=(0, 0, 1, 0.88))  # the top 12% holds the legend
-    fig.legend(handles, labels, loc="upper center", bbox_to_anchor=(0.5, 1.0), ncol=4, frameon=False,
+    fig.legend(handles, labels, loc="upper center", bbox_to_anchor=(0.5, 1.0), ncol=3, frameon=False,
                fontsize=7.4, handlelength=1.6, columnspacing=1.2)
     paths = _save(fig, "figure_ladder_decisions", paper, results)
     plt.close(fig)

@@ -1,0 +1,138 @@
+\section{Predicting a round}
+\label{sec:do-the-checks-predict}
+
+The three evaluation models yield \gpNovGainCases{} cases in total, of which
+the outcome rule classifies \gpCases{}. We ask two questions of them. First,
+does the frozen threshold rule predict what a single round will do before
+training (Section~\ref{sec:main-result}), and what explains its errors
+(Section~\ref{sec:errors})? Second, do Propositions~\ref{prop:novelty}
+and~\ref{prop:agreement} hold quantitatively underneath the thresholds: does
+novelty track the size of the gain (Section~\ref{sec:novelty-bound}), and does
+split agreement isolate right answers without a task filter
+(Section~\ref{sec:confirmed-right})?
+
+\subsection{The main result}
+\label{sec:main-result}
+\label{sec:which-check}
+
+Across the three held-out starting models, the prediction rule was correct in
+\gpCorrect{} of \gpCases{} cases (\gpCorrectPct\%), compared with
+\gpDidNothingPct\% for always predicting \emph{does nothing}, the most frequent
+outcome (Table~\ref{tab:p9b-confusion}). Every prediction of \emph{pays off}
+and of \emph{does nothing} was correct, all \gpHarmful{} harmful cases were
+flagged as \emph{does harm}, and all nine errors were false alarms of harm,
+meeting the pass mark set before evaluation. Broken down by starting model, the
+rule was correct in \gpCorrectModelTwo{}, \gpCorrectModelThree{}, and
+\gpCorrectModelFour{} of the \gpCasesModelTwo{} cases per seed.
+
+\input{generated/table_p9b_confusion}
+
+The \gpCases{} cases are not independent tests. They fall into eight kinds, and
+within each kind the outcome is nearly always the same: what a round does is
+largely determined by which teacher is used and whether the length is new
+(Supplement, Table~\ref{S-tab:p9b-cases}). The checks are given neither piece
+of information; they infer what the round will do from the model's answers
+alone. The novelty check (including its 5\% retention floor) decided
+\gpByNovelty{} cases, all correctly: lengths already learned, every round
+taught by sample and vote, and rounds with no selection at lengths it had
+already taught. Agreement decided \gpByAgreement{} cases, all correctly,
+separating the teachers that paid off at new lengths from no selection, which
+taught wrong answers there. The basics check decided the remaining
+\gpByBasics{} cases and accounts for all nine errors. Each check falls into two
+well-separated clusters with the threshold inside the gap between them
+(Supplement, Figure~\ref{S-fig:checks}). Running the checks took
+\gpChecksCostAdditionPct\% of a round's compute; starting the round and extrapolating
+from its first 200 updates was less accurate, took \gpBaselineCostAdditionPct\% of a
+round's compute, and required correct answers
+(Supplement~\ref{S-app:prediction}).
+
+\subsection{Novelty bounds the change}
+\label{sec:novelty-bound}
+
+The prediction rule uses novelty only as a cutoff, whereas
+Proposition~\ref{prop:novelty} makes a quantitative statement: novelty bounds
+the magnitude of the change a round can produce, and equals the gain when the
+teacher is right. We tested this after all experiments on the same cases, with
+no prediction recorded in advance. In \gpNovGainWithin{} of \gpNovGainCases{}
+cases, test accuracy changed by no more than the novelty plus 3 points, the
+margin allowed for a round that did nothing (Appendix~\ref{app:evidence},
+Figure~\ref{fig:novelty-gain}). When the teacher is right, the proposition
+predicts that novelty, pre-round student error, and accuracy gain coincide. On
+fully trained starting models, the no-carry rule and the agreement rule are
+right almost without exception: across their \gpNovGainSound{} cases, the gain
+lay within 5 points of the novelty in \gpNovGainSoundChange{} (largest gap
+\gpNovGainSoundChangeGap), including the \gpNovGainSoundBetween{} partially
+learned cases where novelty sits away from 0\% and 100\% and all three numbers
+move together. For a teacher known to be right, pre-round novelty is therefore
+a direct forecast of the points a round will add. Without a check on teacher
+accuracy, novelty remains only an upper bound: where sample and vote kept
+answers, they mostly differed from the student's, yet accuracy never changed by
+more than \gpNovGainVoteMax{} points.
+
+\subsection{Confirmed answers are right}
+\label{sec:confirmed-right}
+\label{sec:agreement-filter}
+
+Proposition~\ref{prop:agreement} requires $\varepsilon$ to be small for the
+agreement check ($a_T \ge c - \varepsilon$) and small relative to $c$ for the
+agreement rule ($1 - \varepsilon/c$), and $\varepsilon$ is the one quantity a
+model cannot measure for itself. After all experiments finished, we measured it
+with correct answers; before any answer was scored, we recorded one prediction
+for each condition across the \gpTaFullCases{} split-based cases from fully
+trained starting models: that $\varepsilon$ would be at most 2\% in every case,
+and that at least 98\% of confirmed answers ($1 - \varepsilon/c$) would be
+correct in every case. Both held. The largest $\varepsilon$ was
+\gpTaPOneWorst\%, and the lowest accuracy among confirmed answers was
+\gpTaPTwoWorst\% (Appendix~\ref{app:evidence},
+Table~\ref{tab:teacher-accuracy}).
+
+Agreement therefore identifies the right answers even of a teacher that is
+mostly wrong. With no selection, the teacher was right on only
+\gpTaNoSelectAccLow--\gpTaNoSelectAccHigh\% of its answers, yet at least
+\gpTaNoSelectAccConfirmedLow\% of those confirmed by another split were
+correct. This is why the agreement rule can replace a filter written for the
+task: it encodes no knowledge of carrying, and after four rounds its student
+was within \gpGapMean{} points of the no-carry student on average across 8 to
+15 digits, at the price of taking \gpBuildRatio{} times as long to fill the
+same training quota (Supplement~\ref{S-app:prediction}). The guarantee has a
+limit. On weak starting models, which answer the pieces themselves poorly,
+$\varepsilon$ reached \gpTaWeakWrongConfirmedHigh\% while $c$ also fell,
+pulling confirmed accuracy down with it (Table~\ref{tab:teacher-accuracy}):
+split agreement tests the composition step directly, and piece accuracy only
+indirectly.
+
+
+\subsection{Where the prediction was wrong}
+\label{sec:errors}
+
+All nine errors on classified cases come from the ten cases whose starting
+model failed the basics check: the rule predicted harm in all ten and was right
+once, because a model just below the 98\% pass mark still yields a teacher that
+is mostly right. Without the basics check, the other two checks alone would
+have been correct in \gpCorrectNoBasics{} of \gpCases{} cases
+(\gpCorrectNoBasicsPct\%); we computed this afterwards, and the frozen rule
+remains our main result.
+
+The outcome rule leaves \gpNoOutcome{} further cases unclassified. In ten of
+them, a length the model already answered correctly more than half the time
+rose to 98\% or higher, while the rule predicted \emph{does nothing}. These are
+errors in substance: all ten were taught by an accurate teacher, so novelty
+equaled the student's remaining error, which lay below 50\% and was read by the
+rule as nothing left to learn. The fault lies in the coarse 50\% cutoff rather
+than in novelty itself, which came within \gpNovGainSoundChangeGap{} points of
+the actual gain in every one of the ten cases. Counting all \gpNoOutcome{}
+unclassified cases as errors gives \gpCorrectAllPct\%.
+
+\paragraph{From single rounds to a loop.}
+Taken together, these results separate the two quantities from the thresholds
+wrapped around them. The frozen rule predicts single-round outcomes in
+\gpCorrectPct\% of classified cases and flags every harmful round, and its
+misses---false alarms from the 98\% basics floor and partially learned lengths
+missed by the 50\% novelty cutoff---come from discretizing continuous signals
+rather than from failures of the bounds themselves. Underneath those cutoffs,
+split agreement isolates right answers ($\ge\gpTaPTwoWorst\%$ accurate on fully
+trained models) even when an unfiltered teacher is mostly wrong, and novelty
+forecasts the resulting gain within a few points whenever the teacher is right.
+Those are the two pieces a multi-round loop needs: a task-free filter to keep
+composition errors out of training, and a quantitative measure of whether
+anything remains to be learned.

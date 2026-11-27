@@ -5,9 +5,9 @@
   (cases correctly predicted, \%). Harmful cases flagged: harmful cases (did
   harm, or taught wrong answers) predicted to do harm. The baseline trains 200
   updates and reads accuracy on the test problems, so it needs their correct
-  answers; our checks do not. Cost: share of a full round. Levels fitted on the
-  calibration runs: as run G = 15, H = 47, D = 51; variant Z = 1, G = 15, H =
-  47, D = 51.}
+  answers; our checks do not. Cost: share of a full round, over the addition
+  rounds. Levels fitted on the calibration runs: as run G = 15, H = 47, D = 51;
+  variant Z = 1, G = 15, H = 47, D = 51.}
 \label{tab:baseline}
 \small
 \resizebox{\linewidth}{!}{%
@@ -16,10 +16,10 @@
 Rule & All & Paid off & Did nothing & Harmful cases flagged & Correct answers
   & Cost \% \\
 \midrule
-Our checks & 249/258 (96.5) & 31/37 & 175/178 & 43/43 & no & 9 \\
-Baseline, as run & 224/258 (86.8) & 32/37 & 154/178 & 38/43 & yes & 56 \\
+Our checks & 249/258 (96.5) & 31/37 & 175/178 & 43/43 & no & 8 \\
+Baseline, as run & 224/258 (86.8) & 32/37 & 154/178 & 38/43 & yes & 60 \\
 Baseline, variant in its favour (defined after the evaluation runs)
-  & 242/258 (93.8) & 32/37 & 177/178 & 33/43 & yes & 56 \\
+  & 242/258 (93.8) & 32/37 & 177/178 & 33/43 & yes & 60 \\
 \midrule
 Weak starting models only (10 cases) &  &  &  &  &  &  \\
 Our checks & 1/10 (10.0) & 0/6 & 0/3 & 1/1 &  &  \\

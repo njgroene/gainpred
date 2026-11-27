@@ -34,11 +34,6 @@ def test_section5_numbers_are_in_numbers_tex():
     assert float(nums["gpBuildRatio"]) > 1
 
 
-def test_section5_inputs_the_slim_table():
-    text = Path("paper/sections/5-three-further-findings.tex").read_text()
-    assert r"\input{generated/table_withheld_slim}" in text and r"\input{generated/table_withheld}" not in text
-
-
 def test_exp2_rows_order_bold_and_zero_ranges():
     from gainpred.writeup import exp2_paper_rows
     rows, bold = exp2_paper_rows()

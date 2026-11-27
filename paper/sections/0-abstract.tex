@@ -1,32 +1,26 @@
-% Abstract (owner's text, verbatim). Prose, unlike the other section files.
 \begin{abstract}
-  A model can improve itself by splitting hard problems into easier ones it can
-  already solve, combining their answers, and then training on the resulting
-  data. \citet{shin2026compositional} showed that such training rounds can help,
-  do nothing, or harm the model, and diagnosed the failures after training, using
-  correct answers. We ask the complementary question: can the outcome of a
-  training round be predicted before training, without access to correct
-  answers, and at a lower cost than running the round itself? We view round $i$
-  of the self-improvement loop as a teacher (the model $M_{i-1}$ applying the
-  split-and-combine procedure, which produces the dataset $D_i$) and a student
-  ($M_{i-1}$ answering directly). In this view, training on $D_i$ can help only
-  if the teacher's answers differ from the student's, are correct, and include
-  information the student lacks. The last two conditions restate failure modes
-  identified by Shin et al.; the first is new. We propose a check for each,
-  performed before training: comparing the teacher's answers with the student's,
-  comparing different ways of splitting the same problem, and examining what the
-  combining step is able to produce. None uses correct answers or requires
-  knowing which problems the procedure gets wrong. Reproducing Shin et al.'s
-  setup with a 14M-parameter Transformer on two tasks, and fixing all thresholds
-  before the final evaluation, we find that our checks predict a round's outcome
-  in 96.5\% of 258 cases and flag every harmful round, at about a tenth of the
-  cost of the round itself. Starting the round and peeking at early progress is
-  no more accurate, costs more than half a round, and requires correct answers.
-  These results suggest that a recursively self-improving model need not run a
-  round to learn its outcome: from its own answers alone, it could tell when
-  another round will help, when it will do harm, and when no further round can
-  help.
-
-
-
+  In compositional self-improvement, a model decomposes hard problems into
+  easier ones it already solves, composes their answers, and trains on the
+  result. Because composition can introduce errors, a round may improve the
+  model, leave it unchanged, or degrade it \citep{shin2026compositional}.
+  Existing remedies presuppose resources an unsupervised model lacks:
+  diagnosing why a round failed requires correct answers, and keeping wrong
+  answers out of training requires a hand-written filter for the task. A model
+  teaching itself has neither. We therefore ask whether a model can steer this
+  loop from its own answers alone, predicting what a round will do, filtering
+  its own training data, and deciding where to train. Casting each round as a
+  teacher (applying the decomposition) instructing a student (the same model
+  answering directly) yields two quantities: \emph{novelty} (how often they
+  disagree), which bounds the change in student accuracy, and the
+  \emph{confirmed share} (how often a second split reproduces the teacher's
+  answer), which bounds teacher accuracy from below. Combined in a rule fixed
+  before evaluation, they predict the outcome of a single addition round in
+  96.5\% of 258 cases and flag every harmful round. Tested across 16 rounds
+  from 7-digit supervision to 39-digit addition, the same two quantities carry
+  the loop end to end. As a filter, split agreement is what makes the climb
+  work: direct answers teach nothing, unfiltered compositions teach their carry
+  errors, and split-confirmed answers reach 39 digits on all three starting
+  models. As a measurement, novelty tracks how much of each length remains to
+  be learned, letting the model skip training where judicious and reach the
+  same accuracy in about half the compute.
 \end{abstract}

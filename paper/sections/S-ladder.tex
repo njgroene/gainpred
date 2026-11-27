@@ -1,0 +1,29 @@
+\section{The ladder: further details}
+\label{app:ladder-more}
+
+This section supplements Section~\ref{sec:ladder} of the paper.
+Table~\ref{tab:ladder-splits} lists the three splits of every length.
+Table~\ref{tab:ladder-lengths} gives, for every length and seed, the final
+accuracy of the arm that builds answers everywhere and of the self-paced
+arm, with the novelty the self-paced arm measured and what it then did.
+
+\input{generated/table_ladder_cuts}
+\input{generated/table_ladder_lengths}
+
+\paragraph{Training within a round.} Figure~\ref{fig:ladder-loss} shows the
+training loss and the gradient norm during round~8, the round that adds 22
+and 23 digits, for the run that diverged, its repetition, the self-paced arm
+on the same seed, and the third arm on the two other seeds. In every run the
+loss moves between about 0.01 and 1 and the gradient norm stays far above
+the clipping level for the first two thirds of the round, while the learning
+rate is constant; the loss falls only once the learning rate decays. The run
+that diverged took one more such jump as the decay began and did not
+recover.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=\linewidth]{generated/figure_ladder_loss.pdf}
+\caption{Training loss (top) and largest gradient norm before clipping
+  (bottom) during round~8 of the ladder, per 50 updates.}
+\label{fig:ladder-loss}
+\end{figure}

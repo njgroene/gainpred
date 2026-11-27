@@ -6,3 +6,10 @@ main.pdf
 *.out
 *.fls
 *.fdb_latexmk
+
+# Earlier versions and files the paper no longer uses (kept locally, not tracked).
+_before_*/
+sections/Archive.zip
+sections/S-earlier-loop.tex
+supplement.tex
+supplement.pdf
